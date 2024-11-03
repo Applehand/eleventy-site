@@ -11,6 +11,10 @@ const REDIRECT_URI = process.env.REDIRECT_URI || "https://applehand.dev/auth/cal
 // In-memory token store
 const tokenStore = {};
 
+app.get("/", (req, res) => {
+    res.redirect("/auth");
+  });
+
 // Redirect to GitHub for authentication
 app.get("/auth", (req, res) => {
   const state = uuidv4();

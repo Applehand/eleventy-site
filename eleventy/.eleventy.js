@@ -1,5 +1,5 @@
 export default function(eleventyConfig) {
-    eleventyConfig.addPassthroughCopy("../admin");
+    eleventyConfig.addPassthroughCopy("src/admin");
   
     return {
       dir: {
