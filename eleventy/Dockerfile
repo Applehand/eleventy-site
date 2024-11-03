@@ -1,16 +1,19 @@
 # eleventy/Dockerfile
 FROM node:18
 
-# Set working directory
+# Set working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy Eleventy site files
-COPY . .
+# Copy package.json and package-lock.json first to install dependencies separately
+COPY package.json package-lock.json ./
 
 # Install dependencies
 RUN npm install
 
-# Build Eleventy site
+# Copy the rest of the Eleventy site files
+COPY . .
+
+# Build the Eleventy site
 RUN npx eleventy
 
 # Expose port
