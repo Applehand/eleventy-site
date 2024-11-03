@@ -1,0 +1,24 @@
+---
+layout: layout.html
+---
+
+
+{% for essay in collections.essay %}
+    <h2><a href="{{ essay.url }}">{{ essay.data.title }}</a></h2>
+    <p>{{ essay.content }}</p>
+{% endfor %}
+
+{% for technical-writing in collections.technical-writing %}
+    <h2><a href="{{ technical-writing.url }}">{{ technical-writing.data.title }}</a></h2>
+    <p>{{ technical-writing.content }}</p>
+{% endfor %}
+
+{% for thought in collections.thought %}
+    <h2><a href="{{ thought.url }}">{{ thought.data.title }}</a></h2>
+    <p>{{ thought.content }}</p>
+{% endfor %}
+
+{% for creative in collections.creative %}
+    <h2><a href="{{ creative.url }}">{{ creative.data.title }}</a></h2>
+    <p>{{ creative.content }}</p>
+{% endfor %}

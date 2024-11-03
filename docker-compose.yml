@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  eleventy:
+    build:
+      context: ./eleventy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./eleventy:/usr/src/app              # For live updates of code and templates
+      - ./eleventy/src/library:/usr/src/app/src/library  # Volume for Decap CMS content
+    environment:
+      - PORT=8080
+
+  auth-server:
+    build:
+      context: ./auth-server
+    ports:
+      - "8081:8081"
+    environment:
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - REDIRECT_URI=${REDIRECT_URI}
