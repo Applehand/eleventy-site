@@ -6,7 +6,7 @@ const app = express();
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI || "https://applehand.dev/auth/callback";
+const REDIRECT_URI = process.env.REDIRECT_URI;
 
 // In-memory token store
 const tokenStore = {};
@@ -18,7 +18,7 @@ app.get("/", (req, res) => {
 // Redirect to GitHub for authentication
 app.get("/auth", (req, res) => {
   const state = uuidv4();
-  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${state}`;
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
   tokenStore[state] = null;
   res.redirect(githubAuthUrl);
 });
