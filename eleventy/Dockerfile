@@ -16,8 +16,11 @@ COPY . .
 # Build the Eleventy site
 RUN npx eleventy
 
-# Expose port
+# Install a lightweight HTTP server
+RUN npm install -g http-server
+
+# Expose port 8080
 EXPOSE 8080
 
-# Start Eleventy development server
-CMD ["npx", "eleventy", "--serve", "--port=8080"]
+# Serve the static files from the build directory (assuming Eleventy outputs to _site)
+CMD ["http-server", "_site", "-p", "8080"]
