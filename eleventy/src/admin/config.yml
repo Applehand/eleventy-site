@@ -2,6 +2,8 @@ backend:
   name: github
   repo: Applehand/eleventy-site
   branch: master
+  site_domain: applehand.dev
+  base_url: https://auth.applehand.dev
   auth_endpoint: https://auth.applehand.dev/auth
 
 media_folder: "static/img/uploads"
