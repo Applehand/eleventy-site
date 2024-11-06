@@ -78,3 +78,8 @@ const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
   console.log(`OAuth server is running on http://localhost:${PORT}`);
 });
+
+app.get("/auth", (req, res) => {
+    res.redirect("/");
+  });
+  
