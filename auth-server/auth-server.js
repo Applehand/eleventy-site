@@ -13,12 +13,8 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 // In-memory token store
 const tokenStore = {};
 
+// Redirect to GitHub for authentication from root route
 app.get("/", (req, res) => {
-    res.redirect("/auth");
-  });
-
-// Redirect to GitHub for authentication
-app.get("/auth", (req, res) => {
   const state = uuidv4();
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
   tokenStore[state] = null;
@@ -26,7 +22,7 @@ app.get("/auth", (req, res) => {
 });
 
 // Handle GitHub's callback and exchange code for an access token
-app.get("/auth/callback", async (req, res) => {
+app.get("/callback", async (req, res) => {
   const { code, state } = req.query;
 
   if (!code || !state || !(state in tokenStore)) {
@@ -55,6 +51,7 @@ app.get("/auth/callback", async (req, res) => {
 
     tokenStore[state] = accessToken;
 
+    // Redirect back to DecapCMS with state in the URL hash
     res.redirect(`https://applehand.dev/admin/#state=${state}`);
   } catch (error) {
     console.error("Error during authentication:", error);
@@ -62,8 +59,8 @@ app.get("/auth/callback", async (req, res) => {
   }
 });
 
-// Endpoint for Decap CMS to retrieve the actual access token
-app.get("/auth/token", (req, res) => {
+// Endpoint for DecapCMS to retrieve the actual access token
+app.get("/token", (req, res) => {
   const { state } = req.query;
   const accessToken = tokenStore[state];
 
@@ -71,6 +68,7 @@ app.get("/auth/token", (req, res) => {
     return res.status(404).send("Token not found or has expired.");
   }
 
+  // Return the token to DecapCMS in JSON format
   delete tokenStore[state];
 
   res.json({ access_token: accessToken });
