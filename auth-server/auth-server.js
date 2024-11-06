@@ -83,3 +83,7 @@ app.get("/auth", (req, res) => {
     res.redirect("/");
   });
   
+  app.get("/auth/callback", (req, res) => {
+    res.redirect("/callback");
+  });
+  
