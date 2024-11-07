@@ -4,7 +4,7 @@ backend:
   branch: master
   site_domain: applehand.dev
   base_url: https://auth.applehand.dev
-  auth_endpoint: /
+  auth_endpoint: /auth
 
 media_folder: "static/img/uploads"
 public_folder: "/img/uploads"
