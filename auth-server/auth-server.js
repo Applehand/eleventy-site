@@ -13,21 +13,23 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 // In-memory token store
 const tokenStore = {};
 
-// Redirect to GitHub for authentication from /auth route
+// Step 1: Initiate the GitHub OAuth flow from /auth
 app.get("/auth", (req, res) => {
   const state = uuidv4();
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
     REDIRECT_URI
   )}&state=${state}`;
   tokenStore[state] = null;
+  console.log("Redirecting to GitHub for authentication:", githubAuthUrl); // Debug log
   res.redirect(githubAuthUrl);
 });
 
-// Handle GitHub's callback and exchange code for an access token
+// Step 2: Handle GitHub's callback to exchange code for an access token
 app.get("/callback", async (req, res) => {
   const { code, state } = req.query;
 
   if (!code || !state || !(state in tokenStore)) {
+    console.error("Invalid request in /callback: missing code or state"); // Debug log
     return res.status(400).send("Invalid request.");
   }
 
@@ -51,12 +53,13 @@ app.get("/callback", async (req, res) => {
     const accessToken = tokenData.access_token;
 
     if (!accessToken) {
+      console.error("Failed to obtain access token"); // Debug log
       return res.status(400).send("Failed to obtain access token.");
     }
 
     tokenStore[state] = accessToken;
 
-    // Redirect back to DecapCMS with state in the URL hash
+    // Step 3: Redirect back to DecapCMS with the state in the URL hash
     res.redirect(`https://applehand.dev/admin/#state=${state}`);
   } catch (error) {
     console.error("Error during authentication:", error);
@@ -64,16 +67,19 @@ app.get("/callback", async (req, res) => {
   }
 });
 
-// Endpoint for DecapCMS to retrieve the actual access token
+// Step 4: Endpoint for DecapCMS to retrieve the actual access token
 app.get("/token", (req, res) => {
   const { state } = req.query;
+  console.log("Token request received with state:", state); // Debug log
   const accessToken = tokenStore[state];
 
   if (!accessToken) {
+    console.error("Token not found or expired for state:", state); // Debug log
     return res.status(404).send("Token not found or has expired.");
   }
 
   delete tokenStore[state];
+  console.log("Returning access token:", accessToken); // Debug log
 
   res.json({ access_token: accessToken });
 });
