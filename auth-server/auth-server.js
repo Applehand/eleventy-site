@@ -13,6 +13,7 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 // In-memory token store
 const tokenStore = {};
 
+// Redirect to GitHub for authentication from root route
 // Redirect to GitHub for authentication from /auth route
 app.get("/auth", (req, res) => {
   const state = uuidv4();
@@ -76,4 +77,9 @@ app.get("/token", (req, res) => {
   delete tokenStore[state];
 
   res.json({ access_token: accessToken });
+});
+
+const PORT = process.env.PORT || 8081;
+app.listen(PORT, () => {
+  console.log(`OAuth server is running on http://localhost:${PORT}`);
 });
