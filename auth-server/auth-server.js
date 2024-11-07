@@ -67,8 +67,24 @@ app.get("/callback", async (req, res) => {
 
     tokenStore[state] = accessToken;
 
-    // Step 3: Redirect back to DecapCMS with the state in the URL hash
-    res.redirect(`https://applehand.dev/admin/#state=${state}`);
+    // Step 3: Return HTML to communicate with the DecapCMS parent window
+    res.send(`
+      <html>
+        <head>
+          <script>
+            // Notify the DecapCMS parent window with the access token
+            window.opener.postMessage(
+              'authorization:github:success:${accessToken}',
+              '*'
+            );
+            window.close(); // Close the popup window
+          </script>
+        </head>
+        <body>
+          <p>Authorization successful. You can close this window.</p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error("Error during authentication:", error);
     res.status(500).send("Internal Server Error");
