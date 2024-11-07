@@ -2,9 +2,17 @@ import express from "express";
 import fetch from "node-fetch";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 
 const app = express();
+
+// Enable CORS for applehand.dev
+app.use(
+  cors({
+    origin: "https://applehand.dev", // Allow only applehand.dev
+  })
+);
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
