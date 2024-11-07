@@ -13,7 +13,6 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 // In-memory token store
 const tokenStore = {};
 
-// Redirect to GitHub for authentication from root route
 // Redirect to GitHub for authentication from /auth route
 app.get("/auth", (req, res) => {
   const state = uuidv4();
