@@ -75,7 +75,7 @@ app.get("/callback", async (req, res) => {
             // Notify the DecapCMS parent window with the access token
             window.opener.postMessage(
               'authorization:github:success:${accessToken}',
-              '*'
+              'https://applehand.dev'
             );
             window.close(); // Close the popup window
           </script>
