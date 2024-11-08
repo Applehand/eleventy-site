@@ -69,22 +69,19 @@ app.get("/callback", async (req, res) => {
 
     // Step 3: Return HTML to communicate with the DecapCMS parent window
     res.send(`
-      <html>
-        <head>
-          <script>
-            // Notify the DecapCMS parent window with the access token
-            window.opener.postMessage(
-              'authorization:github:success:${accessToken}',
-              'https://applehand.dev'
-            );
-            window.close(); // Close the popup window
-          </script>
-        </head>
-        <body>
-          <p>Authorization successful. You can close this window.</p>
-        </body>
-      </html>
-    `);
+        <html>
+          <head>
+            <script>
+              // Notify DecapCMS parent window with the access token
+              const message = "authorization:github:success:${accessToken}";
+              window.opener.postMessage(message, 'https://applehand.dev');
+            </script>
+          </head>
+          <body>
+            <p>Authorization successful. Please wait...</p>
+          </body>
+        </html>
+      `);
   } catch (error) {
     console.error("Error during authentication:", error);
     res.status(500).send("Internal Server Error");
