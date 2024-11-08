@@ -7,10 +7,11 @@ dotenv.config();
 
 const app = express();
 
-// Enable CORS for applehand.dev
+// Enable CORS for applehand.dev on all routes
 app.use(
   cors({
     origin: "https://applehand.dev", // Allow only applehand.dev
+    credentials: true, // Allow credentials to be sent with requests
   })
 );
 
@@ -86,7 +87,6 @@ app.get("/callback", async (req, res) => {
         <html>
           <head>
             <script>
-              // Debug log before sending postMessage
               console.log("Sending message to DecapCMS parent window with token");
               const message = "authorization:github:success:${accessToken}";
               try {
@@ -109,7 +109,7 @@ app.get("/callback", async (req, res) => {
 });
 
 // Step 4: Endpoint for DecapCMS to retrieve the actual access token
-app.get("/token", (req, res) => {
+app.get("/token", cors({ origin: "https://applehand.dev", credentials: true }), (req, res) => {
   const { state } = req.query;
   console.log(`[INFO] Token request received with state: ${state}`);
 
