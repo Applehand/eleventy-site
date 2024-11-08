@@ -27,8 +27,11 @@ app.get("/auth", (req, res) => {
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
     REDIRECT_URI
   )}&state=${state}`;
+  
   tokenStore[state] = null;
-  console.log("Redirecting to GitHub for authentication:", githubAuthUrl); // Debug log
+  console.log(`[INFO] Redirecting to GitHub for authentication: ${githubAuthUrl}`);
+  console.log(`[INFO] Generated state for OAuth flow: ${state}`);
+  
   res.redirect(githubAuthUrl);
 });
 
@@ -36,12 +39,15 @@ app.get("/auth", (req, res) => {
 app.get("/callback", async (req, res) => {
   const { code, state } = req.query;
 
+  console.log(`[INFO] Received callback with code: ${code} and state: ${state}`);
+  
   if (!code || !state || !(state in tokenStore)) {
-    console.error("Invalid request in /callback: missing code or state"); // Debug log
+    console.error(`[ERROR] Invalid request in /callback: missing or invalid code/state`);
     return res.status(400).send("Invalid request.");
   }
 
   try {
+    console.log(`[INFO] Exchanging code for access token with GitHub...`);
     const tokenResponse = await fetch(
       "https://github.com/login/oauth/access_token",
       {
@@ -57,15 +63,23 @@ app.get("/callback", async (req, res) => {
       }
     );
 
+    console.log(`[INFO] GitHub token response status: ${tokenResponse.status}`);
+    if (!tokenResponse.ok) {
+      console.error(`[ERROR] Failed to fetch access token. Status: ${tokenResponse.status}`);
+      return res.status(500).send("Failed to fetch access token.");
+    }
+
     const tokenData = await tokenResponse.json();
     const accessToken = tokenData.access_token;
+    console.log(`[INFO] GitHub token response data:`, tokenData);
 
     if (!accessToken) {
-      console.error("Failed to obtain access token"); // Debug log
+      console.error("[ERROR] Failed to obtain access token from GitHub response.");
       return res.status(400).send("Failed to obtain access token.");
     }
 
     tokenStore[state] = accessToken;
+    console.log(`[INFO] Access token stored for state: ${state}`);
 
     // Step 3: Return HTML to communicate with the DecapCMS parent window
     res.send(`
@@ -74,6 +88,7 @@ app.get("/callback", async (req, res) => {
             <script>
               // Notify DecapCMS parent window with the access token
               const message = "authorization:github:success:${accessToken}";
+              console.log("Sending message to DecapCMS parent window:", message);
               window.opener.postMessage(message, 'https://applehand.dev');
             </script>
           </head>
@@ -83,7 +98,7 @@ app.get("/callback", async (req, res) => {
         </html>
       `);
   } catch (error) {
-    console.error("Error during authentication:", error);
+    console.error("[ERROR] Error during authentication:", error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -91,21 +106,22 @@ app.get("/callback", async (req, res) => {
 // Step 4: Endpoint for DecapCMS to retrieve the actual access token
 app.get("/token", (req, res) => {
   const { state } = req.query;
-  console.log("Token request received with state:", state); // Debug log
+  console.log(`[INFO] Token request received with state: ${state}`);
+
   const accessToken = tokenStore[state];
 
   if (!accessToken) {
-    console.error("Token not found or expired for state:", state); // Debug log
+    console.error(`[ERROR] Token not found or expired for state: ${state}`);
     return res.status(404).send("Token not found or has expired.");
   }
 
+  console.log(`[INFO] Returning access token for state: ${state}: ${accessToken}`);
   delete tokenStore[state];
-  console.log("Returning access token:", accessToken); // Debug log
 
   res.json({ access_token: accessToken });
 });
 
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
-  console.log(`OAuth server is running on http://localhost:${PORT}`);
+  console.log(`[INFO] OAuth server is running on http://localhost:${PORT}`);
 });
