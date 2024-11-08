@@ -86,10 +86,15 @@ app.get("/callback", async (req, res) => {
         <html>
           <head>
             <script>
-              // Notify DecapCMS parent window with the access token
+              // Debug log before sending postMessage
+              console.log("Sending message to DecapCMS parent window with token");
               const message = "authorization:github:success:${accessToken}";
-              console.log("Sending message to DecapCMS parent window:", message);
-              window.opener.postMessage(message, 'https://applehand.dev');
+              try {
+                window.opener.postMessage(message, 'https://applehand.dev');
+                console.log("Message sent to parent window:", message);
+              } catch (e) {
+                console.error("Error posting message to parent window:", e);
+              }
             </script>
           </head>
           <body>
