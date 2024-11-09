@@ -87,20 +87,36 @@ app.get("/callback", async (req, res) => {
       <html>
         <head>
           <script>
-            console.log("Sending structured message to DecapCMS parent window with token");
-            const message = {
-              type: "authorization",
-              provider: "github",
-              result: "success",
-              content: { access_token: "${accessToken}" }
-            };
-            try {
-              window.opener.postMessage(JSON.stringify(message), 'https://applehand.dev/admin');
-              console.log("Structured message sent to parent window:", JSON.stringify(message));
-              window.close();
-            } catch (e) {
-              console.error("Error posting message to parent window:", e);
-            }
+            (function() {
+              // Step 1: Define function to handle receiving message
+              function receiveMessage(event) {
+                console.log("Received message from parent:", event);
+                if (event.origin !== "https://applehand.dev") {
+                  console.error("Invalid origin:", event.origin);
+                  return;
+                }
+    
+                // Step 3: After handshake, send the token
+                const message = JSON.stringify({
+                  type: "authorization",
+                  provider: "github",
+                  result: "success",
+                  content: { access_token: "${accessToken}" }
+                });
+                console.log("Sending message to DecapCMS parent window with token:", message);
+                window.opener.postMessage(message, "https://applehand.dev/admin");
+                
+                // Close the popup after sending the token
+                window.close();
+              }
+    
+              // Step 2: Listen for the response from parent
+              window.addEventListener("message", receiveMessage, false);
+    
+              // Step 1: Start handshake with the parent
+              console.log("Initiating handshake with parent window...");
+              window.opener.postMessage("authorizing:github", "*");
+            })();
           </script>
         </head>
         <body>
@@ -108,6 +124,7 @@ app.get("/callback", async (req, res) => {
         </body>
       </html>
     `);
+    
 
   } catch (error) {
     console.error("[ERROR] Error during authentication:", error);
