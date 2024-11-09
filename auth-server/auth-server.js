@@ -96,15 +96,10 @@ app.get("/callback", async (req, res) => {
                   return;
                 }
     
-                // Step 3: After handshake, send the token
-                const message = JSON.stringify({
-                  type: "authorization",
-                  provider: "github",
-                  result: "success",
-                  content: { access_token: "${accessToken}" }
-                });
+                // Step 3: After handshake, send the token in a simple format
+                const message = "authorization:github:success:${accessToken}";
                 console.log("Sending message to DecapCMS parent window with token:", message);
-                window.opener.postMessage(message, "https://applehand.dev/admin");
+                window.opener.postMessage(message, event.origin);
                 
                 // Close the popup after sending the token
                 window.close();
@@ -123,8 +118,7 @@ app.get("/callback", async (req, res) => {
           <p>Authorization successful. Please wait...</p>
         </body>
       </html>
-    `);
-    
+    `);    
 
   } catch (error) {
     console.error("[ERROR] Error during authentication:", error);
