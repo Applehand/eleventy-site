@@ -10,8 +10,8 @@ const app = express();
 // Enable CORS for applehand.dev on all routes
 app.use(
   cors({
-    origin: "https://applehand.dev", // Allow only applehand.dev
-    credentials: true, // Allow credentials to be sent with requests
+    origin: "https://applehand.dev",
+    credentials: true,
   })
 );
 
@@ -28,11 +28,11 @@ app.get("/auth", (req, res) => {
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
     REDIRECT_URI
   )}&state=${state}`;
-
+  
   tokenStore[state] = null;
   console.log(`[INFO] Redirecting to GitHub for authentication: ${githubAuthUrl}`);
   console.log(`[INFO] Generated state for OAuth flow: ${state}`);
-
+  
   res.redirect(githubAuthUrl);
 });
 
@@ -41,7 +41,7 @@ app.get("/callback", async (req, res) => {
   const { code, state } = req.query;
 
   console.log(`[INFO] Received callback with code: ${code} and state: ${state}`);
-
+  
   if (!code || !state || !(state in tokenStore)) {
     console.error(`[ERROR] Invalid request in /callback: missing or invalid code/state`);
     return res.status(400).send("Invalid request.");
@@ -87,11 +87,16 @@ app.get("/callback", async (req, res) => {
       <html>
         <head>
           <script>
-            console.log("Sending message to DecapCMS parent window with token");
-            const message = "authorization:github:success:${accessToken}";
+            console.log("Sending structured message to DecapCMS parent window with token");
+            const message = {
+              type: "authorization",
+              provider: "github",
+              result: "success",
+              content: { access_token: "${accessToken}" }
+            };
             try {
-              window.opener.postMessage(message, 'https://applehand.dev/admin');
-              console.log("Message sent to parent window:", message);
+              window.opener.postMessage(JSON.stringify(message), 'https://applehand.dev/admin');
+              console.log("Structured message sent to parent window:", JSON.stringify(message));
               window.close();
             } catch (e) {
               console.error("Error posting message to parent window:", e);
