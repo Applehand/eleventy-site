@@ -92,6 +92,7 @@ app.get("/callback", async (req, res) => {
               try {
                 window.opener.postMessage(message, 'https://applehand.dev');
                 console.log("Message sent to parent window:", message);
+                window.close();
               } catch (e) {
                 console.error("Error posting message to parent window:", e);
               }
