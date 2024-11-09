@@ -28,11 +28,11 @@ app.get("/auth", (req, res) => {
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
     REDIRECT_URI
   )}&state=${state}`;
-  
+
   tokenStore[state] = null;
   console.log(`[INFO] Redirecting to GitHub for authentication: ${githubAuthUrl}`);
   console.log(`[INFO] Generated state for OAuth flow: ${state}`);
-  
+
   res.redirect(githubAuthUrl);
 });
 
@@ -41,7 +41,7 @@ app.get("/callback", async (req, res) => {
   const { code, state } = req.query;
 
   console.log(`[INFO] Received callback with code: ${code} and state: ${state}`);
-  
+
   if (!code || !state || !(state in tokenStore)) {
     console.error(`[ERROR] Invalid request in /callback: missing or invalid code/state`);
     return res.status(400).send("Invalid request.");
@@ -84,25 +84,26 @@ app.get("/callback", async (req, res) => {
 
     // Step 3: Return HTML to communicate with the DecapCMS parent window
     res.send(`
-        <html>
-          <head>
-            <script>
-              console.log("Sending message to DecapCMS parent window with token");
-              const message = "authorization:github:success:${accessToken}";
-              try {
-                window.opener.postMessage(message, 'https://applehand.dev');
-                console.log("Message sent to parent window:", message);
-                window.close();
-              } catch (e) {
-                console.error("Error posting message to parent window:", e);
-              }
-            </script>
-          </head>
-          <body>
-            <p>Authorization successful. Please wait...</p>
-          </body>
-        </html>
-      `);
+      <html>
+        <head>
+          <script>
+            console.log("Sending message to DecapCMS parent window with token");
+            const message = "authorization:github:success:${accessToken}";
+            try {
+              window.opener.postMessage(message, 'https://applehand.dev/admin');
+              console.log("Message sent to parent window:", message);
+              window.close();
+            } catch (e) {
+              console.error("Error posting message to parent window:", e);
+            }
+          </script>
+        </head>
+        <body>
+          <p>Authorization successful. Please wait...</p>
+        </body>
+      </html>
+    `);
+
   } catch (error) {
     console.error("[ERROR] Error during authentication:", error);
     res.status(500).send("Internal Server Error");
