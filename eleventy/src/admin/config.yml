@@ -12,7 +12,7 @@ public_folder: "/img/uploads"
 collections:
   - name: "essays"
     label: "Essays"
-    folder: "library/essays"
+    folder: "eleventy/src/library/essays"
     create: true
     slug: "{{slug}}"
     fields:
@@ -22,7 +22,7 @@ collections:
 
   - name: "technical-writings"
     label: "Technical Writings"
-    folder: "library/technical-writings"
+    folder: "eleventy/src/library/technical-writings"
     create: true
     slug: "{{slug}}"
     fields:
@@ -32,8 +32,7 @@ collections:
 
   - name: "thoughts"
     label: "Thoughts"
-    folder: "library/thoughts"
-    create: true
+    folder: "eleventy/src/library/thoughts"
     slug: "{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
@@ -42,7 +41,7 @@ collections:
 
   - name: "creative"
     label: "Creative Writings"
-    folder: "library/creative"
+    folder: "eleventy/src/library/creative"
     create: true
     slug: "{{slug}}"
     fields:
