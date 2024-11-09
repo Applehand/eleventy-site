@@ -108,24 +108,6 @@ app.get("/callback", async (req, res) => {
   }
 });
 
-// Step 4: Endpoint for DecapCMS to retrieve the actual access token
-app.get("/token", cors({ origin: "https://applehand.dev", credentials: true }), (req, res) => {
-  const { state } = req.query;
-  console.log(`[INFO] Token request received with state: ${state}`);
-
-  const accessToken = tokenStore[state];
-
-  if (!accessToken) {
-    console.error(`[ERROR] Token not found or expired for state: ${state}`);
-    return res.status(404).send("Token not found or has expired.");
-  }
-
-  console.log(`[INFO] Returning access token for state: ${state}: ${accessToken}`);
-  delete tokenStore[state];
-
-  res.json({ access_token: accessToken });
-});
-
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
   console.log(`[INFO] OAuth server is running on http://localhost:${PORT}`);
