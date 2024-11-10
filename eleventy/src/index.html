@@ -1,21 +1,11 @@
----
-layout: layout.html
----
-
-{% if collections.writings %}
-    <p>Writings collection exists!</p>
-    <pre>{{ collections.writings | inspect }}</pre> <!-- Outputs the full collection structure -->
+{% if collections.library %}
+    <p>Library collection exists!</p>
+    <pre>{{ collections.library | inspect }}</pre> <!-- Outputs the full collection structure -->
 {% else %}
-    <p>Writings collection does not exist.</p>
+    <p>Library collection does not exist.</p>
 {% endif %}
 
-
-
-{% for writing in collections.writings %}
-    <pre>{{ writing | inspect }}</pre>  <!-- Outputs the full object structure -->
-{% endfor %}
-
-{% for writing in collections.writings %}
+{% for writing in collections.library %}
     <h2>
       <a href="{{ writing.url }}">{{ writing.data.title | default: "No title found" }}</a>
     </h2>
