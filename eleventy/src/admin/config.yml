@@ -10,41 +10,17 @@ media_folder: "static/img/uploads"
 public_folder: "/img/uploads"
 
 collections:
-  - name: "essays"
-    label: "Essays"
-    folder: "eleventy/src/library/essays"
+  - name: "writings"
+    label: "Writings"
+    folder: "eleventy/src/library"
     create: true
     slug: "{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Body", name: "body", widget: "markdown" }
-
-  - name: "technical-writings"
-    label: "Technical Writings"
-    folder: "eleventy/src/library/technical-writings"
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Body", name: "body", widget: "markdown" }
-
-  - name: "thoughts"
-    label: "Thoughts"
-    folder: "eleventy/src/library/thoughts"
-    slug: "{{slug}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Body", name: "body", widget: "markdown" }
-
-  - name: "creative"
-    label: "Creative Writings"
-    folder: "eleventy/src/library/creative"
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Category", name: "category", widget: "select", options: ["Essay", "Technical", "Thought", "Creative"], default: "Essay" }
+      - { label: "Tags", name: "tags", widget: "list", allow_add: true, hint: "Add relevant tags for this article." }
+      - { label: "Status", name: "status", widget: "select", options: ["Draft", "Published"], default: "Draft", hint: "Set the publication status." }
+      - { label: "Visibility", name: "visibility", widget: "boolean", default: true, hint: "Uncheck to set as hidden/noindex." }
+      - { label: "Description", name: "description", widget: "text", hint: "Brief description of the article." }
       - { label: "Body", name: "body", widget: "markdown" }
