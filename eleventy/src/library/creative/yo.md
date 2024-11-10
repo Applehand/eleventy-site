@@ -1,5 +1,0 @@
----
-title: YO
-date: 2024-11-09T22:29:00.000Z
----
-# SDFASDFASDFAF YOOOO
