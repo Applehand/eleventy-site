@@ -4,6 +4,23 @@ layout: layout.html
 
 
 {% for writing in collections.writings %}
-    <h2><a href="{{ writing.url }}">{{ writing.data.title }}</a></h2>
-    <p>{{ writing.data.body }}</p>
+    <pre>{{ writing | inspect }}</pre>  <!-- Outputs the full object structure -->
+{% endfor %}
+
+{% for writing in collections.writings %}
+    <h2>
+      <a href="{{ writing.url }}">{{ writing.data.title | default: "No title found" }}</a>
+    </h2>
+    <p>{{ writing.data.body | default: "No body content found" }}</p>
+    {% if writing.data.tags %}
+        <p>Tags: 
+            {% for tag in writing.data.tags %}
+                {{ tag }}{% if forloop.last == false %}, {% endif %}
+            {% endfor %}
+        </p>
+    {% else %}
+        <p>No tags available</p>
+    {% endif %}
+    <p>Published on: {{ writing.data.date | default: "No date set" }}</p>
+    <p>Category: {{ writing.data.category | default: "No category assigned" }}</p>
 {% endfor %}
