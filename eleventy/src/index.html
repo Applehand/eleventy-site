@@ -2,6 +2,14 @@
 layout: layout.html
 ---
 
+{% if collections.writings %}
+    <p>Writings collection exists!</p>
+    <pre>{{ collections.writings | inspect }}</pre> <!-- Outputs the full collection structure -->
+{% else %}
+    <p>Writings collection does not exist.</p>
+{% endif %}
+
+
 
 {% for writing in collections.writings %}
     <pre>{{ writing | inspect }}</pre>  <!-- Outputs the full object structure -->
@@ -11,7 +19,7 @@ layout: layout.html
     <h2>
       <a href="{{ writing.url }}">{{ writing.data.title | default: "No title found" }}</a>
     </h2>
-    <p>{{ writing.data.body | default: "No body content found" }}</p>
+    <p>{{ writing.body | default: "No body content found" }}</p>
     {% if writing.data.tags %}
         <p>Tags: 
             {% for tag in writing.data.tags %}

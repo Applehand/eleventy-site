@@ -10,8 +10,8 @@ media_folder: "static/img/uploads"
 public_folder: "/img/uploads"
 
 collections:
-  - name: "writings"
-    label: "Writings"
+  - name: "library"
+    label: "Library"
     folder: "eleventy/src/library"
     create: true
     slug: "{{slug}}"
