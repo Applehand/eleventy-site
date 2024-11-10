@@ -1,4 +1,4 @@
-# eleventy/Dockerfile
+# Use Node.js as the base image
 FROM node:18
 
 # Set working directory inside the container
@@ -19,11 +19,8 @@ RUN npx eleventy
 # Install a lightweight HTTP server
 RUN npm install -g http-server
 
-# Expose port 8080
+# Expose port 8080 for the server
 EXPOSE 8080
-
-# Set volume for dynamic content updates
-VOLUME [ "/usr/src/app/src/library" ]
 
 # Serve the static files from the build directory (assuming Eleventy outputs to _site)
 CMD ["http-server", "_site", "-p", "8080"]
