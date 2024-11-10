@@ -5,5 +5,5 @@ layout: layout.html
 
 {% for writing in collections.writings %}
     <h2><a href="{{ writing.url }}">{{ writing.data.title }}</a></h2>
-    <p>{{ writing.body }}</p>
+    <p>{{ writing.data.body }}</p>
 {% endfor %}
