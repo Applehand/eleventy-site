@@ -4,7 +4,7 @@ const simpleGit = require("simple-git");
 
 const app = express();
 const PORT = 3001;
-const REPO_PATH = "/home/nonpolar/Projects/eleventy-site/eleventy";
+const REPO_PATH = "/usr/src/app";  // Updated path for Docker container
 const BRANCH = "master";
 
 app.use(bodyParser.json());
