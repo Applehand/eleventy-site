@@ -10,7 +10,7 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the Eleventy site files
+# Copy the rest of the Eleventy site files, excluding your content directory
 COPY . .
 
 # Build the Eleventy site
@@ -21,6 +21,9 @@ RUN npm install -g http-server
 
 # Expose port 8080
 EXPOSE 8080
+
+# Set volume for dynamic content updates
+VOLUME [ "/usr/src/app/src/library" ]
 
 # Serve the static files from the build directory (assuming Eleventy outputs to _site)
 CMD ["http-server", "_site", "-p", "8080"]
