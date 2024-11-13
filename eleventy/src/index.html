@@ -1,24 +1,7 @@
-{% if collections.library %}
-    <p>Library collection exists!</p>
-    <pre>{{ collections.library | inspect }}</pre> <!-- Outputs the full collection structure -->
-{% else %}
-    <p>Library collection does not exist.</p>
-{% endif %}
+---
+    "layout": "layout.html"
+---
 
-{% for writing in collections.library %}
-    <h2>
-      <a href="{{ writing.url }}">{{ writing.data.title | default: "No title found" }}</a>
-    </h2>
-    <p>{{ writing.body | default: "No body content found" }}</p>
-    {% if writing.data.tags %}
-        <p>Tags: 
-            {% for tag in writing.data.tags %}
-                {{ tag }}{% if forloop.last == false %}, {% endif %}
-            {% endfor %}
-        </p>
-    {% else %}
-        <p>No tags available</p>
-    {% endif %}
-    <p>Published on: {{ writing.data.date | default: "No date set" }}</p>
-    <p>Category: {{ writing.data.category | default: "No category assigned" }}</p>
+{% for writing in collections.writings %}
+  {{ forloop.index }} - <a href="{{ writing.url }}">{{ writing.data.title }}</a>
 {% endfor %}
