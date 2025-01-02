@@ -1,7 +1,20 @@
 ---
-    "layout": "layout.html"
+"layout": "base.html"
+title: Jake Applehans - SEO Web Developer & Analyst
 ---
 
-{% for writing in collections.writings %}
-  {{ forloop.index }} - <a href="{{ writing.url }}">{{ writing.data.title }}</a>
-{% endfor %}
+<header>
+  <h1>
+    {{ title }}
+  </h1>
+</header>
+
+<body>
+  {% for writing in collections.writings %}
+  <div>
+    {{ writing.data.image }}
+    <p><i>{{ writing.data.date }}</i></p>
+    {{ forloop.index }} - <a href="{{ writing.url }}">{{ writing.data.title }}</a>
+  </div>
+  {% endfor %}
+</body>
