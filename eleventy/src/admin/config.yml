@@ -18,7 +18,8 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Category", name: "category", widget: "select", options: ["Essay", "Technical", "Thought", "Creative"], default: "Essay" }
+      - { label: "Featured Image", name: "featured-image", widget: "image", choose_url: false}
+      - { label: "Category", name: "category", widget: "select", options: ["Essay", "Technical", "Thought", "Creative"], default: "Thought" }
       - { label: "Tags", name: "tags", widget: "hidden", default: ["writings"] }
       - { label: "Status", name: "status", widget: "select", options: ["Draft", "Published"], default: "Draft", hint: "Set the publication status." }
       - { label: "Visibility", name: "visibility", widget: "boolean", default: true, hint: "Uncheck to set as hidden/noindex." }
