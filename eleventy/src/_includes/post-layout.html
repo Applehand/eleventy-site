@@ -1,14 +1,14 @@
 ---
 layout: base.html
 ---
-<header>
-  <h1>
-    {{ title }}
-  </h1>
-</header>
-<body>
-  <p><i>{{ date }}</i></p>
-  <img src="{{ image }}" />
-  <p>{{ category }}</p>
-  {{ content }}
-</body>
+<p class="back-to-main"><a href="/">← Back to Main</a></p>
+<div class="post-header">
+  <h1>{{ title }}</h1>
+  <img src="{{ image }}" alt="{{ image_alt }}">
+  <div class="post-meta">
+      <p>{{ category }}</p>
+      <p><i>{{ date }}</i></p>
+  </div>
+</div>
+
+{{ content }}

@@ -5,12 +5,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% if page.url == "/" %}
-        <link rel="canonical" href="https://applehand.dev" />
+    <link rel="canonical" href="https://applehand.dev" />
     {% else %}
-        <link rel="canonical" href="https://applehand.dev{{ page.url }}" />
+    <link rel="canonical" href="https://applehand.dev{{ page.url }}" />
     {% endif %}
-    <title>{{ title | default: "Jake Applehans - SEO Web Developer & Analyst"}}</title>
-    <meta name="description" content="{{ description | default: "With expertise in SEO, full-stack development, and a diverse technical background, Jake brings a unique approach to problem-solving and data analysis."}}">
+    <title>{{ title | default: "Jake Applehans - SEO Web Developer & Analyst" }}</title>
+    <meta name="description" content="{{ description | default: " With expertise in SEO, full-stack development, and a
+        diverse technical background, Jake brings a unique approach to problem-solving and data analysis." }}">
+    <link rel="stylesheet" href="/styles.css">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BMRRR8HNXD"></script>
     <script>
@@ -23,13 +25,15 @@
         gtag("config", "G-BMRRR8HNXD");
     </script>
 </head>
-{% if page.url != '/' %}
-<nav>
-    <a href="/">main</a>
-</nav>
-{% endif %}
-<main>
-    {{ content }}
-</main>
+
+<body>
+    <main>
+        {{ content }}
+    </main>
+
+    <footer>
+        &copy; {{ "now" | date: "%Y" }} Jake Applehans
+    </footer>
+</body>
 
 </html>

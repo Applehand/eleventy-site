@@ -3,6 +3,7 @@ export default function(eleventyConfig) {
     eleventyConfig.addPassthroughCopy({
       "static/img/uploads": "img/uploads"
   });
+  eleventyConfig.addPassthroughCopy("styles.css");
     
     return {
       dir: {

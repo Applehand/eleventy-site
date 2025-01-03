@@ -19,6 +19,7 @@ collections:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Featured Image", name: "image", widget: "image", choose_url: false}
+      - { label: "Image Alt Text", name: "image_alt", widget: "string", hint: "Describe the featured image for accessibility and SEO." }
       - { label: "Category", name: "category", widget: "select", options: ["Essay", "Technical", "Thought", "Creative"], default: "Thought" }
       - { label: "Tags", name: "tags", widget: "hidden", default: ["writings"] }
       - { label: "Status", name: "status", widget: "select", options: ["Draft", "Published"], default: "Draft", hint: "Set the publication status." }

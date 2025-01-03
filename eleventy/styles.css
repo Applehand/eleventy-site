@@ -1,0 +1,117 @@
+html, body {
+    height: 100%; 
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    color: #A67F68; /* Muted Terracotta */
+    background-color: #FAF3EF; /* Soft Ivory */
+    line-height: 1.6;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #EAD1C5; /* Blush Rose */
+    color: #A67F68; /* Muted Terracotta */
+    padding: 1rem 0.5rem; 
+    text-align: center;
+    border-bottom: 2px solid #B89482; /* Dusty Mauve */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.75rem; 
+    color: #A67F68; /* Muted Terracotta */
+}
+
+header h2 {
+    margin: 0.5rem 0 0;
+    font-size: 1.25rem;
+    color: #B89482; /* Dusty Mauve */
+}
+
+main {
+    padding: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+    flex: 1;
+}
+
+.writing-card {
+    background-color: #FAF3EF; /* Soft Ivory */
+    border: 1px solid #EAD1C5; /* Blush Rose */
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 3px;
+}
+
+footer {
+    background-color: #A67F68; /* Muted Terracotta */
+    color: #FAF3EF; /* Soft Ivory */
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.back-to-main {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.back-to-main a {
+    color: #B89482; /* Dusty Mauve */
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.back-to-main a:hover {
+    text-decoration: underline;
+}
+
+main img {
+    max-width: 100%;
+    height: auto; 
+    margin: 1rem 0;
+    display: block; 
+}
+
+.post-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.post-header h1 {
+    font-size: 1.75rem; 
+    margin: 0.5rem 0; 
+    color: #A67F68; /* Muted Terracotta */
+}
+
+.post-header img {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+}
+
+.post-meta {
+    color: #B89482; /* Dusty Mauve */
+    font-size: 0.9rem;
+}
+
+.post-meta p {
+    margin: 0.25rem 0;
+}
+
+.back-to-main {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.back-to-main a {
+    color: #B89482; /* Dusty Mauve */
+    text-decoration: none;
+    font-size: 0.875rem;
+}

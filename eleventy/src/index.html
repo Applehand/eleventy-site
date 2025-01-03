@@ -1,20 +1,22 @@
 ---
-"layout": "base.html"
+layout: "base.html"
 title: Jake Applehans - SEO Web Developer & Analyst
+description: "Welcome to the personal site of Jake Applehans, a web developer, designer, and analyst with expertise in SEO and technical solutions."
+
 ---
 
 <header>
-  <h1>
-    {{ title }}
-  </h1>
+  <h1>Hi, I'm Jake.</h1>
+  <h2>Web Developer, Designer, and Analyst.</h2>
 </header>
 
-<body>
+<section>
+  <h3>The Latest</h3>
   {% for writing in collections.writings %}
-  <div>
-    <img src="{{ writing.data.image }}" alt="{{ writing.data.title }}" />
-    <p><i>{{ writing.data.date }}</i></p>
-    {{ forloop.index }} - <a href="{{ writing.url }}">{{ writing.data.title }}</a>
+  <div class="writing-card">
+    <h4><a href="{{ writing.url }}">{{ writing.data.title }}</a></h4>
+    <p><i>{{ writing.data.category }}</i></p>
+    <p>{{ writing.data.description }}</p>
   </div>
   {% endfor %}
-</body>
+</section>
