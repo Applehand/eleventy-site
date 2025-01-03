@@ -1,7 +1,9 @@
 export default function(eleventyConfig) {
     eleventyConfig.addPassthroughCopy("src/admin");
-    eleventyConfig.addPassthroughCopy("static");
-  
+    eleventyConfig.addPassthroughCopy({
+      "static/img/uploads": "img/uploads"
+  });
+    
     return {
       dir: {
         input: "src",         // Use root as input
