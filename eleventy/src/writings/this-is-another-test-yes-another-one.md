@@ -3,7 +3,7 @@ title: This is another test, yes. Another one.
 date: 2025-01-02T21:46:00.000Z
 image: /img/uploads/bigisland-320725-appalachian-trail-marker-image1.jpg
 image_alt: A trail waypoint arrow on a tree pointing toward an uphill path.
-category: Thought
+category: Creative
 tags:
   - writings
 status: Published
