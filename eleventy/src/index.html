@@ -12,7 +12,7 @@ title: Jake Applehans - SEO Web Developer & Analyst
 <body>
   {% for writing in collections.writings %}
   <div>
-    {{ writing.data.image }}
+    <img src="{{ writing.data.image }}" alt="{{ writing.data.title }}" />
     <p><i>{{ writing.data.date }}</i></p>
     {{ forloop.index }} - <a href="{{ writing.url }}">{{ writing.data.title }}</a>
   </div>
