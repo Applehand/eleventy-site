@@ -3,8 +3,8 @@ html, body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    color: #A67F68; /* Muted Terracotta */
-    background-color: #FAF3EF; /* Soft Ivory */
+    color: #A67F68;
+    background-color: #FAF3EF;
     line-height: 1.6;
 }
 
@@ -15,23 +15,51 @@ body {
 }
 
 header {
-    background-color: #EAD1C5; /* Blush Rose */
-    color: #A67F68; /* Muted Terracotta */
-    padding: 1rem 0.5rem; 
+    background-color: #EAD1C5; 
+    color: #A67F68; 
+    padding: 1.5rem 1rem;
+    position: relative;
+    border-bottom: 2px solid #B89482; 
+}
+
+.header-icons {
+    position: absolute;
+    top: 15px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between; 
+    width: calc(100% - 20px);
+}
+
+.icon-link {
+    color: #A67F68;
+    font-size: 1.5rem;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.icon-link:hover {
+    color: #B89482;
+}
+
+.header-text {
+    margin: 0; 
     text-align: center;
-    border-bottom: 2px solid #B89482; /* Dusty Mauve */
+    line-height: 1.4;
+    padding-top: 1rem;
 }
 
 header h1 {
     margin: 0;
     font-size: 1.75rem; 
-    color: #A67F68; /* Muted Terracotta */
+    color: #A67F68;
 }
 
 header h2 {
     margin: 0.5rem 0 0;
     font-size: 1.25rem;
-    color: #B89482; /* Dusty Mauve */
+    color: #B89482; 
 }
 
 main {
@@ -42,16 +70,16 @@ main {
 }
 
 .writing-card {
-    background-color: #FAF3EF; /* Soft Ivory */
-    border: 1px solid #EAD1C5; /* Blush Rose */
+    background-color: #FAF3EF;
+    border: 1px solid #EAD1C5;
     padding: 1rem;
     margin: 1rem 0;
     border-radius: 3px;
 }
 
 footer {
-    background-color: #A67F68; /* Muted Terracotta */
-    color: #FAF3EF; /* Soft Ivory */
+    background-color: #A67F68;
+    color: #FAF3EF;
     text-align: center;
     padding: 0.5rem;
     font-size: 0.875rem;
@@ -63,7 +91,7 @@ footer {
 }
 
 .back-to-main a {
-    color: #B89482; /* Dusty Mauve */
+    color: #B89482;
     text-decoration: none;
     font-size: 0.875rem;
 }
@@ -87,7 +115,7 @@ main img {
 .post-header h1 {
     font-size: 1.75rem; 
     margin: 0.5rem 0; 
-    color: #A67F68; /* Muted Terracotta */
+    color: #A67F68;
 }
 
 .post-header img {
@@ -97,7 +125,7 @@ main img {
 }
 
 .post-meta {
-    color: #B89482; /* Dusty Mauve */
+    color: #B89482;
     font-size: 0.9rem;
 }
 
@@ -111,7 +139,7 @@ main img {
 }
 
 .back-to-main a {
-    color: #B89482; /* Dusty Mauve */
+    color: #B89482;
     text-decoration: none;
     font-size: 0.875rem;
 }
