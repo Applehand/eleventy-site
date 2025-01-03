@@ -6,7 +6,7 @@ backend:
   base_url: https://auth.applehand.dev
   auth_endpoint: /auth
 
-media_folder: "static/img/uploads"
+media_folder: "eleventy/static/img/uploads"
 public_folder: "/img/uploads"
 
 collections:
