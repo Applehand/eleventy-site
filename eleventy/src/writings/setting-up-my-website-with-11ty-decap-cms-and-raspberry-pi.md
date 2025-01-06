@@ -10,7 +10,7 @@ tags:
 status: Draft
 visibility: true
 description: A technical breakdown of this website and the technologies I chose
-  to build it with.
+  to build it with, including 11ty, Decap CMS, and my Raspberry Pi 5.
 ---
 I built this site using a mix of tools that are lightweight, reliable, and easy to work with: 11ty for generating the site, Decap CMS for managing content, and a Raspberry Pi to host everything. Here’s how it all fits together.
 
