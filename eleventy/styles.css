@@ -1,5 +1,6 @@
-html, body {
-    height: 100%; 
+html,
+body {
+    height: 100%;
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
@@ -15,11 +16,11 @@ body {
 }
 
 header {
-    background-color: #EAD1C5; 
-    color: #A67F68; 
+    background-color: #EAD1C5;
+    color: #A67F68;
     padding: 1.5rem 1rem;
     position: relative;
-    border-bottom: 2px solid #B89482; 
+    border-bottom: 2px solid #B89482;
 }
 
 .header-icons {
@@ -28,7 +29,7 @@ header {
     left: 10px;
     right: 10px;
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-between;
     width: calc(100% - 20px);
 }
 
@@ -44,7 +45,7 @@ header {
 }
 
 .header-text {
-    margin: 0; 
+    margin: 0;
     text-align: center;
     line-height: 1.4;
     padding-top: 1rem;
@@ -52,14 +53,14 @@ header {
 
 header h1 {
     margin: 0;
-    font-size: 1.75rem; 
+    font-size: 1.75rem;
     color: #A67F68;
 }
 
 header h2 {
     margin: 0.5rem 0 0;
     font-size: 1.25rem;
-    color: #B89482; 
+    color: #B89482;
 }
 
 main {
@@ -102,9 +103,9 @@ footer {
 
 main img {
     max-width: 100%;
-    height: auto; 
+    height: auto;
     margin: 1rem 0;
-    display: block; 
+    display: block;
 }
 
 .post-header {
@@ -113,8 +114,8 @@ main img {
 }
 
 .post-header h1 {
-    font-size: 1.75rem; 
-    margin: 0.5rem 0; 
+    font-size: 1.75rem;
+    margin: 0.5rem 0;
     color: #A67F68;
 }
 
@@ -142,4 +143,12 @@ main img {
     color: #B89482;
     text-decoration: none;
     font-size: 0.875rem;
+}
+
+section {
+    padding: 2rem 1rem;
+    margin: 2rem 0;
+    background-color: #F9F9F9;
+    border: 1px solid #DDD;
+    border-radius: 4px;
 }
