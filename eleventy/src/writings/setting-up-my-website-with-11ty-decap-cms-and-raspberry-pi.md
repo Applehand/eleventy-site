@@ -1,5 +1,5 @@
 ---
-title: Setting Up My Website with 11ty, Decap CMS, and Raspberry Pi
+title: Setting Up My Website with 11ty, Decap CMS, and a Raspberry Pi
 date: 2025-01-05T18:35:00.000Z
 image: /img/uploads/rasp-pi.webp
 image_alt: A close view of a Raspberry Pi 4 computer, a small chip with various
