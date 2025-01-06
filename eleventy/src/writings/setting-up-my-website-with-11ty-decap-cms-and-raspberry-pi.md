@@ -34,17 +34,12 @@ Instead of using a traditional database, I rely on Git. All my content and confi
 
 Here’s a quick rundown of the workflow:
 
-1. **Content Updates**
+1. **Content Updates**: I use Decap CMS to edit or add content, which commits changes to GitHub.
 
-   : I use Decap CMS to edit or add content, which commits changes to GitHub.
-2. **Version Control**
+2. **Version Control**: GitHub keeps track of all the changes and acts as the central hub for content and configuration.
 
-   : GitHub keeps track of all the changes and acts as the central hub for content and configuration.
-3. **Site Deployment**
+3. **Site Deployment**: The Raspberry Pi pulls updates from the Github repo, rebuilds the site with 11ty, and serves the new version.
 
-   : The Raspberry Pi pulls updates from the Github repo, rebuilds the site with 11ty, and serves the new version.
-4. **Public Access**
-
-   : A Cloudflare tunnel routes traffic securely from the internet to the Raspberry Pi, making the site live.
+4. **Public Access**: A Cloudflare tunnel routes traffic securely from the internet to the Raspberry Pi, making the site live.
 
 This setup is flexible, cost-effective, and gives me full control over how the site works. And self-hosting is just cool.
