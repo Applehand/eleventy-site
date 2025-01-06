@@ -12,37 +12,39 @@ visibility: true
 description: A technical breakdown of this website and the technologies I chose
   to build it with.
 ---
-This website is built with a stack centered around 11ty, Decap CMS, and a Raspberry Pi for hosting. Here’s an explanation of how the setup works.
+I built this site using a mix of tools that are lightweight, reliable, and easy to work with: 11ty for generating the site, Decap CMS for managing content, and a Raspberry Pi to host everything. Here’s how it all fits together.
 
-#### 11ty for Static Site Generation
+#### 11ty: Turning Content into a Website
 
-The site uses 11ty (Eleventy), a static site generator that transforms content written in Markdown and templates into static HTML files. The output is a lightweight, fast website that doesn’t rely on a traditional database or server-side processing for delivery.
+At the core of the site is 11ty (or Eleventy), a static site generator. I write all my content in Markdown, and 11ty takes care of turning it into static HTML files. This keeps things simple—there’s no database or server-side processing, just static files that load quickly and work everywhere.
 
-#### Decap CMS for Content Management
+#### Decap CMS: Managing Content Through Git
 
-To manage content, Decap CMS is integrated with the site. It provides a web-based interface for creating and editing content. Decap CMS works as a headless CMS and uses Git as the storage layer, committing changes directly to a GitHub repository. This allows for version-controlled content and avoids the need for a separate content database.
+To make it easier to manage content, I added Decap CMS. It gives me a nice web interface for editing and adding new posts, which is handy when I don’t want to deal with raw files. Decap CMS hooks into my GitHub repository, so every time I make a change, it commits the updates directly to the repo. Essentially, Git becomes the database for my content.
 
-#### Hosting on Raspberry Pi
+#### Hosting on a Raspberry Pi
 
-The website is hosted on a Raspberry Pi 5, a compact, low-power device suitable for serving static sites. The Pi runs the 11ty build process to generate the site and serves the resulting files. To expose the Pi to the internet securely, Cloudflare tunnel is used. This eliminates the need for direct port forwarding on the home network while providing a secure and reliable connection to the public web.
+The site runs on a Raspberry Pi 5, which is small, energy-efficient, and perfect for hosting my personal dev projects. The Pi handles everything: pulling updates from GitHub, running the 11ty build process, and serving the site. I use a Cloudflare tunnel to make the site accessible on the web without opening up my home network. It’s secure and saves me from dealing with complicated router configurations.
 
-#### Git as a Version-Controlled Content Store
+#### Git as the "Database"
 
-Instead of using a traditional database, Git is used as the storage solution for both content and configuration. Content changes made via Decap CMS are committed to a GitHub repository. The Raspberry Pi is set up to pull updates from this repository, ensuring that the site always reflects the latest changes. Each commit serves as a historical record of edits and updates.
+Instead of using a traditional database, I rely on Git. All my content and configuration live in a GitHub repository. When I update something in Decap CMS, it commits those changes, and the Pi pulls them down automatically. This means the site is always up-to-date, and I get version control for free. If I ever need to roll back a change, it’s just a Git command away.
 
-#### Workflow Overview
+#### How It All Works Together
+
+Here’s a quick rundown of the workflow:
 
 1. **Content Updates**
 
-   Decap CMS is accessed through a web interface to create or edit content. Changes are committed to the GitHub repository.
+   : I use Decap CMS to edit or add content, which commits changes to GitHub.
 2. **Version Control**
 
-   GitHub acts as the central repository for all content and site configuration files.
-3. **Deployment**
+   : GitHub keeps track of all the changes and acts as the central hub for content and configuration.
+3. **Site Deployment**
 
-   The Raspberry Pi pulls changes from the GitHub repository, triggers the 11ty build process, and deploys the updated static site.
+   : The Raspberry Pi pulls updates from the Github repo, rebuilds the site with 11ty, and serves the new version.
 4. **Public Access**
 
-   Cloudflare tunnel routes external traffic to the Raspberry Pi securely, allowing the site to be accessed on the internet.
+   : A Cloudflare tunnel routes traffic securely from the internet to the Raspberry Pi, making the site live.
 
-This configuration leverages modern static site generation tools, integrates content management directly with version control, and provides a cost-effective hosting solution using a Raspberry Pi. It is efficient, scalable for personal use, and straightforward to maintain.
+This setup is flexible, cost-effective, and gives me full control over how the site works. And self-hosting is just cool.
