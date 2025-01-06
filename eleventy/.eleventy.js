@@ -4,6 +4,7 @@ export default function(eleventyConfig) {
       "static/img/uploads": "img/uploads"
   });
   eleventyConfig.addPassthroughCopy("styles.css");
+  eleventyConfig.addPassthroughCopy("src/robots.txt");
     
     return {
       dir: {
