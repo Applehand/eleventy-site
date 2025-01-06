@@ -12,9 +12,6 @@ visibility: true
 description: A technical breakdown of this website and the technologies I chose
   to build it with.
 ---
-
-
-
 This website is built with a stack centered around 11ty, Decap CMS, and a Raspberry Pi for hosting. Here’s an explanation of how the setup works.
 
 #### 11ty for Static Site Generation
@@ -37,15 +34,15 @@ Instead of using a traditional database, Git is used as the storage solution for
 
 1. **Content Updates**
 
-   : Decap CMS is accessed through a web interface to create or edit content. Changes are committed to the GitHub repository.
+   Decap CMS is accessed through a web interface to create or edit content. Changes are committed to the GitHub repository.
 2. **Version Control**
 
-   : GitHub acts as the central repository for all content and site configuration files.
+   GitHub acts as the central repository for all content and site configuration files.
 3. **Deployment**
 
-   : The Raspberry Pi pulls changes from the GitHub repository, triggers the 11ty build process, and deploys the updated static site.
+   The Raspberry Pi pulls changes from the GitHub repository, triggers the 11ty build process, and deploys the updated static site.
 4. **Public Access**
 
-   : Cloudflare tunnel routes external traffic to the Raspberry Pi securely, allowing the site to be accessed on the internet.
+   Cloudflare tunnel routes external traffic to the Raspberry Pi securely, allowing the site to be accessed on the internet.
 
 This configuration leverages modern static site generation tools, integrates content management directly with version control, and provides a cost-effective hosting solution using a Raspberry Pi. It is efficient, scalable for personal use, and straightforward to maintain.
