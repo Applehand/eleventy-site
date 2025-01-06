@@ -1,7 +1,8 @@
 ---
 layout: "base.html"
 title: Jake Applehans - SEO Web Developer & Analyst
-description: "Welcome to the personal site of Jake Applehans, a web developer, designer, and analyst with expertise in SEO and technical solutions."
+description: "Welcome to the personal site of Jake Applehans, a web developer and SEO analyst with a diverse technical
+background. Get in touch!"
 
 ---
 
@@ -16,12 +17,36 @@ description: "Welcome to the personal site of Jake Applehans, a web developer, d
   </div>
   <div class="header-text">
     <h1>Hi, I'm Jake.</h1>
-    <h2>Web Developer, Designer, and Analyst.</h2>
+    <h2>Web Developer and Analyst.</h2>
   </div>
 </header>
 
 <section>
-  <h3>The Latest</h3>
+  <h3>Jake who?</h3>
+  <p>I'm a full-stack web developer and SEO analyst with a diverse technical background. I am driven
+    by curiosity and a commitment to continuous learning, and I seek to create impactful solutions that blend
+    technical precision with actionable insights.</p>
+  <p>
+    Check out my projects and writings below!
+  </p>
+</section>
+
+<section>
+  <h3>My Projects</h3>
+  <p>These are some of my most recent or favorite projects, which include web apps, game dev, CLI tools, and more! Check out
+    my github for more unfinished projects.</p>
+  <ul>
+    <li><a href="https://github.com/Applehand/SEOwayfinder">SEOwayfinder</a>, a CLI spider with a dashboard.</li>
+    <li>Flocking behavior <a href="https://applehand.itch.io/bop-them-boids">demo</a> (boids)</li>
+    <li>Blog image <a href="https://github.com/Applehand/blog-pixie">Resizer</a></li>
+    <li>Password Manager <a href="https://github.com/Applehand/Pass-py">CLI tool</a></li>
+    <li><a href="https://github.com/Applehand/py-maze">Maze Generation</a> algorithms</li>
+  </ul>
+</section>
+
+<section>
+  <h3>My Words</h3>
+  <p>These are my longer-form writings: essays, technical writing, creative writing, and random thoughts.</p>
   {% for writing in collections.writings %}
   <div class="writing-card">
     <h4><a href="{{ writing.url }}">{{ writing.data.title }}</a></h4>
