@@ -51,10 +51,12 @@ impactful digital experiences. Discover projects, writings, and how I can bring 
   <p>My writing collection includes essays, technical deep-dives, creative adventures, and the occasional whimsical
     reflection.</p>
   {% for writing in collections.writings %}
-  <div class="writing-card">
-    <h4><a href="{{ writing.url }}">{{ writing.data.title }}</a></h4>
-    <p><i>{{ writing.data.category }}</i></p>
-    <p>{{ writing.data.description }}</p>
-  </div>
+    {% if writing.data.status == "Published" %}
+      <div class="writing-card">
+        <h4><a href="{{ writing.url }}">{{ writing.data.title }}</a></h4>
+        <p><i>{{ writing.data.category }}</i></p>
+        <p>{{ writing.data.description }}</p>
+      </div>
+    {% endif %}
   {% endfor %}
 </section>

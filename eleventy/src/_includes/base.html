@@ -9,6 +9,11 @@
     {% else %}
     <link rel="canonical" href="https://applehand.dev{{ page.url }}" />
     {% endif %}
+    {% if visibility == false %}
+    <meta name="robots" content="noindex, nofollow">
+    {% else %}
+    <meta name="robots" content="index, follow">
+    {% endif %}
     <title>{{ title | default: "Jake Applehans - SEO Web Developer & Analyst" }}</title>
     <meta name="description" content="{{ description | default: " With expertise in SEO, full-stack development, and a
         diverse technical background, Jake brings a unique approach to problem-solving and data analysis." }}">
