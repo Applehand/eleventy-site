@@ -7,7 +7,7 @@ image_alt: A close view of a Raspberry Pi 4 computer, a small chip with various
 category: Technical
 tags:
   - writings
-status: Draft
+status: Published
 visibility: true
 description: A technical breakdown of this website and the technologies I chose
   to build it with, including 11ty, Decap CMS, and my Raspberry Pi 5.
