@@ -6,7 +6,7 @@ eleventyExcludeFromCollections: true
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   {% for item in collections.all %}
-  {% if item.data.excludeFromSitemap != true and item.url != '/admin/' %}
+  {% if item.data.visibility and item.url != '/admin/' %}
   <url>
     <loc>{{ site.url }}{{ item.url }}</loc>
   </url>
