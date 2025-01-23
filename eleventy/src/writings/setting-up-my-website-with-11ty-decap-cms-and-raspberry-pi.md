@@ -20,15 +20,15 @@ At the core of the site is [11ty](https://www.11ty.dev/blog/wikipedia/) (or Elev
 
 #### Decap CMS: Managing Content Through Git
 
-To make it easier to manage content, I added a headless CMS called [Decap](https://decapcms.org/). I can login using my github account by navigating to https://applehand.dev/admin. Decap gives me a nice web interface for editing and adding new posts, which is handy when I don’t want to deal with raw files. Decap CMS hooks into my GitHub repository, so every time I make a change, it commits the updates directly to the repo. Essentially, Git becomes the database for my content. 
+To make it easier to manage content, I added a headless CMS called [Decap](https://decapcms.org/). I can login using my github account by navigating to https://applehand.dev/admin. Decap gives me a nice web interface for editing and adding new posts, which is handy because I don’t want to deal with raw files. Decap CMS hooks into my GitHub repository, so every time I make a change, it commits the updates directly to the repo. Essentially, Git becomes the database for my content. 
 
 #### Hosting on a Raspberry Pi
 
-The site runs on a Raspberry Pi 5 in my office. It's a tiny, energy-efficient computer that is perfect for hosting my personal dev projects. The Pi handles everything: pulling updates from GitHub, running the 11ty build process, and serving the site. I use a [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) to make the site accessible on the web without opening up my home network. It’s secure and saves me from dealing with port forwarding and complicated router configurations. Using HTTPS via Cloudflare also provides a necessary SEO boost by ensuring secure connections.
+The site runs on a Raspberry Pi 5 in my office. It's a tiny, energy-efficient computer that is perfect for hosting my personal dev projects. The Pi handles everything: pulling updates from GitHub, running the 11ty build process, and serving the site. I use a [Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) to make the site accessible on the web without opening up my home network. It’s secure and saves me from dealing with port forwarding and complicated router configurations. Using 
 
 #### Git as the "Database"
 
-Instead of using a traditional database, I rely on Git. All my content lives in [my github repository](https://github.com/Applehand/eleventy-site). When I update something in Decap CMS, it commits those changes to the repo, and the Pi pulls them down automatically using a [webhook server](https://github.com/Applehand/eleventy-site/blob/master/webhook-server/server.js) that listens for a post request that is sent from Github whenever the repo is updated. This means the site is always up-to-date and version controlled for simple site restores.
+Instead of using a traditional database, I rely on Git. All my content lives in [my github repository](https://github.com/Applehand/eleventy-site). When I update something in Decap CMS, it commits those changes to the repo, and the Pi pulls them down automatically using a [webhook server](https://github.com/Applehand/eleventy-site/blob/master/webhook-server/server.js). This server is always listening for a post request from Github that is sent whenever the repo is updated. This means the site is always up-to-date and version controlled for simple site restores.
 
 #### How It All Works Together
 
