@@ -156,3 +156,7 @@ main > section {
 .slide-text {
     font-size: 2rem;
 }
+
+.slide-text-small {
+    font-size: 1.5rem;
+}
