@@ -1,0 +1,309 @@
+---
+layout: "audit-layout.html"
+title: seoClarity Audit Demo | Jake Applehans
+description: ""
+visibility: false
+---
+
+<script src="/reveal/dist/reveal.js"></script>
+
+<div class="reveal">
+    <div class="slides">
+        <!-- 1. Introduction -->
+        <section>
+            <h2>SEO Tech Audit Demo</h2>
+            <p><i>Jake Applehans</i></p>
+        </section>
+        <section>
+            <section>
+                <h3>1.1 Objective &amp; Focus</h3>
+                <h4>20% increase in organic traffic YoY</h4>
+                <hr />
+                <p>Focus on getting crawled URLs indexed via improving:</p>
+                <ol>
+                    <li>Navigation Structure &amp; Average Crawl Depth</li>
+                    <li>Site Speed</li>
+                    <li>Sitemap Index Categories</li>
+                    <li>URL Structure &amp; Query String Management</li>
+                </ol>
+            </section>
+            <section>
+                <h3>1.2 Summary of Main Findings</h3>
+                <div class="slide-text">
+                    <p>Search crawlers are struggling to understand the site and which pages are important for the
+                        index.
+                    </p>
+                    <hr />
+                    <p>The following items are most telling:</p>
+                    <ul>
+                        <li>Poor crawl budget utilization</li>
+                        <li>Poor Management of URLs regarding readability, query parameters, and canonicals.</li>
+                        <li>Site Speed: ~70% of URLs are slow or medium speed</li>
+                        <li>Duplicate Meta Descriptions, H1s, &amp; Titles (content likely as well)</li>
+                    </ul>
+                </div>
+            </section>
+        </section>
+
+
+        <!-- 2. Crawlability & Indexability -->
+        <section>
+            <h2>2. Crawlability & Indexability</h2>
+            <p>The site is large and lacks enough contextual signals for crawlers to process effectively.</p>
+            <hr />
+            <p>3.7 million total unique URLs. 2.3 million have been crawled.</p>
+            <p>908k URLs are indexable, but only 198k URLs are actually indexed.</p>
+        </section>
+        <section>
+            <section>
+                <h3>2.1. Robots.txt &amp; Meta Robots Tags</h3>
+                <p>1.4k indexed URLs are being blocked by robots.txt. Why?</p>
+                <p>Around 1 million pages, including many with potential value, are blocked from indexing by a noindex
+                    tag.</p>
+            </section>
+            <section>
+                <h3>2.2. XML Sitemaps</h3>
+                <ul>
+                    <li>614k total URLs in sitemap, only 75k indexed. 215k URLs in sitemap not crawled. 23k
+                        non-indexable
+                        pages in sitemap.</li>
+                    <li>122k URLs are indexed and not in the sitemap.</li>
+                    <li>373 non-200 status URLs in the sitemap.</li>
+                </ul>
+                <p>Reorganize sitemap categories within the sitemap index.</p>
+            </section>
+            <section>
+                <h3>2.3. Crawl Budget</h3>
+                <ul>
+                    <li>Total URLs: 3.7M unique pages</li>
+                    <li>Average Crawl Depth: 6.5</li>
+                    <li>2.3 million crawled URLs, only ~200k are indexed</li>
+                    <li>416k crawled URLs that are not 200 status</li>
+                    <li>Crawl Frequency</li>
+                    <li>Server Performance</li>
+                    <li>Dynamic Content</li>
+                    <li>Crawl Waste</li>
+                    <li>Sitemap Prioritization</li>
+                </ul>
+            </section>
+            <section>
+                <h3>2.4. Canonical Tags &amp; Duplicate Content</h3>
+                <ul>
+                    <li>337k pages have no canonical tag</li>
+                    <li>1.9 million pages have "same" canonical</li>
+                    <li>3k pages have "other" canonical</li>
+                </ul>
+                <p>Pages with the "same" canonical type might need to point to a master version to avoid duplicate
+                    content issues</p>
+
+            </section>
+            <section>
+                <h3>2.5. Orphan Pages</h3>
+                <p>3.1M pages are orphaned.</p>
+                <p>56k indexed URLs are missing from the sitemap and lack internal links — including 2.1k productive
+                    pages.</p>
+            </section>
+
+        </section>
+
+
+        <!-- 3. Site Speed & Core Web Vitals -->
+        <section>
+            <h2>3. Site Speed &amp; Core Web Vitals</h2>
+            <div class="slide-text">
+                <p>~70% of the site is slow or medium speed. Key areas to monitor include:</p>
+                <hr />
+                <ul>
+                    <li><strong>Page Load Performance:</strong> Measure metrics like Largest Contentful Paint (LCP) and
+                        Time
+                        to First Byte (TTFB).</li>
+                    <li><strong>Render-Blocking Resources:</strong> Identify and optimize unoptimized CSS/JavaScript
+                        that
+                        delay rendering.</li>
+                    <li><strong>Image &amp; Media Optimization:</strong> Ensure images are compressed, responsive, and
+                        lazy-loaded.</li>
+                </ul>
+                <p>Consider setting up a CDN.</p>
+            </div>
+        </section>
+
+
+        <!-- 4. Mobile-Friendliness & User Experience -->
+        <section>
+            <h2>4. Mobile-Friendliness &amp; User Experience</h2>
+            <div class="slide-text">
+                <ul>
+                    <li><strong>Responsive Design Issues:</strong> Address layout shifts. There are 869k URLs that lack
+                        image height/width
+                        attributes.</li>
+                    <li><strong>Mobile Page Speed:</strong> Assess if mobile performance lags behind desktop and
+                        identify
+                        improvement areas.</li>
+                    <li><strong>User Experience:</strong> Evaluate mobile navigation, touch target sizes, and overall
+                        usability for a smoother experience.</li>
+                </ul>
+            </div>
+        </section>
+
+
+
+        <!-- 5. Structured Data & Rich Snippets -->
+        <section>
+            <h2>5. Structured Data &amp; Rich Snippets</h2>
+            <div class="slide-text">
+                <p>No structured data is currently implemented.</p>
+                <ul>
+                    <li><strong>Opportunity:</strong> Implement JSON-LD schema for key page types to enhance search
+                        visibility.</li>
+                    <li><strong>Benefits:</strong> Rich snippets can improve click-through rates and provide clear
+                        context
+                        to search engines.</li>
+                </ul>
+            </div>
+        </section>
+
+
+
+        <!-- 6. Internal Linking & Site Architecture -->
+        <section>
+            <h2>6. Internal Linking &amp; Site Architecture</h2>
+            <p>A site of this size needs a strong internal linking strategy to signal to crawlers which pages are
+                important, and to improve overall crawlability.</p>
+            <p>1.4 million URLs have 0 internal inbound links, 64k of which are indexed without having been crawled.</p>
+
+        </section>
+        <section>
+            <section>
+                <h3>6.1. Navigation Depth &amp; Link Equity</h3>
+                <p>
+                    Key pages require over 3 clicks to access; the average crawl depth is 6.42.
+                    Optimizing internal links can distribute link equity better and improve page discoverability.
+                </p>
+            </section>
+            <section>
+                <h3>6.2. Anchor Text Optimization</h3>
+                <p>
+                    Ensure internal links use descriptive, keyword-rich anchor text to boost relevancy signals.
+                    Audit current links to identify opportunities for improvement.
+                </p>
+            </section>
+            <section>
+                <h3>6.3. Broken Links &amp; Redirect Issues</h3>
+                <p>
+                    There are 4,799 URLs returning 404 errors, many with numerous internal links.
+                    Streamlining these issues can help preserve link equity and enhance user navigation.
+                </p>
+            </section>
+        </section>
+
+
+        <!-- 7. URL Structure & Query Parameters -->
+        <section>
+            <h2>7. URL Structure &amp; Query Parameters</h2>
+        </section>
+        <section>
+            <section>
+                <h3>7.1. URL Readability</h3>
+                <p>
+                    URLs are currently not short, descriptive, or keyword-friendly. Improving URL readability can
+                    enhance user experience and signal relevance to search engines.
+                </p>
+            </section>
+            <section>
+                <h3>7.2. Canonicalization of URLs</h3>
+                <p>
+                    While www vs. non-www and HTTP vs. HTTPS are mostly consistent, canonical tag implementation likely
+                    needs
+                    refinement. Many pages use self-referencing canonicals when consolidation to a master version would
+                    be more effective, potentially causing duplicate content issues.
+                </p>
+            </section>
+            <section>
+                <h3>7.3. Query String Management</h3>
+                <p>
+                    Query string parameters may be creating duplicate content issues. Consider moving these parameters
+                    to HTTP headers or POST requests to streamline URLs and improve indexation.
+                </p>
+            </section>
+        </section>
+
+        <!-- 8. Growth Strategy & Prioritization -->
+        <section>
+            <h2>8. Growth Strategy &amp; Prioritization</h2>
+        </section>
+        <section>
+            <section>
+                <h3>8.1. High-Impact Quick Wins</h3>
+                <p>
+                    Immediate actions to boost traffic and visibility with minimal effort.
+                </p>
+                <ul>
+                    <li><strong>Sitemap Optimization:</strong> Ensure all important pages are included and properly
+                        categorized to enhance crawl efficiency.</li>
+                    <li><strong>Meta Data Improvements:</strong> Optimize title tags and meta descriptions for improved
+                        context and higher click-through rates.</li>
+                    <li><strong>Internal Linking Fixes:</strong> Address broken or weak internal links to strengthen
+                        site architecture.</li>
+                    <li><strong>Schema Markup Expansion:</strong> Broaden structured data implementation to improve
+                        search visibility.</li>
+                </ul>
+            </section>
+            <section>
+                <h3>8.2. Medium-Term Fixes</h3>
+                <p>
+                    Structural improvements requiring development effort but offering strong ROI.
+                </p>
+                <ul>
+                    <li><strong>URL Optimization:</strong> Standardize URL structures for clarity and consistency.</li>
+                    <li><strong>Query String Refactoring:</strong> Minimize reliance on query parameters, using HTTP
+                        headers or POST requests where possible.</li>
+                    <li><strong>Mobile Usability Enhancements:</strong> Improve Core Web Vitals by refining mobile
+                        performance.</li>
+
+                    <li><strong>Canonical Optimization:</strong> Resolve duplicate content issues by refining canonical
+                        tag implementation.</li>
+                </ul>
+            </section>
+            <section>
+                <h3>8.3. Long-Term SEO Strategy</h3>
+                <p>
+                    Larger initiatives to ensure sustainable growth and improved organic reach.
+                </p>
+                <ul>
+                    <li><strong>Site Structure & Navigation Redesign:</strong> Standardize and flatten site architecture
+                        to enhance crawl depth and user navigation.</li>
+                    <li><strong>Content Strategy Development:</strong> Expand high-value content areas with a focus on
+                        evergreen and authority-building topics.</li>
+                    <li><strong>Internal Linking Strategy:</strong> Establish a robust, programmatic approach to linking
+                        for improved page authority distribution.</li>
+                    <li><strong>Programmatic SEO Implementation:</strong> Use dynamic templates to create consistent,
+                        high-quality landing pages at scale. Standardize metadata, headings, and structured data, and
+                        implement strong internal linking to improve crawl efficiency. Use canonical tags and optimized
+                        URL structures to avoid duplicate content and ensure key pages are properly indexed.</li>
+                </ul>
+            </section>
+        </section>
+
+
+        <!-- 9. Conclusion & Final Recommendations -->
+        <section>
+            <h2>9. Conclusion &amp; Final Recommendations</h2>
+        </section>
+        <section>
+            <section>
+                <h3>9.1. Key Takeaways</h3>
+            </section>
+            <section>
+                <h3>9.2. Final Recommendations</h3>
+            </section>
+            <section>
+                <h3>9.3. Action Plan</h3>
+            </section>
+        </section>
+    </div>
+</div>
+
+<script>
+    let deck = new Reveal();
+    deck.initialize();
+</script>

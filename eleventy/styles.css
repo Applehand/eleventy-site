@@ -145,10 +145,14 @@ main img {
     font-size: 0.875rem;
 }
 
-section {
+main > section {
     padding: 2rem 1rem;
     margin: 2rem 0;
     background-color: #F9F9F9;
     border: 1px solid #DDD;
     border-radius: 4px;
+}
+
+.slide-text {
+    font-size: 2rem;
 }

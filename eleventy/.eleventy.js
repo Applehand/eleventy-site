@@ -4,7 +4,13 @@ export default function(eleventyConfig) {
       "static/img/uploads": "img/uploads"
   });
   eleventyConfig.addPassthroughCopy("styles.css");
+  eleventyConfig.addPassthroughCopy("audit.js");
   eleventyConfig.addPassthroughCopy("src/robots.txt");
+
+  eleventyConfig.addPassthroughCopy({
+    "node_modules/reveal.js/dist": "reveal/dist",
+    "node_modules/reveal.js/plugin": "reveal/plugin"
+});
     
     return {
       dir: {
