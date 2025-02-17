@@ -153,10 +153,6 @@ main > section {
     border-radius: 4px;
 }
 
-.slide-text {
-    font-size: 2rem;
-}
-
-.slide-text-small {
-    font-size: 1.5rem;
+:root {
+    --r-main-font-size: 1.75rem;
 }
