@@ -1,0 +1,141 @@
+<h1>Project structure</h1><ol>
+    <li>Project Structure and Code Organization</li>
+    </ol><p>The project will be organized using a modular approach to ensure scalability, maintainability, and clear separation of concerns. This structure is designed to handle the complexity of intertwining systems like orbital mechanics, factory automation, and business management.
+    Core Godot Structure
+    The main Godot project directory will be structured with several key folders:</p><ul>
+    <li>assets/: Contains all art assets (sprites, textures, animations), audio files (sound effects, music), and fonts.
+    <ul>
+    <li>sprites/: Sub-folders for different categories like planets/, ships/, buildings/, ui/, etc.</li>
+    <li>audio/: music/ and sfx/ folders.</li>
+    <li>fonts/: All custom fonts.</li>
+    </ul>
+    </li>
+    <li>scenes/: Holds all .tscn files, organized by game section.
+    <ul>
+    <li>main/: The main game scene and the entry point.</li>
+    <li>ui/: All UI scenes, like MainMenu.tscn, CompanyOverview.tscn, ShipControlPanel.tscn, etc.</li>
+    <li>gameplay/: Core gameplay scenes, such as OrbitView.tscn, PlanetSurface.tscn, and FactoryLayout.tscn.</li>
+    <li>characters/: Scenes for character profiles and portraits.</li>
+    </ul>
+    </li>
+    <li>scripts/: Contains all GDScript files, organized by system. This is the heart of the project's code organization.
+    <ul>
+    <li>systems/: The high-level systems that manage major game loops.
+    <ul>
+    <li><a href='GameManager.gd'>GameManager.gd</a>: The central singleton that orchestrates all other systems. Manages game state, time, speed, and saves.</li>
+    <li><a href='TimeManager.gd'>TimeManager.gd</a>: Handles the game's time flow (1x, 2x, 3x speed) and real-time events.</li>
+    <li><a href='SaveLoadManager.gd'>SaveLoadManager.gd</a>: Manages saving and loading game data.</li>
+    </ul>
+    </li>
+    <li>logic/: Contains the core logic for each major game pillar.
+    <ul>
+    <li>OrbitalMechanics/: Scripts for celestial bodies, ships, trajectories, and physics calculations.
+    <ul>
+    <li><a href='CelestialBody.gd'>CelestialBody.gd</a>, <a href='Ship.gd'>Ship.gd</a>, <a href='TrajectoryCalculator.gd'>TrajectoryCalculator.gd</a>.</li>
+    </ul>
+    </li>
+    <li>FactoryAutomation/: Scripts for buildings, resources, conveyor belts, and production recipes.
+    <ul>
+    <li><a href='Building.gd'>Building.gd</a>, <a href='Resource.gd'>Resource.gd</a>, <a href='ConveyorBelt.gd'>ConveyorBelt.gd</a>, <a href='Recipe.gd'>Recipe.gd</a>.</li>
+    </ul>
+    </li>
+    <li>Logistics/: Scripts for route planning, cargo handling, and resource distribution.
+    <ul>
+    <li><a href='LogisticsRoute.gd'>LogisticsRoute.gd</a>, <a href='CargoContainer.gd'>CargoContainer.gd</a>.</li>
+    </ul>
+    </li>
+    <li>BusinessManagement/: Scripts for finances, contracts, reputation, and shareholders.
+    <ul>
+    <li><a href='FinanceManager.gd'>FinanceManager.gd</a>, <a href='Contract.gd'>Contract.gd</a>, <a href='ReputationSystem.gd'>ReputationSystem.gd</a>.</li>
+    </ul>
+    </li>
+    <li>CharacterSystem/: Scripts for employees, skills, promotions, and experience.
+    <ul>
+    <li><a href='Employee.gd'>Employee.gd</a>, <a href='CharacterPromotions.gd'>CharacterPromotions.gd</a>.</li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li>ui_controllers/: Scripts for managing UI logic and connecting UI scenes to the game logic.
+    <ul>
+    <li><a href='UIManager.gd'>UIManager.gd</a>: A singleton to manage UI state and transitions.</li>
+    <li><a href='MenuController.gd'>MenuController.gd</a>, <a href='PopupManager.gd'>PopupManager.gd</a>, <a href='HUD.gd'>HUD.gd</a>.</li>
+    </ul>
+    </li>
+    <li>data/: Contains singleton scripts and resources for storing game data, configurations, and lore.
+    <ul>
+    <li><a href='Globals.gd'>Globals.gd</a>: A central singleton for global variables and constants.</li>
+    <li><a href='ResourceData.gd'>ResourceData.gd</a>: A singleton that holds a dictionary of all available resources and their properties.</li>
+    <li><a href='ResearchTree.gd'>ResearchTree.gd</a>: Manages the technology research tree data.</li>
+    <li><a href='CorporateLore.gd'>CorporateLore.gd</a>: A singleton for storing and managing past campaign lore.</li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li>addons/: For any Godot-specific plugins.</li>
+    <li>resources/: Custom resources and data structures, such as Recipe.tres, Technology.tres, EmployeeProfile.tres. These are useful for defining data-driven content outside of code.</li>
+    </ul><ol>
+    <li>Core Systems and Inter-System Communication</li>
+    </ol>
+    <p>Singleton Architecture
+    Key managers will be registered as Godot singletons (autoloads) to be accessible from anywhere in the game. This avoids the need for complex node references and allows for easy system communication.</p><ul>
+    <li>GameManager (central hub)</li>
+    <li>TimeManager (for time speed)</li>
+    <li>UIManager (for UI management)</li>
+    <li>FinanceManager (for all corporate finances)</li>
+    <li>CorporateLore (for legacy lore and history)</li>
+    </ul><p>System Communication via Signals
+    Signals will be used for decoupled communication between systems, which is crucial for handling events like:</p><ul>
+    <li>building_completed: Emitted by a Building node, received by the FactoryAutomation system to update production capacity and by the UIManager to show a notification.</li>
+    <li>resource_extracted: Emitted by an extraction building, received by the Logistics system to update resource counts and trigger transport assignments.</li>
+    <li>contract_fulfilled: Emitted by the BusinessManagement system, received by the FinanceManager to update funds and by the ReputationSystem to increase reputation.</li>
+    <li>employee_promoted: Emitted by the CharacterSystem, received by the UIManager to show a popup and by the CorporateLore system to record the event.</li>
+    </ul><ol>
+    <li>Scene and UI Organization</li>
+    </ol><p>The UI will be a major component of the game, so its scenes will be structured with a clear hierarchy.
+    UI Hierarchy</p><ul>
+    <li>MainHUD.tscn: A persistent UI scene that overlays the gameplay view. Contains a top-bar with key stats (money, reputation, time speed), a minimap, and buttons to open major menus.</li>
+    <li>MenuContainer.tscn: A central scene that acts as a container for all major menus. When a user clicks a button on the HUD, the appropriate menu scene (e.g., CompanyOverviewMenu.tscn) is instanced as a child of this container.</li>
+    <li>Major Menus:
+    <ul>
+    <li>OrbitalViewMenu.tscn: For managing ships and trajectories.</li>
+    <li>PlanetSurfaceMenu.tscn: For constructing and managing factories.</li>
+    <li>LogisticsMenu.tscn: For setting up routes and supply chains.</li>
+    <li>ResearchMenu.tscn: For managing the tech tree.</li>
+    <li>EmployeeManagementMenu.tscn: For viewing and promoting characters.</li>
+    <li>ContractsMenu.tscn: For accepting and tracking contracts.</li>
+    </ul>
+    </li>
+    <li>Popups:
+    <ul>
+    <li>EventPopup.tscn: A generic template for event popups (e.g., a disaster, a promotion, a corporate report).</li>
+    <li>NotificationPanel.tscn: A UI element that shows a queue of notifications.</li>
+    </ul>
+    </li>
+    </ul><p>Gameplay Scenes</p><ul>
+    <li>OrbitView.tscn: The main scene for orbital mechanics. A 2D camera controls movement through a star system.
+    <ul>
+    <li>Nodes for celestial bodies (planets, moons) and player-controlled ships.</li>
+    </ul>
+    </li>
+    <li>PlanetSurface.tscn: A scene for viewing and building on a planet's surface. A grid-based layout for factory automation.
+    <ul>
+    <li>Uses a TileMap or similar grid system for building placement.</li>
+    <li>Instantiates building nodes and conveyor belt nodes.</li>
+    </ul>
+    </li>
+    </ul><ol>
+    <li>Data Management</li>
+    </ol><p>All static game data will be defined in custom Resource files (.tres). This makes it easy to balance the game without changing code.</p><ul>
+    <li>recipes/: Contains .tres files for each crafting recipe, defining inputs, outputs, and time to produce.</li>
+    <li>buildings/: Contains .tres files for each building, defining its cost, function, and sprite.</li>
+    <li>technologies/: Contains .tres for each researchable technology, defining its prerequisites and effects.</li>
+    <li>contracts/: Contains .tres files for different contract templates, defining rewards and requirements.</li>
+    </ul><ol>
+    <li>Character and Legacy Systems</li>
+    </ol><ul>
+    <li>Character Profiles: Each employee will be an instance of an Employee class, with properties for skills, experience, and history.</li>
+    <li>Promotions and Experience: The CharacterSystem will track experience gained from work and use a defined promotion tree to unlock new titles and bonuses.</li>
+    <li>Corporate Lore: The CorporateLore singleton will be a persistent data structure that stores notable events and characters from past campaigns. This data will be used to populate a "Company History" menu and inject notable employees into future playthroughs.</li>
+    </ul>
+    <p>#nbodylogistics</p>
