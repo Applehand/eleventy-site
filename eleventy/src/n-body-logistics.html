@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-body Logistics: Corporate Operations Blueprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #001f3f; 
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .flow-node {
+            border: 2px solid #346888;
+            background-color: #003a5c;
+            color: #c1e9ff;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .flow-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
+            border-color: #9dc7e0;
+        }
+        .flow-line {
+            position: relative;
+            height: 2px;
+            background-color: #5886a5;
+            width: 100%;
+        }
+        .flow-line::after {
+            content: '▼';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #9dc7e0;
+            font-size: 1.25rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+            padding-left: 2rem;
+            border-left: 3px solid #346888;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #7aa6c2;
+            border: 2px solid #003a5c;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12 md:mb-16">
+            <h1 class="text-4xl md:text-6xl font-black text-white uppercase tracking-wider">N-body Logistics</h1>
+            <p class="text-xl md:text-2xl text-[#9dc7e0] mt-2">Corporate Operations Blueprint</p>
+            <p class="max-w-3xl mx-auto mt-4 text-gray-300">An executive overview of the corporate structure, resource pipeline, market dynamics, and operational architecture powering your interplanetary conglomerate.</p>
+        </header>
+
+        <main class="space-y-12 md:space-y-16">
+
+            <section id="corporate-structure">
+                <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold text-white mb-2 text-center">The Corporate Machine</h2>
+                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">As Chief Corporate Officer, you orchestrate six specialized divisions. Your primary role is high-level management, allocating resources and setting strategic direction through divisional CEOs.</p>
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="flow-node w-full md:w-1/3">
+                            <h3 class="font-bold text-lg">You (Chief Corporate Officer)</h3>
+                            <p class="text-sm opacity-80">Strategic Oversight & Capital Allocation</p>
+                        </div>
+                        <div class="w-px h-12 bg-[#5886a5]"></div>
+                        <div class="w-full h-px bg-[#5886a5]"></div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mt-12 w-full">
+                            <div class="flow-node"><strong>Extraction</strong><p class="text-xs opacity-70">Mines & Harvesters</p></div>
+                            <div class="flow-node"><strong>Manufacturing</strong><p class="text-xs opacity-70">Factories & Assembly</p></div>
+                            <div class="flow-node"><strong>Logistics</strong><p class="text-xs opacity-70">Trade Routes & Fleets</p></div>
+                            <div class="flow-node"><strong>Security</strong><p class="text-xs opacity-70">Asset Protection</p></div>
+                            <div class="flow-node"><strong>R&D</strong><p class="text-xs opacity-70">Technology & Innovation</p></div>
+                            <div class="flow-node"><strong>Human Resources</strong><p class="text-xs opacity-70">Staffing & Development</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="resource-pipeline">
+                 <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold text-white mb-8 text-center">Resource & Production Pipeline</h2>
+                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">Success is built upon a sophisticated production chain. Operations begin with foundational resources, refined into base materials, and assembled into increasingly complex products. This flow fuels both internal expansion and external trade.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div class="bg-[#003a5c]/50 rounded-lg p-6">
+                            <h3 class="text-2xl font-semibold text-white mb-4 text-center">Tier 1 & 2: Foundational Materials</h3>
+                            <p class="text-center text-gray-300 mb-6 text-sm">Extraction of raw materials and their initial refinement form the bedrock of your industrial empire. Efficiency at this stage is critical for all subsequent manufacturing.</p>
+                            <div class="chart-container h-96 md:h-[450px]">
+                                <canvas id="tier1and2Chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-[#003a5c]/50 rounded-lg p-6">
+                            <h3 class="text-2xl font-semibold text-white mb-4 text-center">Tier 3 & 4: Production Chain</h3>
+                             <p class="text-center text-gray-300 mb-6 text-sm">Specialized components are manufactured and then assembled into high-value final products, requiring resources from multiple biomes and advanced factory modules.</p>
+                            <div class="space-y-4">
+                                <div class="flow-node"><strong>Tier 2 Materials</strong><p class="text-xs opacity-70">Metal Ingots, Glass, Polymers, Water</p></div>
+                                <div class="w-8 h-8 mx-auto flex items-center justify-center text-[#9dc7e0]">▼</div>
+                                <div class="flow-node"><strong>Tier 3 Components</strong><p class="text-xs opacity-70">Basic Components, Circuit Boards, Coolant, Ship Hulls</p></div>
+                                <div class="w-8 h-8 mx-auto flex items-center justify-center text-[#9dc7e0]">▼</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="flow-node bg-[#346888]"><strong>Advanced Products</strong><p class="text-xs opacity-70">Logistics Drones, Mining Bots, Habitation Units</p></div>
+                                    <div class="flow-node bg-[#346888]"><strong>Specialized Products</strong><p class="text-xs opacity-70">Ship Thrusters, Navigation Modules, Medical Kits</p></div>
+                                </div>
+                                <div class="w-8 h-8 mx-auto flex items-center justify-center text-[#9dc7e0]">▼</div>
+                                <div class="flow-node bg-[#5886a5]"><strong>Tier 4 Apex Products</strong><p class="text-xs opacity-70">Fusion Reactor Cores, Quantum Computers</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="market-dynamics">
+                <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold text-white mb-8 text-center">Market & Corporate Dynamics</h2>
+                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">Navigate the complexities of shareholder expectations and define your corporate identity. Your strategy will be shaped by competing internal demands and your chosen niche in the interplanetary market.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="bg-[#003a5c]/50 rounded-lg p-6">
+                            <h3 class="text-2xl font-semibold text-white mb-4 text-center">Business Model Specialization</h3>
+                            <p class="text-center text-gray-300 mb-6 text-sm">While an integrated conglomerate is possible, specialization offers strategic advantages. Focus your R&D and capital to dominate a specific market sector.</p>
+                            <div class="chart-container h-80 md:h-96">
+                                <canvas id="businessModelsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-[#003a5c]/50 rounded-lg p-6">
+                            <h3 class="text-2xl font-semibold text-white mb-4 text-center">Shareholder Faction Interests</h3>
+                            <p class="text-center text-gray-300 mb-6 text-sm">Balancing the conflicting demands of your shareholders is key to maintaining a high stock price and company reputation. Each decision has political consequences.</p>
+                             <div class="chart-container h-80 md:h-96">
+                                <canvas id="shareholderChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gameplay-loop">
+                <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold text-white mb-8 text-center">The Annual Operations Cycle</h2>
+                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">The game progresses through quarterly and yearly cycles. Monitor performance, allocate budgets, and report to shareholders to ensure long-term growth and solidify your corporate legacy.</p>
+                    <div class="relative">
+                        <div class="timeline-item">
+                            <h4 class="font-bold text-lg text-white">Quarter 1 Report</h4>
+                            <p class="text-gray-300">Review initial performance metrics. Allocate budgets for Extraction and R&D divisions.</p>
+                        </div>
+                         <div class="timeline-item">
+                            <h4 class="font-bold text-lg text-white">Quarter 2 Report</h4>
+                            <p class="text-gray-300">Analyze manufacturing output. Adjust logistics routes and invest in new factories.</p>
+                        </div>
+                         <div class="timeline-item">
+                            <h4 class="font-bold text-lg text-white">Quarter 3 Report</h4>
+                            <p class="text-gray-300">Evaluate contract fulfillment and security effectiveness. Bolster defenses or take on new clients.</p>
+                        </div>
+                         <div class="timeline-item">
+                            <h4 class="font-bold text-lg text-white">Quarter 4 Report</h4>
+                            <p class="text-gray-300">Final review of yearly performance. Prepare for the Annual Shareholder Meeting.</p>
+                        </div>
+                         <div class="timeline-item border-l-3 border-transparent">
+                            <h4 class="font-bold text-lg text-white">Annual Shareholder Meeting</h4>
+                            <p class="text-gray-300">Present yearly results, answer to shareholder factions, and vote on major corporate resolutions. Your reputation and stock price are on the line.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="systems-architecture">
+                <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold text-white mb-8 text-center">Godot Systems Architecture</h2>
+                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">The game's complexity is managed through a modular, decoupled architecture in Godot. Globally accessible Singletons orchestrate core logic modules, communicating via Signals to prevent tight coupling and ensure scalability.</p>
+                    <div class="space-y-8">
+                        <div class="text-center">
+                             <div class="flow-node inline-block bg-[#7aa6c2] text-[#001f3f]"><strong>GameManager (Singleton)</strong><p class="text-xs">Central Orchestrator</p></div>
+                        </div>
+                        <div class="w-12 h-12 mx-auto flex items-center justify-center text-[#9dc7e0] text-4xl">↓</div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="flow-node"><strong>Core Singletons</strong><p class="text-xs opacity-70">UIManager, Finance, Time, Save/Load, Lore</p></div>
+                            <div class="flow-node"><strong>Gameplay Logic</strong><p class="text-xs opacity-70">Orbital, Factory, Logistics, Business, Character</p></div>
+                            <div class="flow-node"><strong>Data Singletons</strong><p class="text-xs opacity-70">ResourceData, ResearchTree</p></div>
+                            <div class="flow-node"><strong>Player Interface</strong><p class="text-xs opacity-70">Menus, HUD, Popups</p></div>
+                        </div>
+                         <div class="w-12 h-12 mx-auto flex items-center justify-center text-[#9dc7e0] text-4xl transform rotate-90">↔</div>
+                         <div class="flow-node w-full md:w-1/2 mx-auto bg-[#003a5c]">
+                            <h3 class="font-bold text-lg">Communication via Signals</h3>
+                            <p class="text-sm opacity-80">Systems communicate through events (e.g., `resource_extracted`, `contract_fulfilled`), ensuring modules are independent and reusable.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="text-center mt-16 text-sm text-gray-500">
+            <p>N-body Logistics Corporate Blueprint. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const FONT_COLOR = '#c1e9ff';
+        const GRID_COLOR = '#346888';
+        const PALETTE = ['#004c6d', '#346888', '#5886a5', '#7aa6c2', '#9dc7e0', '#c1e9ff'];
+
+        const wrapLabel = (str) => {
+            const maxLength = 16;
+            if (str.length <= maxLength) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + ' ' + word).trim().length > maxLength) {
+                    lines.push(currentLine.trim());
+                    currentLine = word;
+                } else {
+                    currentLine = (currentLine + ' ' + word).trim();
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+            return lines;
+        };
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+        
+        const sharedChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: FONT_COLOR,
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: { color: FONT_COLOR, font: { size: 12 } },
+                    grid: { color: GRID_COLOR }
+                },
+                x: {
+                    ticks: { color: FONT_COLOR, font: { size: 12 } },
+                    grid: { color: 'transparent' }
+                }
+            }
+        };
+
+        const tier1and2Data = {
+            labels: ['Ore → Ingots', 'Silicates → Glass', 'Water Ice → Water', 'Crude Oil → Polymers', 'Biomass → Paste'],
+            datasets: [
+                {
+                    label: 'Raw Resource (Tier 1)',
+                    data: [100, 90, 80, 85, 70],
+                    backgroundColor: PALETTE[1],
+                    borderColor: PALETTE[3],
+                    borderWidth: 2
+                },
+                {
+                    label: 'Refined Material (Tier 2)',
+                    data: [75, 70, 65, 60, 50],
+                    backgroundColor: PALETTE[3],
+                    borderColor: PALETTE[5],
+                    borderWidth: 2
+                }
+            ]
+        };
+        new Chart(document.getElementById('tier1and2Chart'), {
+            type: 'bar',
+            data: tier1and2Data,
+            options: { ...sharedChartOptions, indexAxis: 'y' }
+        });
+
+        const businessModelsData = {
+            labels: ['Extractor', 'Manufacturer', ['Logistics', 'Provider'], ['Integrated', 'Conglomerate'], ['Tech', 'Innovator']],
+            datasets: [{
+                label: 'Business Models',
+                data: [20, 25, 15, 20, 20],
+                backgroundColor: PALETTE,
+                borderColor: '#001f3f',
+                borderWidth: 3,
+                hoverOffset: 4
+            }]
+        };
+        new Chart(document.getElementById('businessModelsChart'), {
+            type: 'doughnut',
+            data: businessModelsData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: FONT_COLOR, font: { size: 12 } } },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+
+        const shareholderData = {
+            labels: [
+                'Short-Term Profit',
+                'Long-Term Stability',
+                'Reputation',
+                wrapLabel('Contract Quotas & Security'),
+                'Worker Safety & Wages'
+            ],
+            datasets: [{
+                label: 'Venture Capitalists',
+                data: [5, 2, 2, 3, 1],
+                fill: true,
+                backgroundColor: 'rgba(255, 118, 74, 0.2)',
+                borderColor: 'rgba(255, 118, 74, 1)',
+                pointBackgroundColor: 'rgba(255, 118, 74, 1)',
+            }, {
+                label: 'Legacy Investors',
+                data: [3, 5, 5, 3, 2],
+                fill: true,
+                backgroundColor: 'rgba(122, 166, 194, 0.2)',
+                borderColor: 'rgba(122, 166, 194, 1)',
+                pointBackgroundColor: 'rgba(122, 166, 194, 1)',
+            }, {
+                label: 'Workforce Union',
+                data: [1, 2, 4, 3, 5],
+                fill: true,
+                backgroundColor: 'rgba(193, 233, 255, 0.2)',
+                borderColor: 'rgba(193, 233, 255, 1)',
+                pointBackgroundColor: 'rgba(193, 233, 255, 1)',
+            }]
+        };
+
+        new Chart(document.getElementById('shareholderChart'), {
+            type: 'radar',
+            data: shareholderData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: FONT_COLOR, font: { size: 12 } } },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: GRID_COLOR },
+                        grid: { color: GRID_COLOR },
+                        pointLabels: {
+                            color: FONT_COLOR,
+                            font: { size: 11 }
+                        },
+                        ticks: {
+                            color: FONT_COLOR,
+                            backdropColor: 'transparent',
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
