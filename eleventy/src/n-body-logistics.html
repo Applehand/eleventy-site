@@ -202,51 +202,29 @@
             <section id="gameplay-timeline">
                 <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
                     <h2 class="text-3xl font-bold text-white mb-8 text-center">The Annual Operations Cycle</h2>
-                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">The game progresses through quarterly and yearly cycles. Monitor performance, allocate budgets, and report to shareholders to ensure long-term growth and solidify your corporate legacy.</p>
+                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">The game progresses through a series of narrative-driven quarterly reports. These are not just spreadsheets; they are interactive events where you must make critical decisions, respond to challenges, and navigate the complex political landscape of your corporation.</p>
                     <div class="relative">
                         <div class="timeline-item">
-                            <h4 class="font-bold text-lg text-white">Quarter 1 Report</h4>
-                            <p class="text-gray-300">Review initial performance metrics. Allocate budgets for Extraction and R&D divisions.</p>
+                            <h4 class="font-bold text-lg text-white">The Quarterly Report: A Test of Leadership</h4>
+                            <p class="text-gray-300">Each quarter, you will be presented with a comprehensive report detailing the performance of each division. This is your opportunity to shape the future of the company. You will be faced with a variety of situations, such as:</p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-300 mt-4">
+                                <li>A critical equipment failure in the Manufacturing division has led to a production shortfall. Do you authorize emergency repairs, cutting into your profits, or risk missing a contractual deadline?</li>
+                                <li>The R&D division has made a breakthrough in automation, but it will require a significant investment to implement. Do you approve the funding, hoping for long-term gains, or focus on short-term profitability?</li>
+                                <li>A rival corporation is attempting a hostile takeover of a key supplier. Do you intervene, potentially sparking a corporate war, or allow the acquisition to proceed and risk supply chain disruptions?</li>
+                                <li>The Workforce Union is demanding better working conditions and higher pay. Do you negotiate, risking a decrease in your profit margins, or ignore their demands and risk a strike?</li>
+                            </ul>
                         </div>
                          <div class="timeline-item">
-                            <h4 class="font-bold text-lg text-white">Quarter 2 Report</h4>
-                            <p class="text-gray-300">Analyze manufacturing output. Adjust logistics routes and invest in new factories.</p>
-                        </div>
-                         <div class="timeline-item">
-                            <h4 class="font-bold text-lg text-white">Quarter 3 Report</h4>
-                            <p class="text-gray-300">Evaluate contract fulfillment and security effectiveness. Bolster defenses or take on new clients.</p>
-                        </div>
-                         <div class="timeline-item">
-                            <h4 class="font-bold text-lg text-white">Quarter 4 Report</h4>
-                            <p class="text-gray-300">Final review of yearly performance. Prepare for the Annual Shareholder Meeting.</p>
+                            <h4 class="font-bold text-lg text-white">Interacting with Superiors and Subordinates</h4>
+                            <p class="text-gray-300">Your decisions will not go unnoticed. During the quarterly report, you will interact with key figures in the corporation:</p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-300 mt-4">
+                                <li><strong>Your Superior (The CEO/Board of Directors):</strong> You will need to justify your decisions and present a clear vision for the future. Your performance will be judged not just on profits, but on your ability to lead and inspire confidence.</li>
+                                <li><strong>Your Divisional CEOs:</strong> You will need to delegate tasks, set performance targets, and hold your subordinates accountable. Your ability to manage your team will be crucial to your success.</li>
+                            </ul>
                         </div>
                          <div class="timeline-item border-l-3 border-transparent">
-                            <h4 class="font-bold text-lg text-white">Annual Shareholder Meeting</h4>
-                            <p class="text-gray-300">Present yearly results, answer to shareholder factions, and vote on major corporate resolutions. Your reputation and stock price are on the line.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="systems-architecture">
-                <div class="bg-[#003a5c]/50 backdrop-blur-sm rounded-xl shadow-2xl p-6 md:p-8">
-                    <h2 class="text-3xl font-bold text-white mb-8 text-center">Godot Systems Architecture</h2>
-                    <p class="text-center text-[#9dc7e0] mb-8 max-w-2xl mx-auto">The game's complexity is managed through a modular, decoupled architecture in Godot. Globally accessible Singletons orchestrate core logic modules, communicating via Signals to prevent tight coupling and ensure scalability.</p>
-                    <div class="space-y-8">
-                        <div class="text-center">
-                             <div class="flow-node inline-block bg-[#7aa6c2] text-[#001f3f]"><strong>GameManager (Singleton)</strong><p class="text-xs">Central Orchestrator</p></div>
-                        </div>
-                        <div class="w-12 h-12 mx-auto flex items-center justify-center text-[#9dc7e0] text-4xl">↓</div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="flow-node"><strong>Core Singletons</strong><p class="text-xs opacity-70">UIManager, Finance, Time, Save/Load, Lore</p></div>
-                            <div class="flow-node"><strong>Gameplay Logic</strong><p class="text-xs opacity-70">Orbital, Factory, Logistics, Business, Character</p></div>
-                            <div class="flow-node"><strong>Data Singletons</strong><p class="text-xs opacity-70">ResourceData, ResearchTree</p></div>
-                            <div class="flow-node"><strong>Player Interface</strong><p class="text-xs opacity-70">Menus, HUD, Popups</p></div>
-                        </div>
-                         <div class="w-12 h-12 mx-auto flex items-center justify-center text-[#9dc7e0] text-4xl transform rotate-90">↔</div>
-                         <div class="flow-node w-full md:w-1/2 mx-auto bg-[#003a5c]">
-                            <h3 class="font-bold text-lg">Communication via Signals</h3>
-                            <p class="text-sm opacity-80">Systems communicate through events (e.g., `resource_extracted`, `contract_fulfilled`), ensuring modules are independent and reusable.</p>
+                            <h4 class="font-bold text-lg text-white">The Annual Shareholder Meeting: The Ultimate Test</h4>
+                            <p class="text-gray-300">At the end of each year, you will face the ultimate test of your leadership: the Annual Shareholder Meeting. Here, you will present your company's performance to the various shareholder factions, each with their own agenda. You will need to answer tough questions, defend your decisions, and secure the support of the shareholders to continue in your role. Your reputation, your career, and the future of the company are on the line.</p>
                         </div>
                     </div>
                 </div>
