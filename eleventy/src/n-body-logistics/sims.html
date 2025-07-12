@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Believable & Gameified Systems</title>
+    
+    <!-- Chosen Palette: Zen Developer (Background: #F5F5F4, Primary: #475569, Accent: #14B8A6) -->
+    <!-- Application Structure Plan: The SPA rejects the report's linear format for a thematic, dashboard-style layout with a fixed sidebar for navigation. This structure empowers users (game developers) to non-linearly explore core concepts based on their immediate needs. The main sections are: 'Design Philosophy', 'Core Systems Implementation' (with interactive sub-sections for Economy, AI, Physics), and 'Player Experience'. This architecture transforms a static document into a practical, task-oriented tool, prioritizing discoverability and usability over the original's narrative flow. -->
+    <!-- Visualization & Content Choices: Dense tables from the report are transformed into interactive Chart.js radar charts (for AI/Physics/Economy) to facilitate at-a-glance comparison. Users click a chart segment to view detailed text, making data exploration active, not passive. The abstract concept of 'Believability vs. Gamification' is made tangible with an interactive slider that dynamically updates explanatory text. Core principles are presented in a clickable accordion to manage text density. All choices aim to convert static text into engaging, understandable visual systems, using only Chart.js and HTML/CSS for visuals. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6;
+        }
+        .main-content::-webkit-scrollbar { width: 6px; }
+        .main-content::-webkit-scrollbar-track { background: #E5E7EB; }
+        .main-content::-webkit-scrollbar-thumb { background: #9CA3AF; border-radius: 3px; }
+        .main-content::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-link.active {
+            background-color: #14B8A6;
+            color: white;
+            transform: translateX(4px);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .recipe-node {
+            border: 2px solid #9CA3AF;
+            background-color: #ffffff;
+            color: #1F2937;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        .recipe-node:hover {
+            border-color: #14B8A6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .recipe-line {
+            position: relative;
+            background-color: #D1D5DB;
+            flex-grow: 1;
+        }
+        .recipe-line.vertical { height: 100%; width: 2px; margin: 0 auto; }
+        .recipe-line.horizontal { width: 100%; height: 2px; margin: auto 0; }
+        .recipe-line::after {
+            font-family: 'Inter';
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #4B5563;
+        }
+        .recipe-line.down::after { content: '▼'; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); }
+        .recipe-line.right::after { content: '►'; position: absolute; right: -12px; top: 50%; transform: translateY(-50%); }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="flex h-screen bg-gray-100">
+        <aside class="w-64 bg-white shadow-md flex-shrink-0 hidden md:block">
+            <div class="p-6">
+                <h1 class="text-xl font-bold text-slate-900">Godot Sim Design</h1>
+                <p class="text-sm text-slate-500 mt-1">Believable & Gameified Systems</p>
+            </div>
+            <nav class="mt-4 px-4">
+                <a href="#philosophy" class="nav-link flex items-center p-3 my-1 rounded-lg text-slate-600 hover:bg-gray-200">
+                    <span class="mr-3">🧠</span> Design Philosophy
+                </a>
+                <a href="#systems" class="nav-link flex items-center p-3 my-1 rounded-lg text-slate-600 hover:bg-gray-200">
+                    <span class="mr-3">⚙️</span> Core Systems
+                </a>
+                <a href="#experience" class="nav-link flex items-center p-3 my-1 rounded-lg text-slate-600 hover:bg-gray-200">
+                    <span class="mr-3">🎮</span> Player Experience
+                </a>
+                <a href="#conclusion" class="nav-link flex items-center p-3 my-1 rounded-lg text-slate-600 hover:bg-gray-200">
+                    <span class="mr-3">🏆</span> Key Takeaways
+                </a>
+            </nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-sm p-4 md:hidden">
+                <h1 class="text-lg font-bold text-slate-900">Godot Sim Design</h1>
+                <div class="flex justify-around mt-2">
+                    <a href="#philosophy" class="text-sm text-slate-600">Philosophy</a>
+                    <a href="#systems" class="text-sm text-slate-600">Systems</a>
+                    <a href="#experience" class="text-sm text-slate-600">Experience</a>
+                    <a href="#conclusion" class="text-sm text-slate-600">Takeaways</a>
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6 md:p-8 main-content">
+                <div id="philosophy" class="content-section space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Design Philosophy: The Core Tension</h2>
+                        <p class="text-slate-600">This guide explores how to develop ambitious simulation games, focusing on the critical balance between creating systems that are "believable" (authentic, grounded in reality) and "gameified" (enjoyable, accessible, and strategically deep). The goal is to abstract real-world complexity without sacrificing what makes it compelling.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">Interactive Spectrum: Simulation vs. Game</h3>
+                        <p class="text-slate-600 mb-4">Drag the slider to explore the trade-offs between pure simulation and pure game. This highlights the "sweet spot" where believable systems become engaging gameplay.</p>
+                        <input id="balance-slider" type="range" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-sm text-slate-500 mt-2">
+                            <span>Pure Simulation</span>
+                            <span>Gameified Sweet Spot</span>
+                            <span>Pure Game</span>
+                        </div>
+                        <div id="balance-feedback" class="mt-4 p-4 bg-gray-50 rounded-md border text-slate-700">Select a point on the spectrum to see its characteristics.</div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">Foundational Principles</h3>
+                        <p class="text-slate-600 mb-4">These core principles are the building blocks for creating deep, emergent, and understandable simulations. Click each principle to learn more.</p>
+                        <div class="space-y-2">
+                            <div class="accordion-item border rounded-lg overflow-hidden">
+                                <button class="accordion-header w-full text-left p-4 font-semibold bg-gray-50 hover:bg-gray-100 flex justify-between items-center">
+                                    <span>The Living Game Design Document (GDD)</span>
+                                    <span class="transform transition-transform duration-200">▼</span>
+                                </button>
+                                <div class="accordion-content bg-white">
+                                    <div class="p-4 text-slate-600 space-y-2">
+                                        <p>An ambitious GDD must be a dynamic, evolving blueprint, not a static book. Agile, lightweight, and collaborative documentation allows for iterative refinement of complex systems without costly rework. It becomes a shared mental model for the team.</p>
+                                        <p>This agility is crucial for discovering emergent gameplay, where complex behaviors arise from simple mechanics. A rigid GDD stifles this discovery, while a living one adapts to incorporate it, leading to a richer game.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item border rounded-lg overflow-hidden">
+                                <button class="accordion-header w-full text-left p-4 font-semibold bg-gray-50 hover:bg-gray-100 flex justify-between items-center">
+                                    <span>Gamification & Abstraction</span>
+                                    <span class="transform transition-transform duration-200">▼</span>
+                                </button>
+                                <div class="accordion-content bg-white">
+                                    <div class="p-4 text-slate-600 space-y-2">
+                                        <p>Gamification is the framework for making complex systems enjoyable. It applies game mechanics like clear goals, immediate feedback, and meaningful rewards to non-game contexts. This transforms the act of learning a complex simulation into an intrinsically motivating experience.</p>
+                                        <p>Successful abstraction isn't just simplification; it's about preserving the strategic depth of a real-world system while removing frustrating complexity. This is achieved by grounding game mechanics in core principles (like game theory) rather than attempting a direct, exhaustive replication.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="systems" class="content-section hidden space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Core Systems Implementation</h2>
+                        <p class="text-slate-600">This section breaks down the practical application of design principles for specific real-world systems within the Godot engine. Each system presents a unique set of challenges and opportunities for creating believable, gameified experiences. Click on a chart segment to see detailed analysis.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-4 text-center">Economy: Production Graph Properties</h3>
+                            <div class="chart-container">
+                                <canvas id="productionChart"></canvas>
+                            </div>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">Analysis: Production Systems</h3>
+                            <p class="text-slate-500 text-sm mb-4">Click a property on the chart to learn how it impacts gameplay.</p>
+                            <div id="production-feedback" class="p-4 bg-gray-50 rounded-md border h-80 overflow-y-auto text-slate-700">
+                                Welcome to Production Systems analysis. The properties of your resource "recipe graph" fundamentally shape the player's experience, from the learning curve to the complexity of logistics puzzles. A high number of nodes creates diversity but also cognitive load, while the graph's diameter determines the length of production chains. Select a property to dive deeper.
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4 text-center">Visualizing a Production Chain</h3>
+                        <p class="text-slate-600 mb-6 text-center">This diagram illustrates a simple production chain, from raw resources to end products. In a real game, the complexity arises from the interaction of many such chains, storage limitations, and transport costs.</p>
+                        <div class="flex flex-col items-center">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="recipe-node p-2 text-center"><strong>Raw Ore</strong><p class="text-xs opacity-70">From Mining</p></div>
+                                <div class="recipe-node p-2 text-center"><strong>Crude Oil</strong><p class="text-xs opacity-70">From Pumping</p></div>
+                            </div>
+                            <div class="h-8 w-px bg-gray-300"></div>
+                            <div class="grid grid-cols-2 gap-16">
+                               <div class="h-px w-full bg-gray-300 recipe-line down"></div>
+                               <div class="h-px w-full bg-gray-300 recipe-line down"></div>
+                            </div>
+                             <div class="h-8 w-px bg-gray-300"></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="recipe-node p-2 text-center"><strong>Metal Ingots</strong><p class="text-xs opacity-70">Intermediate</p></div>
+                                <div class="recipe-node p-2 text-center"><strong>Polymers</strong><p class="text-xs opacity-70">Intermediate</p></div>
+                            </div>
+                            <div class="h-8 w-px bg-gray-300"></div>
+                             <div class="relative w-full h-px">
+                                <div class="absolute top-0 left-0 w-1/2 h-full flex justify-end">
+                                    <div class="w-1/2 h-px bg-gray-300"></div>
+                                    <div class="w-px h-8 bg-gray-300 -mt-8"></div>
+                                </div>
+                                <div class="absolute top-0 right-0 w-1/2 h-full flex justify-start">
+                                     <div class="w-1/2 h-px bg-gray-300"></div>
+                                     <div class="w-px h-8 bg-gray-300 -mt-8"></div>
+                                </div>
+                                <div class="absolute w-px h-8 bg-gray-300 left-1/2 -ml-px recipe-line down"></div>
+                            </div>
+                            <div class="h-8 w-px bg-gray-300"></div>
+                            <div class="recipe-node p-4 text-center bg-teal-50 border-teal-500"><strong>End Product: Drones</strong><p class="text-xs opacity-70">Requires Ingots & Polymers</p></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-4 text-center">AI: Rival & Faction Approaches</h3>
+                            <div class="chart-container">
+                                <canvas id="aiChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">Analysis: AI Systems</h3>
+                            <p class="text-slate-500 text-sm mb-4">Click an AI approach on the chart to see its strengths and best use cases.</p>
+                            <div id="ai-feedback" class="p-4 bg-gray-50 rounded-md border h-80 overflow-y-auto text-slate-700">
+                                Welcome to AI Systems analysis. In a simulation, AI is not just an opponent; it IS the system, embodying corporate rivals, political factions, and individuals. Your choice of AI model dictates the believability and dynamism of your world. Simple FSMs are predictable, while advanced techniques like MCTS or RL can create truly emergent, strategic behavior. Select an approach to learn more.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-4 text-center">Physics: Orbital Mechanics Methods</h3>
+                            <div class="chart-container">
+                                <canvas id="physicsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">Analysis: Physics Systems</h3>
+                             <p class="text-slate-500 text-sm mb-4">Click a method on the chart to understand its trade-offs.</p>
+                            <div id="physics-feedback" class="p-4 bg-gray-50 rounded-md border h-80 overflow-y-auto text-slate-700">
+                                Welcome to Physics Systems analysis. Simulating orbital mechanics requires balancing a "fidelity ceiling" against performance. Simple geometric paths are fast but unrealistic. Full N-Body simulation is accurate but computationally expensive. The key is finding the right level of abstraction that serves gameplay without crippling performance. Sometimes, complex phenomena like perturbations can become unique strategic mechanics.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="experience" class="content-section hidden space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Player Experience Design</h2>
+                        <p class="text-slate-600">This section focuses on the user-facing elements that translate the complex simulation into a compelling and understandable game. It's about crafting the narrative, managing progression, and designing an intuitive interface.</p>
+                    </div>
+
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">Emergent Narrative & Agency</h3>
+                            <p class="text-slate-600 mb-4">Emergent narrative isn't written; it arises from player actions within the game's systems. By giving players meaningful choices that ripple through the economy, politics, and character relationships, the game generates unique, personal stories.</p>
+                             <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><strong>Systemic Interactions:</strong> True emergence comes from simple rules in different systems (physics, economics, AI) interacting in complex ways.</li>
+                                <li><strong>Player Agency:</strong> The player must be the catalyst. Their freedom to make impactful choices is what drives the emergent story forward.</li>
+                                <li><strong>Procedural Generation:</strong> Tools like procedural content generation (PCG) for maps, events, and characters create a unique canvas for emergence in each playthrough.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">Meta-Progression & Legacy</h3>
+                            <p class="text-slate-600 mb-4">Meta-progression (persistent unlocks across playthroughs) serves as a structured learning path for complex simulations. It prevents information overload and provides a continuous sense of achievement.</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li><strong>Unlock > Stat Boosts:</strong> Players prefer unlocking new mechanics, items, or strategic options over simple stat increases. This adds variety, not just power.</li>
+                                <li><strong>A Gradual Tutorial:</strong> Unlock-based progression can incrementally introduce a game's full depth, making it more accessible to a wider audience.</li>
+                                <li><strong>Winnable from the Start:</strong> The first playthrough should be a complete, winnable experience, ensuring the game feels fair and not like a grind.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">UI/UX and Data Visualization</h3>
+                        <p class="text-slate-600 mb-4">For data-rich games, the UI is not just an interface; it's a critical translation layer. Its job is to manage cognitive load and turn complex data into actionable insights, transforming potential frustration into a sense of mastery.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <h4 class="font-semibold text-slate-800">Status Information</h4>
+                                <p class="text-sm text-slate-500 mt-1">Real-time data for immediate decisions (e.g., health bars, resource counts). Must be processed subconsciously to avoid disrupting flow.</p>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold text-slate-800">Training Visualizations</h4>
+                                <p class="text-sm text-slate-500 mt-1">Tools to improve player skill over time (e.g., tech trees, post-game graphs, replay systems).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="conclusion" class="content-section hidden space-y-8">
+                     <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Conclusions & Key Takeaways</h2>
+                        <p class="text-slate-600 mb-6">Developing an ambitious simulation game is a holistic process. Success hinges on interweaving agile design, strategic abstraction, thoughtful implementation, and a player-centric user experience. By prioritizing clarity and emergent behaviors, you can bring believable real-world systems to life.</p>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <span class="text-teal-500 font-bold text-2xl mr-4">1</span>
+                                <div>
+                                    <h4 class="font-semibold text-slate-800">Embrace a Living GDD</h4>
+                                    <p class="text-slate-600">Treat your Game Design Document as a dynamic, collaborative tool to manage complexity and foster the discovery of emergent gameplay.</p>
+                                </div>
+                            </div>
+                             <div class="flex items-start">
+                                <span class="text-teal-500 font-bold text-2xl mr-4">2</span>
+                                <div>
+                                    <h4 class="font-semibold text-slate-800">Abstract for Depth, Not Simplicity</h4>
+                                    <p class="text-slate-600">Gameify systems by selectively simplifying realism while retaining the core principles that create strategic depth and believability.</p>
+                                </div>
+                            </div>
+                             <div class="flex items-start">
+                                <span class="text-teal-500 font-bold text-2xl mr-4">3</span>
+                                <div>
+                                    <h4 class="font-semibold text-slate-800">Know Your Trade-offs</h4>
+                                    <p class="text-slate-600">Every system (economy, AI, physics) has a "fidelity ceiling." Balance realism with performance and gameplay, and look for opportunities where complexity creates strategy.</p>
+                                </div>
+                            </div>
+                             <div class="flex items-start">
+                                <span class="text-teal-500 font-bold text-2xl mr-4">4</span>
+                                <div>
+                                    <h4 class="font-semibold text-slate-800">The UI is the Translation Layer</h4>
+                                    <p class="text-slate-600">An intuitive UI with effective data visualization is critical. It transforms opaque systems into understandable, engaging challenges, empowering the player with a sense of mastery.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const appState = {
+        currentView: 'philosophy',
+        charts: {}
+    };
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    const balanceSlider = document.getElementById('balance-slider');
+    const balanceFeedback = document.getElementById('balance-feedback');
+    
+    const productionFeedback = document.getElementById('production-feedback');
+    const aiFeedback = document.getElementById('ai-feedback');
+    const physicsFeedback = document.getElementById('physics-feedback');
+
+    const accordionItems = document.querySelectorAll('.accordion-item');
+
+    const balanceData = [
+        { 
+            range: [0, 20], 
+            title: "Pure Simulation", 
+            text: "High fidelity, mirrors reality closely. Often complex, with a steep learning curve. Gameplay can feel secondary to accuracy. Can be a performance bottleneck. Appeals to a niche audience seeking deep realism." 
+        },
+        { 
+            range: [21, 40], 
+            title: "Simulation-Leaning", 
+            text: "Retains high realism but introduces some quality-of-life abstractions. Core mechanics are still deeply rooted in real-world principles, but UI/UX helps manage complexity. Strategic depth is high." 
+        },
+        { 
+            range: [41, 60], 
+            title: "Gameified Sweet Spot", 
+            text: "The ideal balance. Abstracts away frustrating realism while keeping the systems believable. Focuses on strategic depth arising from interacting mechanics. Intuitive for players, but hard to master. Maximizes engagement." 
+        },
+        { 
+            range: [61, 80], 
+            title: "Game-Leaning", 
+            text: "Real-world concepts are used as a theme, but mechanics are heavily simplified for accessibility and fast-paced fun. The 'why' of the system is less important than the immediate gameplay loop." 
+        },
+        { 
+            range: [81, 100], 
+            title: "Pure Game", 
+            text: "Low fidelity, systems bear little resemblance to reality. Focus is entirely on player enjoyment, rules, and rewards. Highly accessible. May lack long-term strategic depth compared to simulations." 
+        }
+    ];
+    
+    const productionData = [
+        { label: 'Number of Nodes', description: 'Total unique items/recipes. A higher count increases learning curve, playtime, and diversity, but also development cost and complexity. It\'s a balance between content volume and player cognitive load.'},
+        { label: 'Connected Components', description: 'How many independent sub-graphs exist. A high number means simpler, less interconnected systems. A low number suggests greater cohesion, more interdependencies, and more complex logistics.'},
+        { label: 'Graph Diameter', description: 'The longest path from raw resource to end product. A high number adds depth but significantly increases complexity. Requires simpler early recipes or useful intermediates to manage.' },
+        { label: 'Resource Substitutability', description: 'How many different recipes produce a specific item (incoming edges) or what an item is used for (outgoing edges). High substitutability gives players flexibility and strategic choice.' },
+        { label: 'Cycles & Constrictions', description: 'Cycles are loops in the recipe graph (e.g., scrap metal can be smelted back into ingots). They add depth but can unbalance an economy if not handled carefully. Constrictions are choke points that can guide progression but may lead to bottlenecks.'}
+    ];
+    
+    const aiData = {
+        labels: ['Flexibility', 'Performance Cost', 'Implementation Complexity', 'Predictability', 'Emergent Behavior'],
+        datasets: [
+            { label: 'FSM', data: [2, 1, 1, 9, 1], borderColor: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.2)' },
+            { label: 'GOAP', data: [7, 4, 5, 6, 6], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
+            { label: 'MCTS', data: [8, 8, 9, 4, 8], borderColor: '#F97316', backgroundColor: 'rgba(249, 115, 22, 0.2)' },
+            { label: 'Neural Networks', data: [9, 9, 8, 2, 9], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
+            { label: 'Reinforcement Learning', data: [10, 10, 10, 3, 10], borderColor: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.2)' }
+        ],
+        descriptions: [
+            'Finite State Machines (FSM): Simple and predictable, good for basic reactive AI like simple NPCs or tutorial guides. Low flexibility and potential for emergence.',
+            'Goal-Oriented Action Planning (GOAP): More flexible and emergent than FSMs, allowing AI to plan sequences of actions to achieve a goal. Great for complex NPC routines or tactical decisions.',
+            'Monte Carlo Tree Search (MCTS): Excellent for strategic opponents in games with large decision spaces (like Chess or Go). It learns without explicit rules, leading to strong emergent strategies, but is computationally intensive.',
+            'Neural Networks (NN): Highly adaptable and great at learning complex relationships from data. Best for high-level strategic decisions, predicting market trends, or complex character dynamics. Requires C++ modules or external libraries for performance.',
+            'Reinforcement Learning (RL): The pinnacle for self-learning AI. Agents master complex games through trial and error, capable of superhuman performance. Requires significant data and computational power for training.'
+        ]
+    };
+    
+     const physicsData = {
+        labels: ['Physical Accuracy', 'Performance Cost', 'Implementation Complexity', 'Dynamic Interaction'],
+        datasets: [
+            { label: 'Simple Geometric', data: [1, 1, 1, 1], borderColor: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.2)' },
+            { label: 'Keplerian Elements', data: [4, 3, 4, 3], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)' },
+            { label: 'Patched Conics', data: [6, 6, 7, 5], borderColor: '#F97316', backgroundColor: 'rgba(249, 115, 22, 0.2)' },
+            { label: 'Barnes-Hut N-Body', data: [8, 7, 8, 9], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.2)' },
+            { label: 'Full N-Body', data: [10, 10, 10, 10], borderColor: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.2)' }
+        ],
+        descriptions: [
+            'Simple Geometric (Cos/Sin): Excellent performance and easy to implement, but lacks any physical realism or dynamic interaction. Best for purely aesthetic background elements or fixed paths.',
+            'Keplerian Elements: A good balance for two-body systems (e.g., a planet around a star). More accurate than simple geometry and still performant, but does not account for N-body effects.',
+            'Patched Conics: A clever approximation for interplanetary travel, treating trajectories as a series of two-body problems. Less expensive than full N-body, but can diverge from true paths and misses phenomena like Lagrange points.',
+            'Barnes-Hut N-Body: A smart approximation algorithm (O(N log N)) that makes large-scale gravitational simulation feasible in real-time. The go-to for many interacting bodies where performance is a concern.',
+            'Full N-Body Simulation: The most accurate method, capturing all perturbations. However, its computational cost (O(N^2)) makes it extremely difficult to use in real-time for more than a few bodies.'
+        ]
+    };
+
+    function updateView() {
+        contentSections.forEach(section => {
+            if (section.id === appState.currentView) {
+                section.classList.remove('hidden');
+                section.classList.add('fade-in');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === `#${appState.currentView}`) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+
+        if (appState.currentView === 'systems' && !appState.charts.productionChart) {
+            initCharts();
+        }
+    }
+
+    function handleNavClick(e) {
+        const isNavLink = e.target.closest('a[href^="#"]');
+        if (!isNavLink) return;
+        
+        e.preventDefault();
+        const viewId = isNavLink.getAttribute('href').substring(1);
+        if(appState.currentView !== viewId) {
+            appState.currentView = viewId;
+            updateView();
+        }
+    }
+
+    function updateBalanceFeedback() {
+        const value = parseInt(balanceSlider.value);
+        const data = balanceData.find(d => value >= d.range[0] && value <= d.range[1]);
+        if (data) {
+            balanceFeedback.innerHTML = `<strong class="text-slate-800">${data.title}:</strong> ${data.text}`;
+        }
+    }
+
+    function createRadarChart(canvasId, chartData, feedbackElement) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if(appState.charts[canvasId]) {
+            appState.charts[canvasId].destroy();
+        }
+        appState.charts[canvasId] = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: chartData.labels,
+                datasets: chartData.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.r !== null) {
+                                    label += context.parsed.r;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: '#E5E7EB' },
+                        grid: { color: '#E5E7EB' },
+                        pointLabels: {
+                            font: { size: 12 },
+                            color: '#4B5563'
+                        },
+                        ticks: {
+                            backdropColor: 'rgba(255, 255, 255, 0.75)',
+                            stepSize: 2
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 10
+                    }
+                },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const { datasetIndex } = elements[0];
+                        feedbackElement.innerHTML = chartData.descriptions[datasetIndex];
+                    }
+                }
+            }
+        });
+    }
+
+    function createBarChart(canvasId, chartData, feedbackElement) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+         if(appState.charts[canvasId]) {
+            appState.charts[canvasId].destroy();
+        }
+        appState.charts[canvasId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.map(d => d.label),
+                datasets: [{
+                    label: 'Impact / Complexity',
+                    data: [8, 7, 9, 6, 8],
+                    backgroundColor: 'rgba(20, 184, 166, 0.5)',
+                    borderColor: 'rgba(20, 184, 166, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { suggestedMax: 10 } },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const { index } = elements[0];
+                        feedbackElement.innerHTML = `<strong class="text-slate-800">${chartData[index].label}:</strong> ${chartData[index].description}`;
+                    }
+                }
+            }
+        });
+    }
+    
+    function initCharts() {
+        createBarChart('productionChart', productionData, productionFeedback);
+        createRadarChart('aiChart', aiData, aiFeedback);
+        createRadarChart('physicsChart', physicsData, physicsFeedback);
+    }
+    
+    accordionItems.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+        const content = item.querySelector('.accordion-content');
+        const icon = header.querySelector('span:last-child');
+        header.addEventListener('click', () => {
+            const isExpanded = content.style.maxHeight && content.style.maxHeight !== '0px';
+            if (isExpanded) {
+                content.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.style.transform = 'rotate(180deg)';
+            }
+        });
+    });
+
+    document.body.addEventListener('click', handleNavClick);
+    balanceSlider.addEventListener('input', updateBalanceFeedback);
+
+    const hash = window.location.hash.substring(1);
+    if (hash && document.getElementById(hash)) {
+        appState.currentView = hash;
+    }
+
+    updateView();
+    updateBalanceFeedback();
+});
+</script>
+
+</body>
+</html>
