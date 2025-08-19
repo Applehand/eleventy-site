@@ -6,164 +6,228 @@ permalink: /geo-chat/
 <!doctype html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+
 <style>
-	:root { --pad: 12px; }
-	body {
-		font: 16px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-		max-width: 740px; margin: 2rem auto; line-height: 1.5; padding: 0 var(--pad);
+	/* === Brutalist look: high contrast, chunky borders, slight offset shadows === */
+	:root{
+		--ink:#000; --paper:#fff; --muted:#777; --pad:14px;
+		--accent:#06c; --ok:#00c853; --warn:#ffab00; --err:#d50000;
 	}
-	label { font-weight: 600; display:block; margin-bottom: 6px; }
-	textarea, input, button {
-		font: inherit; padding: 8px; border: 1px solid #ddd; border-radius: 8px;
+	*{box-sizing:border-box}
+	body{
+		background:var(--paper); color:var(--ink);
+		font:16px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+		max-width: 840px; margin: 40px auto; padding: 0 var(--pad); line-height:1.5;
 	}
-	textarea { width: 100%; resize: vertical; min-height: 90px; }
-	button { cursor: pointer; }
-	button[disabled] { opacity: .6; cursor: not-allowed; }
-	.controls { display:flex; gap:8px; flex-wrap: wrap; margin:.5rem 0 1rem; }
-	#out {
-		white-space: pre-wrap; border: 1px solid #eee; padding: var(--pad);
-		border-radius: 8px; min-height: 140px; background: #fafafa; overflow: auto;
+	h1{
+		font: 800 28px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+		text-transform: uppercase; letter-spacing: .02em;
+		margin: 0 0 14px 0;
 	}
-	#status { font-size: 14px; margin-bottom: .5rem; color:#666; }
-	.row { display:flex; gap:8px; align-items:center; }
-	.row > * { flex: 0 0 auto; }
-	.grow { flex: 1 1 auto; }
+	.card{
+		border: 2.5px solid var(--ink);
+		box-shadow: 8px 8px 0 var(--ink);
+		border-radius: 8px;
+		background: var(--paper);
+		padding: var(--pad);
+	}
+
+	/* Status bar */
+	.statusbar{
+		display:flex; align-items:center; gap:10px; margin: 10px 0 20px;
+	}
+	.pill{
+		display:inline-flex; align-items:center; gap:8px;
+		border:2px solid var(--ink); padding:6px 12px; border-radius:999px;
+		box-shadow: 3px 3px 0 var(--ink); font-weight:700; font-size:13px;
+		background:var(--paper);
+	}
+	.dot{width:10px; height:10px; border-radius:50%; background:var(--muted); border:2px solid var(--ink)}
+	.pill.ok .dot{ background:var(--ok); }
+	.pill.warn .dot{ background:var(--warn); }
+	.pill.err .dot{ background:var(--err); }
+	.pill small{font-weight:600; color:var(--muted)}
+
+	/* Inputs + buttons */
+	label{ font-weight:800; display:block; margin:4px 0 8px }
+	textarea, input{
+		width:100%; padding:12px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+		box-shadow: 4px 4px 0 var(--ink); font: inherit; resize: vertical; min-height: 96px;
+	}
+	.controls{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 6px }
+	.btn{
+		border:2px solid var(--ink); background:var(--paper); padding:10px 14px; border-radius:10px;
+		box-shadow:4px 4px 0 var(--ink); font-weight:800; cursor:pointer; user-select:none;
+	}
+	.btn:hover{ transform: translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
+	.btn:active{ transform: translate(0,0); box-shadow:2px 2px 0 var(--ink); }
+	.btn[disabled]{ opacity:.6; cursor:not-allowed; transform:none; box-shadow:4px 4px 0 var(--ink); }
+
+	/* Output panel */
+	#outWrap{ position:relative; }
+	#out{
+		min-height: 160px; white-space: pre-wrap;
+		border:2px dashed var(--ink); border-radius:10px; padding: var(--pad);
+		background: #f7f7f7; box-shadow: inset 0 0 0 4px #fff;
+	}
+	/* Blinking caret while streaming */
+	#caret{ display:none; }
+	.streaming #caret{ display:inline-block; width:10px; height:1.1em; background:var(--ink); vertical-align:baseline; animation:blink 1s steps(1,end) infinite; }
+	@keyframes blink{ 50%{ opacity:0 } }
+
+	/* Top loading bar */
+	#loader{
+		display:none; height:12px; border:2px solid var(--ink); border-radius:10px; overflow:hidden;
+		background: #fff; margin: 10px 0 16px; box-shadow:4px 4px 0 var(--ink);
+	}
+	.busy #loader{ display:block; }
+	#loader::before{
+		content:""; display:block; height:100%; width:40%;
+		background: repeating-linear-gradient(45deg, var(--ink) 0 10px, #fff 10px 20px);
+		position:relative; left:-40%; animation:slide 1.05s linear infinite;
+	}
+	@keyframes slide{ to { left: 100%; } }
+
+	/* Small utilities */
+	.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+	.muted{ color: var(--muted) }
+	.grow{ flex:1 1 auto }
 </style>
 
-<h1>geo-chat</h1>
-<div id="status">Checking API…</div>
+<h1>Geo-Chat <span class="mono">/ RAG</span></h1>
 
-<form id="f">
+<div class="statusbar">
+	<div id="apiPill" class="pill"><span class="dot"></span><span id="apiText">Checking API…</span> <small id="latency" class="muted mono"></small></div>
+	<div class="grow"></div>
+	<div class="pill" title="Pi → Mac">
+		<span class="mono">LAN</span>
+	</div>
+</div>
+
+<div id="loader" aria-hidden="true"></div>
+
+<form id="f" class="card" autocomplete="off">
 	<label for="q">Question</label>
 	<textarea id="q" placeholder="Ask…">What does the AI search manual say about dense embeddings?</textarea>
 
 	<div class="controls">
-		<button id="ask">Ask (stream)</button>
-		<button type="button" id="once">Ask (non-stream)</button>
-		<button type="button" id="cancel" disabled>Cancel</button>
-		<span class="grow"></span>
-		<button type="button" id="copy">Copy</button>
-		<button type="button" id="clear">Clear</button>
+		<button id="ask" class="btn">Ask (stream)</button>
+		<button type="button" id="once" class="btn">Ask (non-stream)</button>
+		<button type="button" id="cancel" class="btn" disabled>Cancel</button>
+		<div class="grow"></div>
+		<button type="button" id="copy" class="btn">Copy</button>
+		<button type="button" id="clear" class="btn">Clear</button>
+	</div>
+
+	<div id="outWrap">
+		<div id="out" class="mono" aria-live="polite"></div>
+		<span id="caret" aria-hidden="true"></span>
 	</div>
 </form>
 
-<div id="out" aria-live="polite"></div>
-
 <script>
-/* tiny helper bits */
-const $ = (s) => document.querySelector(s);
-const out = $("#out");
+/* Config: keep same-origin /api; override with window.GEOCHAT_API if you prefer a subdomain */
+const API_BASE = (window.GEOCHAT_API || "/api").replace(/\/$/, "");
+
+const $ = (s)=>document.querySelector(s);
+const root = document.documentElement, bodyEl = document.body;
+const apiPill = $("#apiPill"), apiText = $("#apiText"), latencyEl = $("#latency");
+const out = $("#out"), caret = $("#caret");
 const qEl = $("#q");
-const statusEl = $("#status");
-const askBtn = $("#ask");
-const onceBtn = $("#once");
-const cancelBtn = $("#cancel");
-const copyBtn = $("#copy");
-const clearBtn = $("#clear");
-let controller = null; // AbortController for streaming
+const askBtn = $("#ask"), onceBtn = $("#once"), cancelBtn = $("#cancel"), copyBtn = $("#copy"), clearBtn = $("#clear");
+let controller = null;
 
-function setBusy(busy) {
-	askBtn.disabled = busy;
-	onceBtn.disabled = busy;
-	cancelBtn.disabled = !busy;
-	qEl.disabled = busy;
+function setBusy(b){
+	bodyEl.classList.toggle("busy", b);
+	askBtn.disabled = b; onceBtn.disabled = b; cancelBtn.disabled = !b; qEl.disabled = b;
+	out.parentElement.classList.toggle("streaming", b);
+	caret.style.display = b ? "inline-block" : "none";
 }
+function autoScroll(){ out.scrollTop = out.scrollHeight; }
 
-async function healthCheck() {
-	try {
-		const r = await fetch("/api/healthz", { cache: "no-store" });
-		if (!r.ok) throw new Error(await r.text());
+async function healthCheck(){
+	try{
+		const t0 = performance.now();
+		const r = await fetch(`${API_BASE}/healthz`, { cache: "no-store" });
+		const ms = Math.max(1, Math.round(performance.now()-t0));
+		latencyEl.textContent = `~${ms}ms`;
+		if(!r.ok) throw new Error(await r.text());
 		const j = await r.json();
-		statusEl.textContent = j.ok ? "API ready." : "API not ready.";
-	} catch (e) {
-		statusEl.textContent = "API unreachable. Make sure the Pi proxy is running.";
+		if(j.ok){
+			apiPill.classList.remove("warn","err"); apiPill.classList.add("ok");
+			apiText.textContent = "API online";
+		}else{
+			apiPill.classList.remove("ok","err"); apiPill.classList.add("warn");
+			apiText.textContent = "API not ready";
+		}
+	}catch(e){
+		apiPill.classList.remove("ok","warn"); apiPill.classList.add("err");
+		apiText.textContent = "API unreachable";
+		latencyEl.textContent = "";
 	}
 }
 healthCheck();
 
-/* Enter submits, Shift+Enter adds newline */
-qEl.addEventListener("keydown", (e) => {
-	if (e.key === "Enter" && !e.shiftKey) {
-		e.preventDefault();
-		askBtn.click();
-	}
+/* Keyboard: Enter to submit, Shift+Enter for newline, Esc to cancel */
+qEl.addEventListener("keydown",(e)=>{
+	if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); askBtn.click(); }
+	if(e.key==="Escape" && cancelBtn.disabled===false){ cancelBtn.click(); }
 });
 
-function autoScroll() { out.scrollTop = out.scrollHeight; }
+function renderError(msg){ out.textContent = `[error] ${msg}`; }
 
-/* Non-streaming path (quick sanity) */
-onceBtn.addEventListener("click", async () => {
-	setBusy(true);
-	out.textContent = "";
-	try {
-		const res = await fetch("/api/chat_once", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
+/* Non-streaming */
+onceBtn.addEventListener("click", async ()=>{
+	setBusy(true); out.textContent = "";
+	try{
+		const res = await fetch(`${API_BASE}/chat_once`, {
+			method:"POST", headers:{ "Content-Type":"application/json" },
 			body: JSON.stringify({ question: qEl.value })
 		});
 		const ct = res.headers.get("content-type") || "";
-		if (!res.ok) throw new Error(await res.text());
-		if (ct.includes("application/json")) {
+		if(!res.ok) throw new Error(await res.text());
+		if(ct.includes("application/json")){
 			const j = await res.json();
 			out.textContent = j.text ?? JSON.stringify(j);
-		} else {
+		}else{
 			out.textContent = await res.text();
 		}
-	} catch (e) {
-		out.textContent = "[error] " + (e.message || e);
-	} finally {
-		setBusy(false);
-	}
+	} catch(e){ renderError(e.message || e); }
+	finally{ setBusy(false); }
 });
 
-/* Streaming path */
-$("#f").addEventListener("submit", async (e) => {
+/* Streaming */
+$("#f").addEventListener("submit", async (e)=>{
 	e.preventDefault();
-	setBusy(true);
-	out.textContent = "";
-	controller = new AbortController();
-	try {
-		const res = await fetch("/api/chat", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
+	setBusy(true); out.textContent=""; controller = new AbortController();
+	try{
+		const res = await fetch(`${API_BASE}/chat`, {
+			method:"POST", headers:{ "Content-Type":"application/json" },
 			body: JSON.stringify({ question: qEl.value }),
 			signal: controller.signal
 		});
-		if (!res.ok || !res.body) throw new Error(await res.text());
-		const reader = res.body.getReader();
-		const dec = new TextDecoder();
-		for (;;) {
+		if(!res.ok || !res.body) throw new Error(await res.text());
+		const reader = res.body.getReader(); const dec = new TextDecoder();
+		for(;;){
 			const { value, done } = await reader.read();
-			if (done) break;
-			out.textContent += dec.decode(value, { stream: true });
+			if(done) break;
+			out.textContent += dec.decode(value, { stream:true });
 			autoScroll();
 		}
-	} catch (e) {
-		if (e.name === "AbortError") {
-			out.textContent += "\n[stream canceled]";
-		} else {
-			out.textContent = "[error] " + (e.message || e);
-		}
-	} finally {
-		setBusy(false);
-		controller = null;
+	}catch(e){
+		if(e.name === "AbortError"){ out.textContent += "\n[stream canceled]"; }
+		else{ renderError(e.message || e); }
+	}finally{
+		setBusy(false); controller = null;
 	}
 });
 
-cancelBtn.addEventListener("click", () => {
-	if (controller) controller.abort();
+cancelBtn.addEventListener("click", ()=>{ if(controller) controller.abort(); });
+copyBtn.addEventListener("click", async ()=>{
+	try{ await navigator.clipboard.writeText(out.textContent); copyBtn.textContent="Copied!"; setTimeout(()=>copyBtn.textContent="Copy",900); }catch{}
 });
+clearBtn.addEventListener("click", ()=>{ out.textContent=""; qEl.focus(); });
 
-copyBtn.addEventListener("click", async () => {
-	try {
-		await navigator.clipboard.writeText(out.textContent);
-		copyBtn.textContent = "Copied!";
-		setTimeout(() => (copyBtn.textContent = "Copy"), 900);
-	} catch {}
-});
-
-clearBtn.addEventListener("click", () => {
-	out.textContent = "";
-	qEl.focus();
-});
+/* periodic lightweight health ping to keep status fresh */
+setInterval(healthCheck, 15000);
 </script>
