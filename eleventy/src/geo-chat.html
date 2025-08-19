@@ -62,13 +62,13 @@ permalink: /geo-chat/
   <summary>..what?</summary>
   <div class="content">
     <p>
-      This is a <strong>retrieval-augmented generation (RAG)</strong> demo. The AI Search Manual has been chunked and
-      embedded into a <strong><a href="https://www.trychroma.com/">Chroma</a></strong> vector database. For each question, the app retrieves the most
+      This is a <strong><a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">retrieval-augmented generation</a> (RAG)</strong> demo. The AI Search Manual has been <a href="https://www.pinecone.io/learn/chunking-strategies/">chunked</a>and
+      <a href="https://www.pinecone.io/learn/vector-embeddings-for-developers/#:~:text=about%20the%20data.-,What%20are%20vector%20embeddings%3F,-Before%20we%20delve">embedded</a>into a <strong><a href="https://www.trychroma.com/">Chroma</a></strong> vector database. For each question, the app retrieves the most
       relevant chunks and prompts a local model (gpt-oss:20b from <a href="https://openai.com/index/introducing-gpt-oss/">OpenAI's recent open source release</a>) served by <strong><a href="https://ollama.com/">Ollama</a></strong> to compose an answer with context.
     </p>
     <p>
-      The compute runs on my MacBook (<em>FastAPI + Ollama + Chroma</em>). This web UI and a tiny
-      Flask proxy live on my <a href="https://www.raspberrypi.com/products/raspberry-pi-5/">Raspberry&nbsp;Pi</a>. Requests flow
+      The compute is running on my MacBook (<em>FastAPI + Ollama + Chroma</em>)... probably. This web UI and a tiny
+      Flask proxy live on my <a href="https://www.raspberrypi.com/products/raspberry-pi-5/">Raspberry&nbsp;Pi</a>. Requests flow like
       <span class="mono">Browser → Pi → Mac (LAN)</span> and stream tokens back in real time.
       A <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a> exposes only the Pi, keeping the Mac private on my local network.
     </p>
