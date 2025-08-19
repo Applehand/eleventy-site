@@ -52,27 +52,25 @@ permalink: /geo-chat/
 	.muted{ color:var(--muted) }
 </style>
 
-<h1>AI Search Manual Assistant</h1>
+<h1>AI Search Manual GEOAssistant</h1>
 <p class="tagline">
-  A RAG-assisted chatbot that answers with context from the
+  A RAG-assisted GEO chatbot that answers with context from the
   <a href="https://ipullrank.com/ai-search-manual" target="_blank" rel="noopener">AI Search Manual</a>.
 </p>
 
 <details class="disclosure">
-  <summary>What’s going on under the hood?</summary>
+  <summary>..what?</summary>
   <div class="content">
     <p>
-      This is a <strong>retrieval-augmented generation (RAG)</strong> demo. The manual is chunked and
-      embedded into a <strong>Chroma</strong> vector database. For each question, the app retrieves the most
-      relevant chunks and prompts a local model served by <strong>Ollama</strong> to compose an answer with context.
+      This is a <strong>retrieval-augmented generation (RAG)</strong> demo. The AI Search Manual has been chunked and
+      embedded into a <strong><a href="https://www.trychroma.com/">Chroma</a></strong> vector database. For each question, the app retrieves the most
+      relevant chunks and prompts a local model (gpt-oss:20b from <a href="https://openai.com/index/introducing-gpt-oss/">OpenAI's recent open source release</a>) served by <strong><a href="https://ollama.com/">Ollama</a></strong> to compose an answer with context.
     </p>
     <p>
-      Compute runs on a <strong>MacBook</strong> (<em>FastAPI + Ollama + Chroma</em>). This web UI and a tiny
-      Flask proxy live on a <strong>Raspberry&nbsp;Pi</strong>. Requests flow
-      <span class="mono">Browser → Pi → Mac (LAN)</span> and stream tokens back. A Cloudflare Tunnel exposes only the Pi.
-    </p>
-    <p class="muted">
-      Tips: <span class="mono">Enter</span> to send, <span class="mono">Shift+Enter</span> for a newline, <span class="mono">Esc</span> to cancel.
+      The compute runs on my MacBook (<em>FastAPI + Ollama + Chroma</em>). This web UI and a tiny
+      Flask proxy live on my <a href="https://www.raspberrypi.com/products/raspberry-pi-5/">Raspberry&nbsp;Pi</a>. Requests flow
+      <span class="mono">Browser → Pi → Mac (LAN)</span> and stream tokens back in real time.
+      A <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a> exposes only the Pi, keeping the Mac private on my local network.
     </p>
   </div>
 </details>
