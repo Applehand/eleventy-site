@@ -1,0 +1,169 @@
+---
+title: Geo Chat
+permalink: /geo-chat/
+---
+
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+	:root { --pad: 12px; }
+	body {
+		font: 16px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+		max-width: 740px; margin: 2rem auto; line-height: 1.5; padding: 0 var(--pad);
+	}
+	label { font-weight: 600; display:block; margin-bottom: 6px; }
+	textarea, input, button {
+		font: inherit; padding: 8px; border: 1px solid #ddd; border-radius: 8px;
+	}
+	textarea { width: 100%; resize: vertical; min-height: 90px; }
+	button { cursor: pointer; }
+	button[disabled] { opacity: .6; cursor: not-allowed; }
+	.controls { display:flex; gap:8px; flex-wrap: wrap; margin:.5rem 0 1rem; }
+	#out {
+		white-space: pre-wrap; border: 1px solid #eee; padding: var(--pad);
+		border-radius: 8px; min-height: 140px; background: #fafafa; overflow: auto;
+	}
+	#status { font-size: 14px; margin-bottom: .5rem; color:#666; }
+	.row { display:flex; gap:8px; align-items:center; }
+	.row > * { flex: 0 0 auto; }
+	.grow { flex: 1 1 auto; }
+</style>
+
+<h1>geo-chat</h1>
+<div id="status">Checking API…</div>
+
+<form id="f">
+	<label for="q">Question</label>
+	<textarea id="q" placeholder="Ask…">What does the AI search manual say about dense embeddings?</textarea>
+
+	<div class="controls">
+		<button id="ask">Ask (stream)</button>
+		<button type="button" id="once">Ask (non-stream)</button>
+		<button type="button" id="cancel" disabled>Cancel</button>
+		<span class="grow"></span>
+		<button type="button" id="copy">Copy</button>
+		<button type="button" id="clear">Clear</button>
+	</div>
+</form>
+
+<div id="out" aria-live="polite"></div>
+
+<script>
+/* tiny helper bits */
+const $ = (s) => document.querySelector(s);
+const out = $("#out");
+const qEl = $("#q");
+const statusEl = $("#status");
+const askBtn = $("#ask");
+const onceBtn = $("#once");
+const cancelBtn = $("#cancel");
+const copyBtn = $("#copy");
+const clearBtn = $("#clear");
+let controller = null; // AbortController for streaming
+
+function setBusy(busy) {
+	askBtn.disabled = busy;
+	onceBtn.disabled = busy;
+	cancelBtn.disabled = !busy;
+	qEl.disabled = busy;
+}
+
+async function healthCheck() {
+	try {
+		const r = await fetch("/api/healthz", { cache: "no-store" });
+		if (!r.ok) throw new Error(await r.text());
+		const j = await r.json();
+		statusEl.textContent = j.ok ? "API ready." : "API not ready.";
+	} catch (e) {
+		statusEl.textContent = "API unreachable. Make sure the Pi proxy is running.";
+	}
+}
+healthCheck();
+
+/* Enter submits, Shift+Enter adds newline */
+qEl.addEventListener("keydown", (e) => {
+	if (e.key === "Enter" && !e.shiftKey) {
+		e.preventDefault();
+		askBtn.click();
+	}
+});
+
+function autoScroll() { out.scrollTop = out.scrollHeight; }
+
+/* Non-streaming path (quick sanity) */
+onceBtn.addEventListener("click", async () => {
+	setBusy(true);
+	out.textContent = "";
+	try {
+		const res = await fetch("/api/chat_once", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ question: qEl.value })
+		});
+		const ct = res.headers.get("content-type") || "";
+		if (!res.ok) throw new Error(await res.text());
+		if (ct.includes("application/json")) {
+			const j = await res.json();
+			out.textContent = j.text ?? JSON.stringify(j);
+		} else {
+			out.textContent = await res.text();
+		}
+	} catch (e) {
+		out.textContent = "[error] " + (e.message || e);
+	} finally {
+		setBusy(false);
+	}
+});
+
+/* Streaming path */
+$("#f").addEventListener("submit", async (e) => {
+	e.preventDefault();
+	setBusy(true);
+	out.textContent = "";
+	controller = new AbortController();
+	try {
+		const res = await fetch("/api/chat", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ question: qEl.value }),
+			signal: controller.signal
+		});
+		if (!res.ok || !res.body) throw new Error(await res.text());
+		const reader = res.body.getReader();
+		const dec = new TextDecoder();
+		for (;;) {
+			const { value, done } = await reader.read();
+			if (done) break;
+			out.textContent += dec.decode(value, { stream: true });
+			autoScroll();
+		}
+	} catch (e) {
+		if (e.name === "AbortError") {
+			out.textContent += "\n[stream canceled]";
+		} else {
+			out.textContent = "[error] " + (e.message || e);
+		}
+	} finally {
+		setBusy(false);
+		controller = null;
+	}
+});
+
+cancelBtn.addEventListener("click", () => {
+	if (controller) controller.abort();
+});
+
+copyBtn.addEventListener("click", async () => {
+	try {
+		await navigator.clipboard.writeText(out.textContent);
+		copyBtn.textContent = "Copied!";
+		setTimeout(() => (copyBtn.textContent = "Copy"), 900);
+	} catch {}
+});
+
+clearBtn.addEventListener("click", () => {
+	out.textContent = "";
+	qEl.focus();
+});
+</script>
