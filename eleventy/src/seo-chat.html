@@ -1,5 +1,5 @@
 ---
-title: Geo Chat
+title: AI Search Manual assistant
 permalink: /geo-chat/
 ---
 
@@ -8,7 +8,7 @@ permalink: /geo-chat/
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 
 <style>
-	/* === Brutalist look: high contrast, chunky borders, slight offset shadows === */
+	/* === Brutalist look: high contrast, chunky borders, offset shadows === */
 	:root{
 		--ink:#000; --paper:#fff; --muted:#777; --pad:14px;
 		--accent:#06c; --ok:#00c853; --warn:#ffab00; --err:#d50000;
@@ -22,8 +22,10 @@ permalink: /geo-chat/
 	h1{
 		font: 800 28px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 		text-transform: uppercase; letter-spacing: .02em;
-		margin: 0 0 14px 0;
+		margin: 0 0 8px 0;
 	}
+	.tagline{ margin: 0 0 12px; color:var(--muted); font-weight:600 }
+
 	.card{
 		border: 2.5px solid var(--ink);
 		box-shadow: 8px 8px 0 var(--ink);
@@ -32,10 +34,31 @@ permalink: /geo-chat/
 		padding: var(--pad);
 	}
 
-	/* Status bar */
-	.statusbar{
-		display:flex; align-items:center; gap:10px; margin: 10px 0 20px;
+	/* Disclosure box */
+	details.disclosure{
+		margin: 14px 0 6px;
+		border: 2px solid var(--ink);
+		border-radius: 8px;
+		box-shadow: 6px 6px 0 var(--ink);
+		background: var(--paper);
 	}
+	details.disclosure > summary{
+		cursor: pointer;
+		padding: 10px 14px;
+		list-style: none;
+		font-weight: 800;
+		display:flex; align-items:center; gap:10px;
+		border-bottom: 2px solid var(--ink);
+	}
+	details.disclosure[open] > summary{ background: #f5f5f5; }
+	details.disclosure > summary::before{
+		content: "▸"; display:inline-block; transform: translateY(-1px);
+	}
+	details.disclosure[open] > summary::before{ content:"▾"; }
+	details.disclosure .content{ padding: 12px 14px; }
+
+	/* Status bar */
+	.statusbar{ display:flex; align-items:center; gap:10px; margin: 12px 0 18px; }
 	.pill{
 		display:inline-flex; align-items:center; gap:8px;
 		border:2px solid var(--ink); padding:6px 12px; border-radius:999px;
@@ -47,9 +70,10 @@ permalink: /geo-chat/
 	.pill.warn .dot{ background:var(--warn); }
 	.pill.err .dot{ background:var(--err); }
 	.pill small{font-weight:600; color:var(--muted)}
+	.grow{ flex:1 1 auto }
 
 	/* Inputs + buttons */
-	label{ font-weight:800; display:block; margin:4px 0 8px }
+	label{ font-weight:800; display:block; margin:8px 0 8px }
 	textarea, input{
 		width:100%; padding:12px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
 		box-shadow: 4px 4px 0 var(--ink); font: inherit; resize: vertical; min-height: 96px;
@@ -91,10 +115,32 @@ permalink: /geo-chat/
 	/* Small utilities */
 	.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 	.muted{ color: var(--muted) }
-	.grow{ flex:1 1 auto }
 </style>
 
-<h1>Geo-Chat <span class="mono">/ RAG</span></h1>
+<h1>AI Search Manual GEOAssistant</h1>
+<p class="tagline">
+  A RAG-assisted GEO chatbot that answers with context from the
+  <a href="https://ipullrank.com/ai-search-manual" target="_blank" rel="noopener">AI Search Manual</a>.
+</p>
+
+<details class="disclosure">
+  <summary>..what?</summary>
+  <div class="content">
+    <p>
+      This is a <strong>retrieval-augmented generation (RAG)</strong> demo. The AI Search Manual has been chunked and
+      embedded into a <strong><a href="https://www.trychroma.com/">Chroma</a></strong> vector database. For each question, the app retrieves the most
+      relevant chunks and prompts a local model (gpt-oss:20b from OpenAI's recent open source release) served by <strong><a href="https://ollama.com/">Ollama</a></strong> to compose an answer with context.
+    </p>
+    <p>
+      The compute runs on my <strong>MacBook</strong> (<em>FastAPI + Ollama + Chroma</em>). This web UI and a tiny
+      Flask proxy live on a <strong>Raspberry&nbsp;Pi</strong>. Requests flow
+      <span class="mono">Browser → Pi → Mac (LAN)</span> and stream tokens back in real time.
+      A <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a> exposes only the Pi, keeping the Mac private on my local network.
+    </p>
+  </div>
+</details>
+
+</details>
 
 <div class="statusbar">
 	<div id="apiPill" class="pill"><span class="dot"></span><span id="apiText">Checking API…</span> <small id="latency" class="muted mono"></small></div>
@@ -108,7 +154,7 @@ permalink: /geo-chat/
 
 <form id="f" class="card" autocomplete="off">
 	<label for="q">Question</label>
-	<textarea id="q" placeholder="Ask…">What does the AI search manual say about dense embeddings?</textarea>
+	<textarea id="q" placeholder="Ask…">What does the AI Search Manual say about changes in user behavior?</textarea>
 
 	<div class="controls">
 		<button id="ask" class="btn">Ask (stream)</button>
@@ -126,11 +172,11 @@ permalink: /geo-chat/
 </form>
 
 <script>
-/* Config: keep same-origin /api; override with window.GEOCHAT_API if you prefer a subdomain */
+/* Config: same-origin /api; override with window.GEOCHAT_API for a subdomain */
 const API_BASE = (window.GEOCHAT_API || "/api").replace(/\/$/, "");
 
 const $ = (s)=>document.querySelector(s);
-const root = document.documentElement, bodyEl = document.body;
+const bodyEl = document.body;
 const apiPill = $("#apiPill"), apiText = $("#apiText"), latencyEl = $("#latency");
 const out = $("#out"), caret = $("#caret");
 const qEl = $("#q");
@@ -139,7 +185,13 @@ let controller = null;
 
 function setBusy(b){
 	bodyEl.classList.toggle("busy", b);
-	askBtn.disabled = b; onceBtn.disabled = b; cancelBtn.disabled = !b; qEl.disabled = b;
+	askBtn.disabled = b; onceBtn.disabled = b; cancelBtn.disabled = !b;
+
+	/* disable & blur textarea so the blinking caret disappears while generating */
+	qEl.disabled = b;
+	if (b) { qEl.blur(); }
+
+	/* streaming visuals */
 	out.parentElement.classList.toggle("streaming", b);
 	caret.style.display = b ? "inline-block" : "none";
 }
@@ -168,7 +220,7 @@ async function healthCheck(){
 }
 healthCheck();
 
-/* Keyboard: Enter to submit, Shift+Enter for newline, Esc to cancel */
+/* Keyboard: Enter to submit, Shift+Enter newline, Esc to cancel */
 qEl.addEventListener("keydown",(e)=>{
 	if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); askBtn.click(); }
 	if(e.key==="Escape" && cancelBtn.disabled===false){ cancelBtn.click(); }
@@ -228,6 +280,6 @@ copyBtn.addEventListener("click", async ()=>{
 });
 clearBtn.addEventListener("click", ()=>{ out.textContent=""; qEl.focus(); });
 
-/* periodic lightweight health ping to keep status fresh */
+/* Refresh status periodically */
 setInterval(healthCheck, 15000);
 </script>
