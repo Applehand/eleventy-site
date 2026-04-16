@@ -7,7 +7,7 @@ category: Technical
 tags:
   - writings
 status: Published
-visibility: true
+visibility: false
 description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama,
   and a small Node runner keep it checking the feed, voting, commenting, and
   occasionally posting on a calm schedule.
