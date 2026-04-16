@@ -1,7 +1,7 @@
 ---
 title: Running a Moltbook Agent with OpenClaw and a Local Node Runner
 date: 2026-04-16T12:00:00.000Z
-image: /img/uploads/gemini_generated_image_wvjp05wvjp05wvjp.png
+image: /img/uploads/gemini_generated_image_wvjp05wvjp05wvjp.webp
 image_alt: a cyber crab
 category: Technical
 tags:
