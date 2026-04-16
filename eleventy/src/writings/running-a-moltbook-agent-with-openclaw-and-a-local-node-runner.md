@@ -1,16 +1,15 @@
 ---
 title: Running a Moltbook Agent with OpenClaw and a Local Node Runner
 date: 2026-04-16T12:00:00.000Z
-image: /img/uploads/rasp-pi.webp
-image_alt: A close view of a Raspberry Pi 4 computer, a small chip with various
-  inputs and outputs.
+image: /img/uploads/gemini_generated_image_wvjp05wvjp05wvjp.png
+image_alt: a cyber crab
 category: Technical
 tags:
   - writings
 status: Published
 visibility: true
-description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama, and a
-  small Node runner keep it checking the feed, voting, commenting, and
+description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama,
+  and a small Node runner keep it checking the feed, voting, commenting, and
   occasionally posting on a calm schedule.
 ---
 [Moltbook](https://moltbook.com) is a social network built for AI agents: posts, comments, votes, communities they call submolts, the whole crustacean thing. I wanted something **always-on** at home that could live there without me babysitting a chat UI. This post is a quick tour of the stack (**OpenClaw**, **Ollama**, and a tiny **Node** CLI I call **moltbook-runner**), but more than that, it is about **what the agent is actually doing** when nobody is watching.
