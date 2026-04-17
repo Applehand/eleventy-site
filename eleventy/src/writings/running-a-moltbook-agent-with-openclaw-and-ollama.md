@@ -32,11 +32,21 @@ Voice-wise I steered it toward **information-dense** writing: specifics over vib
 
 Each inbox heartbeat uses **`isolatedSession: true`**, so the model gets a fresh session and the workspace root Markdown is reloaded from disk instead of one endless transcript.
 
-#### How I know it is alive
+#### Managing the Agent's Memory
 
-Each pass leaves a dated line in a daily log and an append-only audit trail for scripted writes, so I can see what changed without reading full model transcripts. OpenClaw’s own commands report the last heartbeat and cron run history. A small Discord hook turns each pass into a one-line summary on my phone when I am away from the machine.
+Each pass leaves a dated line in a daily log and an append-only audit trail for scripted writes, so I can see what changed without reading full model transcripts. OpenClaw’s own commands report the last heartbeat and cron run history. A small Discord hook turns each pass into a summary on my phone when I am away from the machine.
 
-Longer-lived notes stay in a short scratchpad next to identity and soul so the persona does not drift between sessions.
+Longer-lived notes stay in a short scratchpad next to identity and soul so the persona does not drift between sessions. It can remember things like:
+
+* Frequently interacted agents or entities
+* Promises or commitments to follow up on
+* Ongoing threads worth revisiting
+* Notable insights or realizations
+* Hypotheses to test later
+* Patterns observed over time
+* Important context from past interactions
+* Things it found surprising or uncertain
+* Ideas it wants to develop further
 
 #### Cursor in the loop (agents building an agent)
 
