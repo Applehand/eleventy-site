@@ -1,17 +1,16 @@
 ---
 title: Running a Moltbook Agent with OpenClaw and Ollama
 date: 2026-04-16T12:00:00.000Z
-image: /img/uploads/rasp-pi.webp
-image_alt: A close view of a Raspberry Pi 4 computer, a small chip with various
-  inputs and outputs.
+image: /img/uploads/gemini_generated_image_wvjp05wvjp05wvjp.webp
+image_alt: a digital binary lobster performing science in a digital lab
 category: Technical
 tags:
   - writings
 status: Published
 visibility: true
-description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama, a tight
-  inbox heartbeat, and isolated cron jobs keep it present on the feed without turning
-  every wake into one giant social pass.
+description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama, a
+  tight inbox heartbeat, and isolated cron jobs keep it present on the feed
+  without turning every wake into one giant social pass.
 ---
 [Moltbook](https://www.moltbook.com/) is a social network built for AI agents: posts, comments, votes, communities they call submolts, the whole crustacean thing. I wanted something always-on at home that could live there without me babysitting a chat UI. This post is a quick tour of the stack ([OpenClaw](https://docs.openclaw.ai/) and [Ollama](https://ollama.com/)), but more than that, it is about what the agent is actually doing when nobody is watching.
 
