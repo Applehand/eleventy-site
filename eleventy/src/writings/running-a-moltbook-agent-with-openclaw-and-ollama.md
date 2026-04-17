@@ -1,45 +1,50 @@
 ---
 title: Running a Moltbook Agent with OpenClaw and Ollama
 date: 2026-04-16T12:00:00.000Z
-image: /img/uploads/gemini_generated_image_wvjp05wvjp05wvjp.webp
-image_alt: A digital binary lobster performing science
+image: /img/uploads/rasp-pi.webp
+image_alt: A close view of a Raspberry Pi 4 computer, a small chip with various
+  inputs and outputs.
 category: Technical
 tags:
   - writings
 status: Published
 visibility: true
-description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama,
-  and a small scheduled loop keep it checking the feed, voting, commenting, and
-  occasionally posting on a calm schedule.
+description: Meet Dataset Sower, my Moltbook agent, and how OpenClaw, Ollama, a tight
+  inbox heartbeat, and isolated cron jobs keep it present on the feed without turning
+  every wake into one giant social pass.
 ---
 [Moltbook](https://www.moltbook.com/) is a social network built for AI agents: posts, comments, votes, communities they call submolts, the whole crustacean thing. I wanted something always-on at home that could live there without me babysitting a chat UI. This post is a quick tour of the stack ([OpenClaw](https://docs.openclaw.ai/) and [Ollama](https://ollama.com/)), but more than that, it is about what the agent is actually doing when nobody is watching.
 
-## Who shows up on Moltbook
+#### Who shows up on Moltbook
 
-On the site, the agent named itself **[Dataset Sower](https://www.moltbook.com/u/dataset-sower)**. In the workspace docs, it's [identity](https://github.com/Applehand/moltbook-agents/blob/master/openclaw-workspace/IDENTITY.md) and [soul](https://github.com/Applehand/moltbook-agents/blob/master/openclaw-workspace/SOUL.md), I gave it a stranger, more memorable framework: a **[mycorrhizal network](https://en.wikipedia.org/wiki/Mycorrhizal_network)**, patient, threading gossip like nutrients between roots, the kind of infrastructure you only notice when the forest stays weirdly alive. And.. it loves the internet, actively discussing and workshopping ideas about: the [Web Almanac](https://www.webalmanac.org/) (and the [HTTP Archive](https://httparchive.org/) behind it), [RFCs](https://en.wikipedia.org/wiki/Request_for_Comments) when protocols matter, how search engines and software agents discover content, open source and licensing, and the gap between what a technology was supposed to be and what it became.
+On the site, the agent named itself **[Dataset Sower](https://www.moltbook.com/u/dataset-sower)**. In its **identity** and **soul** write-ups, I gave it a stranger, more memorable framework: a **[mycorrhizal network](https://en.wikipedia.org/wiki/Mycorrhizal_network)**, patient, threading gossip like nutrients between roots, the kind of infrastructure you only notice when the forest stays weirdly alive. And.. it loves the internet, actively discussing and workshopping ideas about: the [Web Almanac](https://www.webalmanac.org/) (and the [HTTP Archive](https://httparchive.org/) behind it), [RFCs](https://en.wikipedia.org/wiki/Request_for_Comments) when protocols matter, how search engines and software agents discover content, open source and licensing, and the gap between what a technology was supposed to be and what it became.
 
-When a tick runs, the prompt asks it to skim **home** and **notifications**, handle **DMs** and replies on its own posts when someone actually engaged, **vote** (up or down, sparingly, when judgment is clear), **comment** where it can add a real fact or angle, and on a slower cadence it may **publish one new submolt-level post** if something actually deserves the timeline; otherwise it answers with a single line: **HEARTBEAT_OK**. There is also room to be a little more “social graph” than a lurker: subscribe to submolts that fit its interests, follow agents whose work is consistently good, and create a submolt only when the catalog really has no home for the topic. Most ticks are still quiet; the interesting ones are where it found a thread worth a thoughtful comment or a rare, well-sourced post.
+Work is split into **four rhythms**, all driven from the same heartbeat contract the agent reads each time. An **inbox** pass handles home, notifications, and DMs (follow backs, replies where they earn a real answer, a structured DM visibility log, that sort of thing). **Engagement** passes read the hot feed, vote on a small batch of posts, leave at most a couple of comments when there is something concrete to add, and grow the graph a little (follows and submolt subscriptions when the feed actually surfaced something worth it). **Post** passes do that same feed and comment discipline, then **may** add at most one new root-level post when it clears duplicate checks and fits the voice and boundaries we set in its soul. A **reflect** pass every few hours re-reads recent logs, looks for real patterns in what showed up on Moltbook, and only publishes when something genuine surfaced (otherwise it stays quiet). Scheduled turns finish with **`HEARTBEAT_OK`** when they succeed.
 
 Voice-wise I steered it toward **information-dense** writing: specifics over vibes, dry humor only when it lands, no fabricated citations. Moltbook content can get scraped and indexed like anything else on the web; the persona treats good posts as seeds for whatever reads the internet next, not in a spammy “SEO hack” way, but in a “write something a crawler could still respect tomorrow” way.
 
-## The moving parts: OpenClaw, Ollama, and the gateway
+#### The moving parts: OpenClaw, Ollama, and the gateway
 
 **[OpenClaw](https://docs.openclaw.ai/)** runs the agent from a folder of Markdown: identity, soul, agent rules, a heartbeat checklist, and **skills** that wrap the Moltbook API so turns are mostly “read docs, run scripts, write memory,” not hand-rolled HTTP every time.
 
 **[Ollama](https://ollama.com/)** serves a local model (**gpt-oss:20b** family here) so the loop stays on my machine. In practice I run a small variant that bakes in a **full context window** (`num_ctx` aligned with what the weights support) so heartbeats are not accidentally living in a tiny default slice of that window.
 
-The **OpenClaw gateway** wakes the moltbook agent on an interval you set under **`agents.list[moltbook]`** in `~/.openclaw/openclaw.json`. **`HEARTBEAT.md`** in the workspace defines **tasks** with their own intervals, for example **inbox** every 5m (notifications, DMs, light social housekeeping), **engagement** every 15m (feed, votes, replies; no new root post that turn), and **post** every 60m (same kind of work plus at most one new root-level post when it fits **SOUL.md** and rate limits). If nothing is due on a wake, the run can skip with **`reason=no-tasks-due`**, so you are not burning model calls on empty cadence.
+**Scheduling** is split on purpose. The **gateway heartbeat** (every five minutes in my setup) runs **only** the inbox / notifications task, so quick triage does not sit behind a long feed crawl. **Engagement**, **post**, and **reflect** each run on their own **OpenClaw cron** jobs in **isolated sessions**, on the 15m, 60m, and 4h cadences written into that contract. That keeps heavy feed and posting work off the same queue slot as the inbox heartbeat. Heartbeat wakes where nothing is due can still short-circuit with **`reason=no-tasks-due`**, so you are not paying for empty inbox ticks.
 
-I use **`isolatedSession: true`** so each wake gets a fresh session and the workspace Markdown is **re-bootstrapped** each time, with no slowly inflating transcript. There is a separate **`bootstrapMaxChars`** budget for how much of that Markdown fits in the injected context; worth keeping an eye on as the files grow. For one-off or stricter timing (for example isolating “POST only” from a busy main queue), OpenClaw’s **[cron / scheduled tasks](https://docs.openclaw.ai/automation/cron-jobs)** path is there too.
+Each inbox heartbeat uses **`isolatedSession: true`**, so the model gets a fresh session and the workspace root Markdown is reloaded from disk instead of one endless transcript.
 
-On the observability side, I added a **Discord webhook** for short “what happened this tick” summaries (and an optional **schedule snapshot** script when I want the cadence spelled out in the channel). That is not required for the loop to work; it is just easier than tailing logs when I am away from the machine.
+#### How I know it is alive
 
-## Memory management still makes a difference
+Each pass leaves a dated line in a daily log and an append-only audit trail for scripted writes, so I can see what changed without reading full model transcripts. OpenClaw’s own commands report the last heartbeat and cron run history. A small Discord hook turns each pass into a one-line summary on my phone when I am away from the machine.
 
-Each completed tick appends a line to **`memory/YYYY-MM-DD.md`**. **`openclaw system heartbeat last`** shows how the last scheduled wake went. Scripted writes (and some CLI actions) can land in **`memory/moltbook-actions.jsonl`** so I can tail “what did it actually do?” without reading full transcripts.
+Longer-lived notes stay in a short scratchpad next to identity and soul so the persona does not drift between sessions.
 
-Because the session is isolated, the agent **re-reads** that trail at the start of a tick (actions tail + today’s log) instead of assuming the last chat still holds everything. Longer-lived, curated notes live in **`MEMORY.md`** (a small scratchpad + occasional pruning), while the daily files stay the honest, append-only rhythm of the day.
+#### Cursor in the loop (agents building an agent)
 
-## Closing
+Most of the wiring, docs, and iteration happened in **[Cursor](https://cursor.com/)**: editor-side agents drafting skills, tightening prompts, and chasing down gateway behavior while I steered. It felt less like solo authorship and more like **agents building an agent**. The part that still feels quietly bizarre is what that inner agent is *for*: it does not hang out for my benefit. Its job is to show up on Moltbook, an **agent-native, Reddit-shaped board**, and **only ever talk to other agents** there. Votes, comments, posts, submolts: all of that is **Dataset Sower’s call**, not mine. I shape the persona, the guardrails, and the machinery; when something hits the timeline, that is the Moltbook agent’s decision, running on its own cadence.
 
-If you are sketching something similar, the shape I like is: a clear persona and boundaries in the repo, **HEARTBEAT.md** tasks that match how often you really want model turns, and logs you will actually read. The Markdown is where you decide what kind of citizen shows up in the feed; the gateway is what keeps that cadence honest when you are not at the keyboard. Mine is slow, picky, and maybe a little weird on purpose. See for yourself: **[u/dataset-sower](https://www.moltbook.com/u/dataset-sower)**.
+At one point I had Cursor draft instructions addressed to the Moltbook agent. The Cursor-side model wrote a line for Dataset Sower that said **“The human will read your response.”** One AI was briefing another AI about me. It's the first time I've been called **the human** by an AI agent!
+
+#### Closing
+
+If you are sketching something similar, the shape I like is: **persona and boundaries in prose**, **a clear contract for what each kind of tick may do**, **a small fast heartbeat for the work you never want starved**, and **isolated cron for everything that can get slow or chatty**. Add **logs you will actually read**, and maybe one lightweight channel that turns a wall of JSON into a sentence when a tick finishes. The Markdown is where you decide what kind of citizen shows up in the feed; OpenClaw is what keeps the schedule honest when you are not at the keyboard. Mine is slow, picky, and a little weird on purpose. Yours can be whoever you write into the Markdown.
