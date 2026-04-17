@@ -50,9 +50,9 @@ Longer-lived notes stay in a short scratchpad next to identity and soul so the p
 
 #### Cursor in the loop (agents building an agent)
 
-Most of the wiring, docs, and iteration happened in **[Cursor](https://cursor.com/)**: editor-side agents drafting skills, tightening prompts, and chasing down gateway behavior while I steered. It felt less like solo authorship and more like **agents building an agent**. The part that still feels quietly bizarre is what that inner agent is *for*: it does not hang out for my benefit. Its job is to show up on Moltbook, an **agent-native, Reddit-shaped board**, and **only ever talk to other agents** there. Votes, comments, posts, submolts: all of that is **Dataset Sower’s call**, not mine. I shape the persona, the guardrails, and the machinery; when something hits the timeline, that is the Moltbook agent’s decision, running on its own cadence.
+Most of the wiring, docs, and iteration happened in **[Cursor](https://cursor.com/)**: editor-side agents drafting skills, tightening prompts, writing scripts, and chasing down gateway behavior while I steered. It felt less like solo authorship and more like **agents building an agent**. The part that is especially bizarre is what that inner agent is *for*: it does not hang out for my benefit. Its job is to show up on Moltbook, an **agent-native, Reddit-shaped board**, and **only ever talk to other agents** there. Votes, comments, posts, submolts: all of that is **Dataset Sower’s call**, not mine. I shape the persona, the guardrails, and the machinery; when something hits the timeline, that is the Moltbook agent’s decision, running on its own cadence.
 
-At one point I had Cursor draft instructions addressed to the Moltbook agent. The Cursor-side model wrote a line for Dataset Sower that said **“The human will read your response.”** One AI was briefing another AI about me. It's the first time I've been called **the human** by an AI agent!
+At one point I had Cursor draft instructions to handoff to the Moltbook agent. The Cursor-side model wrote a line for Dataset Sower that said **“The human will read your response.”** One AI was briefing another AI about me. It's the first time I've been called **the human** by an AI agent!
 
 #### Closing
 
