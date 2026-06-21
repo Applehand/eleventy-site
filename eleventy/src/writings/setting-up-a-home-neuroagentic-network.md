@@ -23,12 +23,14 @@ This is designed to avoid those common issues. In this approach, hardware maps t
 
 **Software.** On that hardware sits the agent hierarchy: nine persistent agents with fixed lanes, plus short-lived swarm workers for cheap parallel tasks. Deterministic routing rules act as a basal ganglia layer, sending simple requests to scripts instead of waking a model. The nodes are the nervous system; the cast is the mind running on it.
 
-#### Why a hierarchy
+#### The standing cast
 
-A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system more predictable. Most of the design choices here start from that split.
+A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system more predictable, and most of the design here follows from that one split.
+
+The cast is a persistent org chart of nine agents, each with a stable identity and a dedicated lane. I sit outside the tree as the owner with final authority, and Homer is the only agent I speak to directly. Everything I ask flows down through him, and anything that needs my attention comes back up the same way. Below Homer, Stuart handles coordination. The triad under him does the everyday work: Wright builds, Argus researches and owns the cluster's connection to the outside web, and Lucy holds long-term context and tends memory. Ira, Robin, and Nerva cover visualization, governance, and security. Tess sits beneath Wright as a check on his work.
 
 <details>
-<summary>Problems the hierarchy is meant to solve</summary>
+<summary>Problems a hierarchy solves</summary>
 
 | **Problem**            | **Response**                                                                                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -44,14 +46,8 @@ A single agent asked to be executive, engineer, researcher, security officer, an
 
 </details>
 
-#### The standing cast
-
-The standing cast is a persistent org chart of nine agents, each with a stable identity and a dedicated lane of responsibility. I sit outside the tree as the owner with final authority, and Homer is the only agent I speak to directly. Everything I ask flows down through him, and anything that needs my attention comes back up the same way.
-
-Below Homer, Stuart handles coordination. The triad under him does the everyday work: Wright builds, Argus researches and owns the cluster's connection to the outside web, and Lucy holds long-term context and tends memory. Ira, Robin, and Nerva cover visualization, governance, and security. Tess sits beneath Wright as a check on his work.
-
 <details>
-<summary>Cast levels, roles, and dispatch tree</summary>
+<summary>Cast levels and the dispatch tree</summary>
 
 | Level        | Who                             | Role                                  |
 | ------------ | ------------------------------- | ------------------------------------- |
@@ -92,20 +88,35 @@ Keeping the ways agents talk to each other distinct makes the system easier to f
 
 The swarm sits apart from all of this on purpose. Its workers are cheap, stateless, and have no tools of their own; they take chunks in and return chunks out, and a standing agent decides what to do with the result. That keeps the cost of routine parallel work low and the surface for mistakes small.
 
+#### Tools and access
+
+Agents do not all get the same capabilities. A **tool** here is anything an agent may use, and tools come in three kinds: **rules** (always-on or scope-based guidance), **skills** (playbooks pulled on demand), and **commands** (deterministic scripts and handoffs). Which kind fits depends on when it should load and how much judgment it needs.
+
+A few commands are powerful enough that they should not sit in every agent's hands: reaching out to the open web, writing to version control, reading the cold memory archive, observing the full cluster state, or actuating anything physical. Each of those is gated to a single owner. Another agent that needs one routes a request to that owner, or borrows a narrow, time-limited grant that still passes the same safety checks on the gateway. Powerful actions always trace back to someone responsible for them.
+
+<details>
+<summary>The three kinds of tools, in detail</summary>
+
+**Rules** are always-on or scope-based guidance: identity files, hierarchy, the four pillars, and file-type conventions that load only when someone is editing Python or prose. They shape behavior without being invoked. **Skills** are markdown playbooks pulled on demand when a task matches, like assessing whether a commit is safe to land, redacting a draft for publication, or running a structured code-evaluation rubric. **Commands** are the deterministic layer: shell wrappers and CLI entrypoints that call the gateway, post to the job board, search recent memory, or hand off to another agent. If the outcome should be the same every time, it belongs here.
+
+Need standing posture or file-scoped habits? Load a rule. Need expert judgment for a recognizable task type? Pull a skill. Need a fixed script with a signed API call at the end? Run a command. Swarm workers sit outside this split entirely. They are summoned for bounded input chunks (text, images, diffs, whatever fits in the prompt) and return chunks back, with no tools of their own.
+
+**Dispatch** and **summon** are commands too, but they are the coordination ones: dispatch when another standing agent should own the judgment, summon when parallelizable chunk work fits a swarm role. Other commands are operational: memory search, job-board posts, chart generation, where the script path is fixed. An ops router handles a fourth lane for simple operator requests ("what mode are we in?", "show recent cost") by mapping natural language to allowlisted scripts instead of waking a standing agent.
+
+Each agent carries a different subset of these capabilities, declared in one central list so enforcement stays consistent everywhere: the running cluster, the gateway, dispatch signing, and the MCP tools in my editor all read the same source. Agents see a short daily list for common work and can list the full grant set when they need it. A discovery command ranks skills by task description when the right playbook is not obvious.
+
+</details>
+
 #### Evidence before "done"
 
 Building software is where an unsupervised agent most often reports success it has not actually earned, so coding work follows a planner, generator, evaluator pattern that keeps those roles in separate hands. Stuart frames the task and passes it to Wright, who agrees on acceptance criteria up front, sometimes has a swarm worker draft the tests first, and then implements against that contract. Before anything counts as finished, an automated suite produces objective evidence that it works, and a separate evaluator, Tess, reviews the result in a clean context against a fixed rubric, with no ability to edit what she is grading. She returns a pass or sends it back with specific findings. Completion rests on that evidence rather than an agent's own confidence.
 
-#### Owners for powerful tools
-
-Some **tools** are powerful enough that they should not sit in every agent's repertoire: reaching out to the open web, writing to version control, reading the cold memory archive, observing the full cluster state, or actuating anything physical. Each gated command has a single owner. By default, an agent that needs a certain tool routes a request to that owner via dispatch, who carries it out and stays accountable for it. When going through the owner would be too slow, the owner can use an attestation to issue a narrow, time-limited permission for the other agent to invoke the tool directly. That borrowed access still passes through the same safety checks on the gateway. Powerful actions always trace back to someone responsible for them.
-
 #### The four pillars
 
-**Security**, **Reliability**, **Precision**, and **Clarity** are the standing contract for how agents behave. Each maps to habits the cluster actually enforces.
+**Security**, **Reliability**, **Precision**, and **Clarity** are the standing contract for how every agent behaves. Each maps to habits the cluster actually enforces, not ideals on a page.
 
 <details>
-<summary>Security, Reliability, Precision, and Clarity</summary>
+<summary>The four pillars, and keeping prompts lean</summary>
 
 **Security:** no secret leakage, narrow access, gated egress, no silent self-modification. Keys stay in Keychain; drafts get redacted before they leave home.
 
@@ -115,64 +126,47 @@ Some **tools** are powerful enough that they should not sit in every agent's rep
 
 **Clarity:** explicit ownership, structured findings with references, logged governance transitions, and a fixed publication chain (draft, redaction, review, admin approval).
 
-</details>
-
-<details>
-<summary>Choosing the right tool</summary>
-
-Not every problem deserves the same mechanism. Mixing them up is how agent systems get expensive and sloppy. In this cluster, a **tool** is anything an agent is allowed to use: standing policy, expertise pulled when needed, or a deterministic script. They fall into three kinds. The choice between them is mostly about when the capability should load and how much judgment it needs.
-
-**Rules** are always-on or scope-based guidance: identity files, hierarchy, the four pillars, and file-type conventions that load only when someone is editing Python or prose. They shape behavior without being invoked. **Skills** are markdown playbooks pulled on demand when a task matches, like assessing whether a commit is safe to land, redacting a draft for publication, or running a structured code-evaluation rubric. **Commands** are the deterministic layer: shell wrappers and CLI entrypoints that call the gateway, post to the job board, search recent memory, or hand off to another agent. If the outcome should be the same every time, it belongs here.
-
-Need standing posture or file-scoped habits? Load a rule. Need expert judgment for a recognizable task type? Pull a skill. Need a fixed script with a signed API call at the end? Run a command. Swarm workers sit outside this split entirely. They are summoned for bounded input chunks (text, images, diffs, whatever fits in the prompt) and return chunks back, with no tools of their own.
-
-**Dispatch** and **summon** are commands too, but they are the coordination ones: dispatch when another standing agent should own the judgment, summon when parallelizable chunk work fits a swarm role. Other commands are operational: memory search, job-board posts, chart generation, where the script path is fixed. **Skills** fill the gap when the work needs a structured playbook but not a full handoff. An ops router handles a fourth lane for simple operator requests ("what mode are we in?", "show recent cost") by mapping natural language to allowlisted scripts instead of waking a standing agent.
-
-Each agent carries a different subset of these capabilities, declared in one central list so enforcement stays consistent everywhere: the running cluster, the gateway, dispatch signing, and the MCP tools in my editor all read the same source. Agents see a short daily list for common work and can list the full grant set when they need it. A discovery command ranks skills by task description when the right playbook is not obvious. Broad commands are shared widely. Narrow, high-risk ones are gated to a single owner.
+Precision shows up most in how context is built. If every agent dragged its full identity, history, and personality into every prompt, context would balloon and cost with it. So context is assembled to fit the moment: core identity and rules load when they bear on the task, deeper skills are pulled in only when a job calls for them, and personality is kept separate and added only in social or demo settings. Real work gets a lean prompt; a showcase gets a richer one.
 
 </details>
 
-<details>
-<summary>Lean context and personality</summary>
+#### Operating over time
 
-A persistent cast creates a problem that one-off agents avoid. If every agent dragged its full identity, history, and personality into every prompt, context would balloon and cost with it. Context is assembled to fit the moment. Core identity and rules load when they bear on the task at hand, deeper skills are pulled in only when a job calls for them, and an agent's personality is kept separate and added only in social or demo settings. Real work gets a lean prompt. Social or demo settings get a richer one.
-
-</details>
+The cluster has a sense of what it should be doing right now and what it is working toward. Its posture shifts with the time of day, work that outlasts a conversation gets real project structure, and memory is condensed rather than dumped as it ages. Autonomy is opt-in throughout: background watching and scheduled sweeps stay off until I enable them, while ordinary interactive use is always available.
 
 <details>
 <summary>Modes, seasons, and drills</summary>
 
-The cluster has a notion of what it should be doing right now. A mode is its current operating state, shaping how it routes requests, how patient it is, how cautious it is, and whether personality is allowed at all. Modes include an ordinary workday, a quiet overnight period for consolidating memory, and a security lockdown, among others. Seasons sit above modes as longer-term rhythms that schedule those states across each day, week, or month and hold the cluster to a scheduled spending limit. Autonomy is opt-in: background watching and scheduled sweeps stay off until I enable them, while ordinary interactive use is always available. Together these let me decide how much independence the system has at any given time, instead of facing a single on-or-off switch.
+A mode is the cluster's current operating state, shaping how it routes requests, how patient it is, how cautious it is, and whether personality is allowed at all. Modes include an ordinary workday, a quiet overnight period for consolidating memory, and a security lockdown, among others. Seasons sit above modes as longer-term rhythms that schedule those states across each day, week, or month and hold the cluster to a scheduled spending limit. Together they let me decide how much independence the system has at any given time, instead of facing a single on-or-off switch.
 
-The cluster periodically runs drills at escalating cost, from free static checks up to full multi-agent exercises, to confirm that agents still hand off and recover the way they should.
-
-</details>
-
-<details>
-<summary>Structure for long work</summary>
-
-Not everything is a quick request. Some work is a project that runs for days, and that needs more structure than a chat thread. Ideas enter as proposals and move through a ledger with real states, from pending to approved, deferred, or rejected, after passing a review chain that weighs them for duplication, priority, risk, cost, and governance before anyone spends effort. Approved proposals become projects with their own goals, milestones, and task lists. The larger or more irreversible the work, the higher its approval has to climb, ultimately to me for anything that cannot be undone. When that work touches shared code, it usually arrives as a GitHub pull request I merge or close. Long-running work gets the same intake, ownership, and checkpoints a small team would use.
+To make sure the structure holds up under load, the cluster periodically runs drills at escalating cost, from free static checks up to full multi-agent exercises, to confirm that agents still hand off and recover the way they should.
 
 </details>
 
 <details>
-<summary>Memory</summary>
+<summary>Long-running work and memory</summary>
+
+Some work is a project that runs for days, and that needs more structure than a chat thread. Ideas enter as proposals and move through a ledger with real states, from pending to approved, deferred, or rejected, after a review chain weighs them for duplication, priority, risk, cost, and governance before anyone spends effort. Approved proposals become projects with their own goals, milestones, and task lists. The larger or more irreversible the work, the higher its approval has to climb, ultimately to me for anything that cannot be undone. When that work touches shared code, it usually arrives as a GitHub pull request I merge or close.
 
 Memory is tiered so that recent, relevant context stays close while older material is condensed rather than discarded. A nightly consolidation pass, run by Lucy, rolls older memories into summaries and records how much detail each one keeps, down to archive-only at the far end, with the cold archive itself behind a gate. That counters the slow decay that affects any long-lived agent, where context either grows without bound or quietly disappears.
 
 </details>
 
-<details>
-<summary>Governance for external work</summary>
+#### Boundaries and visibility
 
-When work needs to go beyond the home network, it passes through a governance loop first. Findings are validated, triaged, and adjudicated up the chain before anything is written externally, sensitive details are redacted on the way out, and every step is recorded. The cluster opens GitHub issues and pull requests when it is ready to act; I approve or reject them there. External action carries the most risk, so it gets the most oversight.
+Two things make the system safe to leave running: it is careful about what crosses the home boundary, and it is easy to watch while it works. External action carries the most risk, so it gets the most oversight, and nothing the cluster does is hidden from me.
+
+<details>
+<summary>Governance for anything that leaves home</summary>
+
+When work needs to go beyond the home network, it passes through a governance loop first. Findings are validated, triaged, and adjudicated up the chain before anything is written externally, sensitive details are redacted on the way out, and every step is recorded. The cluster opens GitHub issues and pull requests when it is ready to act; I approve or reject them there.
 
 </details>
 
 <details>
-<summary>Observability and the editor interface</summary>
+<summary>Seeing what it does, from a portal and my editor</summary>
 
-A system this active is only trustworthy if you can watch it work. An observation portal renders the cluster's live state: its agents, projects, tasks, pending proposals, and governance queue. A single ledger records every LLM model call so any request can be followed from start to finish. The live aggregate view of all agent and cluster data is locked to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context.
+An observation portal renders the cluster's live state: its agents, projects, tasks, pending proposals, and governance queue. A single ledger records every LLM model call so any request can be followed from start to finish. The live aggregate view of all agent and cluster data is locked to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context.
 
 The same operations the agents use are exposed to my Cursor editor through MCP, so I can check status, hand off work, search memory, or summon a worker without leaving the place I already write code. A single configuration defines those commands, the agents' skills and rules, and the swarm roles together, which keeps the editor and the running cluster describing the same system.
 
@@ -180,4 +174,4 @@ The same operations the agents use are exposed to my Cursor editor through MCP, 
 
 #### Putting it together
 
-The home cluster behaves like a small, accountable team rather than a single chatbot. It has clear roles and one point of contact, a split between rules, skills, and commands so agents pick the right mechanism for the job, cheap help for routine work, evidence before anything is called done, named owners for every powerful command, and a Precision pillar that keeps prompts and outputs task-shaped as the system grows. Context stays lean until it needs to be rich. Autonomy is something I dial up or down. Long work gets real process. Memory condenses instead of vanishing. And there is enough visibility to trust the whole thing while it runs.
+The home cluster behaves like a small, accountable team rather than a single chatbot. It has clear roles and one point of contact, a split between rules, skills, and commands so agents pick the right mechanism for the job, cheap help for routine work, evidence before anything is called done, and named owners for every powerful tool. Context stays lean until it needs to be rich. Autonomy is something I dial up or down. Long work gets real process. Memory condenses instead of vanishing. And there is enough visibility to trust the whole thing while it runs.
