@@ -9,43 +9,40 @@ visibility: false
 description: A home agent cluster built around a standing cast, a cheap swarm,
   and shared infrastructure for routing, memory, and governance.
 ---
-Most agent setups collapse into one chat window with one personality and one tool belt. That works for demos. Longer runs bloat context, leave tools unsupervised, run up costs, and blur accountability.
+Most agent setups collapse into a single chat window with one personality and one set of tools. That is fine for a demo, but it falls apart over a longer run. The context window fills with history that no longer matters, tools fire without oversight, costs climb, and it gets hard to say which decision came from where.
 
-A **home neuroagentic network** is a small organization of persistent agents plus short-lived workers, connected by signed handoffs and a shared message bus.
+A home neuroagentic network takes the opposite approach. It is a small organization of persistent agents, supported by a pool of short-lived workers, that pass work to each other through signed handoffs over a shared message bus. The rest of this post walks through the systems that hold that organization together, and the design problem each one is meant to solve.
 
-#### Why hierarchy
+#### Why a hierarchy
 
-One super-agent plays executive, engineer, researcher, security officer, and bookkeeper at once. It picks whichever role is easiest. Fixed **lanes** with clear owners make behavior predictable:
+A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system far more predictable, and most of the design below follows from that one choice.
 
 | Problem | Response |
 |---------|----------|
-| Role confusion | One lane per standing agent (build, research, governance, security, etc.) |
-| Ungoverned tools | **Gatekeepers** own dangerous capabilities; others dispatch the owner or borrow via scoped **attestation** |
-| Context bloat | **Conditional loading**: identity, rules, and flavor load only when their conditions match |
-| Cost runaway | **Swarm** on cheap models; standing agents on heavier routes; **budget envelope** and mode caps |
-| Premature "done" | Deterministic checks, then a separate grader in a clean context |
-| Weak accountability | **Signed dispatch**; governance transitions logged to memory |
-| Chat as only queue | **Workspace**, **job board**, and **project registry** for async work |
-| Stale memory | **Dream** consolidation into rated summaries; cold archive behind Lucy |
-| Runaway autonomy | **Modes**, **seasons**, and opt-in **autonomy** |
-| IDE vs runtime gap | Cluster MCP exposes the same operations the agents use |
+| Role confusion | One lane per standing agent: build, research, governance, security, and so on |
+| Ungoverned tools | **Gatekeepers** own dangerous capabilities; others route to the owner or borrow access for a limited time |
+| Context bloat | Identity, rules, and personality load only when they are relevant |
+| Cost runaway | Cheap **swarm** workers for routine jobs, heavier models reserved for standing agents, all under a spending cap |
+| Premature "done" | Automated checks plus a separate grader before any work closes |
+| Weak accountability | Signed handoffs and a log of every governance decision |
+| Chat as the only queue | A shared **workspace** and **job board** for durable, asynchronous work |
+| Stale memory | Nightly **consolidation** that summarizes old context instead of dropping it |
+| Runaway autonomy | **Modes** and **seasons** that scope how independent the system is |
 
-The "neuro" is a loose metaphor: agents map to brain functions like attention, memory, and reflection. It is only a naming aid.
+The "neuro" part is a loose metaphor. Agents map to brain functions like attention, memory, and reflection. It helps name the parts and nothing more.
 
-#### The standing cast: nine agents
+#### The standing cast
 
-The **standing cast** is a persistent org chart. Each agent has stable identity, a dispatch scope, and a lane. They **dispatch** along the tree, **summon** swarm workers for small jobs, or ask peers read-only questions.
-
-I sit outside this tree. I'm the owner and final authority. **Homer** is the only standing agent I talk to; every other agent routes admin questions through him.
+The standing cast is a persistent org chart of nine agents, each with a stable identity and a single lane of responsibility. I sit outside the tree as the owner and final authority, and Homer is the only agent I speak to directly. Everything I ask flows down through him, and anything that needs my attention comes back up the same way.
 
 | Level | Who | Role |
 |-------|-----|------|
-| 1: Executive | Homer | My interface to the cluster; dispatch: all |
-| 2: Upper management | Stuart | Team coordination; dispatch: team |
-| 3: Triad | Wright, Argus, Lucy | Build, research, reflection |
-| 4: Specialists | Ira, Robin, Nerva | Visualization, governance, security |
-| 5: Subordinates | Tess | Build evaluator under Wright |
-| (outside tree) | Swarm | reader, reviewer, summarizer, … one-shot workers |
+| Executive | Homer | My interface to the cluster |
+| Coordination | Stuart | Plans work and keeps the team in sync |
+| Triad | Wright, Argus, Lucy | Build, research, reflection |
+| Specialists | Ira, Robin, Nerva | Visualization, governance, security |
+| Evaluator | Tess | Grades Wright's output |
+| Swarm | reader, reviewer, summarizer, … | One-shot workers, outside the tree |
 
 ```
 Jake (owner, human, outside the cast)
@@ -69,129 +66,54 @@ Swarm pool ── summon ──▶ reader · reviewer · summarizer · test auth
          └── invoked by standing cast; outside the tree
 ```
 
-**Stuart** owns arbitration, reliability, the portfolio, and the job board. Wright, Argus, Lucy, Ira, Robin, and Nerva report to Stuart.
+Below Homer, Stuart handles coordination: arbitrating between agents, running the project portfolio, and keeping the job board moving. The triad under him does the everyday cognition, with Wright building, Argus researching and owning the cluster's connection to the outside web, and Lucy holding long term context and tending memory. The specialists cover narrower domains that each deserve a dedicated owner: Ira for charts and the observation interface, Robin for governance and version control, and Nerva for security and anything physical in the house. Tess sits beneath Wright as a deliberate check on his work, which is worth describing on its own.
 
-**The Triad** runs daily work: Wright builds, Argus researches and controls outbound web access, Lucy holds long-term context and runs memory consolidation.
+#### How work moves
 
-**Specialists** hold gated domains: Ira for charts and the observation UI, Robin for governance and version control, Nerva for security monitoring and home actuation.
+Keeping the ways agents talk to each other distinct is part of what keeps the system easy to reason about. A dispatch is a blocking, signed handoff from one standing agent to another, used whenever a task needs real judgment or coordination. A summon is a lighter, one-shot call down to a swarm worker for bounded text work such as reading a document, summarizing it, or drafting tests. For anything that should outlive a single conversation, agents post findings to a shared workspace and pick up tasks from a job board, so long work can proceed in the background instead of living inside one chat thread. Agents can also ask each other read-only questions without handing off any work at all. Every one of these paths is signed and checked against policy, so the system always knows who asked for what and whether they were allowed to.
 
-**Tess** reports to Wright. She grades deliverables in a separate context against a fixed rubric, read-only, with no write access. Wright builds; Tess returns pass or needs-work. Shared library promotion uses the same gate.
+The swarm sits apart from all of this on purpose. Its workers are cheap, stateless, and have no tools of their own; they take text in and return text out, and a standing agent decides what to do with the result. That keeps the cost of routine parallel work low and the surface for mistakes small.
 
-#### Three ways to move work
+#### Evidence before "done"
 
-1. **Dispatch**: blocking, signed handoff between standing agents. Policy-checked. For judgment and orchestration.
-2. **Summon**: one-shot swarm call for parallel text work (read, summarize, classify, draft tests). Stateless, cheap, outside the tree.
-3. **Workspace + job board**: async work. Agents post **findings**; the **job board** routes requests, claims, and completions.
+Building software is where an unsupervised agent most often reports success it has not actually earned, so coding work follows a planner, generator, evaluator pattern that keeps those roles in separate hands. Stuart frames the task and passes it to Wright, who agrees on acceptance criteria up front, sometimes has a swarm worker draft the tests first, and then implements against that contract. Before anything counts as finished, an automated suite produces objective evidence that it works, and a separate evaluator, Tess, reviews the result in a clean context against a fixed rubric, with no ability to edit what she is grading. She returns a pass or sends it back with specific findings. Completion always rests on that evidence rather than an agent's own confidence, which is the same discipline that keeps the swarm cheap applied to work that matters more.
 
-Agents can also ask each other read-only questions (Wright checking a fact with Argus). These stay signed and policy-checked, but hand off no work.
+#### Owners for dangerous tools
 
-Swarm agents stay outside the tree, cannot summon each other, and do not use MCP. They take text in and return text out; a standing agent handles the results.
+Some capabilities are risky enough that they should not be in every agent's hands: reaching out to the open web, writing to version control, reading the cold archive, or actuating anything physical. Each of these has a single owner. By default, an agent that needs one routes the request to that owner, who carries it out and stays accountable for it. When going through the owner would be needlessly slow, the owner can grant a narrow, time-limited permission for the other agent to act directly, and that borrowed access still passes through the same safety checks. The effect is that powerful actions always trace back to someone responsible for them.
 
-#### The build loop
+Underneath this sit four pillars, Security, Reliability, Pithiness, and Clarity, which act as the standing contract for how agents behave. They translate into concrete habits throughout the system, from signed handoffs and narrow file access to bounded retries and a redaction pass before anything is published.
 
-Coding work uses **Planner, Generator, Evaluator**:
+#### Lean context and personality
 
-1. Stuart dispatches the build task to Wright.
-2. Wright sets acceptance criteria and may summon a test-author swarm role first.
-3. Wright implements and runs verification: tests, lint, type-check, build. Output is a machine-readable report.
-4. Wright dispatches Tess to grade against the contract.
-5. Tess returns pass or needs-work. Needs-work goes back to Wright with findings.
+A persistent cast creates a problem that one-off agents avoid. If every agent dragged its full identity, history, and personality into every prompt, context would balloon and cost with it. So context is assembled to fit the moment. Core identity and rules load when they bear on the task at hand, deeper skills are pulled in only when a job calls for them, and an agent's personality is kept separate and added only in social or demo settings. The payoff is a lean prompt during real work and a richer one when the situation genuinely warrants it.
 
-Stuart plans at portfolio scale. Tess checks the artifact. Closure requires a green report and a Tess pass.
+#### A sense of time and posture
 
-#### Gatekeepers and attestation
+The cluster has a notion of what it should be doing right now. A mode is its current operating state, shaping how it routes requests, how patient it is, how cautious it is, and whether personality is allowed at all. Those states span an ordinary workday, a quiet overnight window for consolidating memory, and a security lockdown, among others. Seasons sit above modes as month long rhythms that schedule those states across each day and hold the cluster to a weekly spending limit. Just as important, autonomy is opt-in: background watching and scheduled sweeps stay off until I enable them, while ordinary interactive use is always available. Together these let me decide exactly how much independence the system has at any given time, instead of facing a single on-or-off switch.
 
-Dangerous capabilities have named owners. Default: dispatch the owner. **Attestation** grants a time-limited borrow without dropping guardrails.
+To make sure the structure actually holds up under load, the cluster periodically runs drills at escalating cost, from free static checks up to full multi agent exercises, confirming that agents still hand off and recover the way they are supposed to.
 
-| Capability | Owner | Use |
-|------------|-------|-----|
-| External fetch | Argus | Outbound web access and research |
-| Cold memory search | Lucy | Archived context |
-| Version control writes | Robin | Shared infrastructure mutation |
-| Home actuation | Nerva | Physical automation |
+#### Structure for long work
 
-Inbound MCP calls use the same proxy as external fetch. Swarm agents do not use MCP.
+Not everything is a quick request. Some work is a project that runs for days, and that needs more structure than a chat thread. Ideas enter as proposals and move through a ledger with real states, from pending to approved, deferred, or rejected, after passing a review chain that weighs them for duplication, priority, risk, cost, and governance before anyone spends effort. Approved proposals become projects with their own goals, milestones, and task lists. The larger or more irreversible the work, the higher its approval has to climb, ultimately to me for anything that cannot be undone. The intent is to give long horizon work the same intake, ownership, and checkpoints a small team would use.
 
-Four **pillars** (Security, Reliability, Pithiness, Clarity) guide enforcement: signed dispatch, narrow file access, bounded retries, mode-aware timeouts, and redaction before anything is published.
+#### Memory that ages gracefully
 
-#### Context and flavor
+Memory is tiered so that recent, relevant context stays close while older material is condensed rather than discarded. A nightly consolidation pass, run by Lucy, rolls older memories into summaries and records how much detail each one keeps, down to archive-only at the far end, with the cold archive itself behind a gate. The goal is to counter the slow decay that affects any long lived agent, where context either grows without bound or quietly disappears.
 
-Context is layered:
+#### Governance for anything that leaves home
 
-- **Rules** (identity, pillars, hierarchy) load at startup or when conditions match (file type, mode, role).
-- **Skills** load on demand when the task fits.
-- **Commands** are explicit deterministic workflows.
+When work needs to go beyond the home network, such as opening an issue or a pull request, it passes through a governance loop first. Findings are validated, triaged, and adjudicated up the chain before anything is written externally, sensitive details are redacted on the way out, and every step is recorded. External action carries the most risk, so it gets the most oversight.
 
-Identity and personality are separate files. Personality loads only when a global switch, the current mode, and the agent's own opt-in all agree. The build step checks these conditions and assembles a short prompt for normal work, a fuller one for showcase or off-hours modes.
+#### Seeing what it does
 
-**Flavor** stays off during production. Character appears in social or demo modes. Dispatch-auth context loads for dispatchers only; specialist guidance for specialists and peers. Mode changes re-sync the layers.
+A system this active is only trustworthy if you can watch it work. A read-only portal renders the cluster's live state, its agents, projects, tasks, pending proposals, and governance queue, and a single ledger records every model call so any request can be followed from start to finish. The people building that portal develop it against fake data, and the live aggregate view is held to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context.
 
-Production prompts stay short. Optional layers attach when the mode allows them.
+#### One interface, editor and cluster
 
-#### Modes, seasons, and lifecycle
+Finally, the same operations the agents use are exposed to my editor through MCP, so I can check status, hand off work, search memory, or summon a worker without leaving the place I already write code. A single configuration defines those tools, the agents' commands, and the swarm roles together, which keeps the editor and the running cluster describing the same system.
 
-| Knob | Scope | Controls |
-|------|-------|----------|
-| **Mode** | Runtime state | Routing, timeouts, autonomy, flavor |
-| **Season** | Month profile | Scheduled modes, weekly budget |
-| **Flavor** | Personality | Whether character prose injects |
+#### Putting it together
 
-**Modes** include workday, development, hibernate, incident, dream, happy hour, showcase, watch, maintenance, self-improvement, prefer local, high alert, and lockdown. Incident, security, and maintenance modes cannot be preempted by the schedule. After an idle timeout the cluster can enter hibernate; the next message from me wakes it.
-
-**Seasons** (steady, caretaker, focus, away) set daily rhythm: work windows, memory consolidation, low footprint, local models. A weekly spending limit can force prefer local when the cluster gets close to it.
-
-**Autonomy** starts off. Background watches and scheduled sweeps stay disabled until I enable them. Interactive use, chat, dispatch, and summon, is always on.
-
-**Drills** run at three cost tiers, from free static checks up to full multi-agent exercises, to confirm the hierarchy and handoffs still work.
-
-#### Projects, proposals, and the job board
-
-**Proposals** move through a ledger: pending, assessed, approved, deferred, rejected. Review runs in order: a free screen for duplicates, Stuart, a reviewer matched to the work, Nerva for risk and cost, Robin when code or publishing is involved, and Homer for final sign-off. Higher tiers need higher approval, up to me for anything irreversible.
-
-Approved proposals become **projects** with their own workspace, goals, milestone gates, and todos. Stuart owns the portfolio; Wright builds; Tess gates quality; Robin owns the path into shared infrastructure.
-
-The **job board** routes tasks inside projects. The **workspace** holds findings, flags, and governance candidates. Because this state is shared, work survives across sessions and restarts.
-
-#### Memory
-
-Memory is tiered:
-
-- **Warm**: full-text plus vector search for recent context.
-- **Consolidation**: Lucy's dream pass compresses older memories into summaries, each tagged with how much detail it keeps, from full down to archive-only.
-- **Cold archive**: Lucy's gate; old context goes through her lane.
-- **Identity review**: periodic proposed identity updates, human-approved.
-
-When the cluster spans machines, only small references cross the bus, and repeated updates are safe to apply.
-
-#### Governance
-
-Robin validates findings, Stuart triages, Homer adjudicates, then the cluster may open issues or pull requests. Transitions log to memory. Argus redacts before publication. Robin owns version control writes.
-
-#### Observability
-
-The cluster exposes heartbeats, mode, memories, projects, todos, job board, proposals, governance queue, audit snapshots, and a log of model calls. A read-only **observation portal** renders it; a structured API feeds the UI.
-
-Wright and Ira build the portal on **synthetic fixtures** (fake agents, invented memories). Live aggregate data is Homer-only.
-
-A single **ledger** records every model call with a trace ID, so any request can be followed end to end. Audit snapshots bundle health, cost, memory, governance, and device state.
-
-#### Cluster MCP
-
-**Outbound**: MCP tools that let the IDE check status, dispatch, search memory, summon swarm workers, and read the job board. Skills become MCP resources; commands become MCP tools.
-
-**Inbound**: standing agents call allowlisted MCP servers through the same proxy as external fetch.
-
-One configuration file drives the MCP tools, the command list, and the swarm roles, so the IDE and the running cluster stay in step.
-
-#### Summary
-
-A home cluster organized like a small team:
-
-- **Standing cast** with fixed lanes and one admin interface.
-- **Swarm** for cheap parallel text work, with no tools and outside the tree.
-- **Dispatch, summon, workspace** for blocking handoffs, parallel subtasks, and async queues.
-- **Gatekeepers, attestation, pillars** for owned dangerous tools.
-- **Conditional context and flavor** for short production prompts.
-- **Modes and seasons** for time-of-day, budget, and security posture.
-- **Projects, proposals, governance** for long work and external writes.
-- **Memory consolidation and observability** for audit and improvement.
+Taken as a whole, these systems describe a home cluster that behaves like a small, accountable team rather than a single tireless chatbot. It has clear roles and one point of contact, cheap help for routine work, evidence before anything is called done, named owners for every dangerous tool, context that stays lean until it needs to be rich, autonomy I can dial up or down, real process for work that outlasts a conversation, memory that ages gracefully, and enough visibility to trust the whole thing while it runs.
