@@ -13,7 +13,7 @@ description: Meet the nine agents that run my home cluster, plus the hardware
 ---
 Most agent setups collapse into a single chat window with one personality and one set of tools. That works for a demo. Over a longer run, the context window fills with history that no longer matters, tools fire without oversight, costs climb, and it gets hard to say which decision came from where.
 
-A home neuroagentic network takes a different approach. Hardware maps to brain regions; software maps to cognitive roles. Each section below covers one piece of the cluster and the problem it is meant to solve.
+This is designed to avoid those common issues. In this approach, hardware maps to brain regions and software maps to cognitive roles. Each section below covers one piece of the cluster and the problem it is meant to solve.
 
 #### The network: hardware and software
 
