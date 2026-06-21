@@ -12,6 +12,12 @@ export default function(eleventyConfig) {
     "node_modules/reveal.js/dist": "reveal/dist",
     "node_modules/reveal.js/plugin": "reveal/plugin"
 });
+
+  eleventyConfig.addCollection("writings", (collectionApi) => {
+    return collectionApi
+      .getFilteredByTag("writings")
+      .sort((a, b) => b.date - a.date);
+  });
     
     return {
       dir: {

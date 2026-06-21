@@ -78,6 +78,12 @@ main {
     border-radius: 3px;
 }
 
+.writing-card-date {
+    color: #B89482;
+    font-size: 0.9rem;
+    margin: 0.25rem 0;
+}
+
 footer {
     background-color: #A67F68;
     color: #FAF3EF;
