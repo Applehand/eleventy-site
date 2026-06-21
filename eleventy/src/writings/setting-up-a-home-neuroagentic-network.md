@@ -1,15 +1,16 @@
 ---
 title: Setting Up a Home Neuroagentic Network
 date: 2026-06-20T22:49:00.000-05:00
-image: /img/uploads/gemini_generated_image_a69j2la69j2la69j.png
+image: /img/uploads/applehand-logo.webp
 image_alt: a stylized brain with segments depicting an ai agent hierarchy of roles
 category: Technical
 tags:
   - writings
-status: Draft
+status: Published
 visibility: false
-description: A home agent cluster built around a standing cast, a cheap swarm,
-  and shared infrastructure for routing, memory, and governance.
+description: Meet the standing cast of nine agents designed to live and work on
+  my local network. They each have a stable identity and a dedicated lane of
+  responsibility.
 ---
 Most agent setups collapse into a single chat window with one personality and one set of tools. That is fine for a demo, but it falls apart over a longer run. The context window fills with history that no longer matters, tools fire without oversight, costs climb, and it gets hard to say which decision came from where.
 
@@ -17,19 +18,21 @@ A home neuroagentic network takes the opposite approach. It is a small organizat
 
 #### Why a hierarchy
 
-A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system far more predictable, and most of the design below follows from that one choice.
+A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system far more predictable and observable, and most of the design below follows from that one necessity.
 
-| Problem                | Response                                                                                                        |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                   |
-| Ungoverned tools       | **Gatekeepers** own dangerous capabilities; others route to the owner or borrow access for a limited time       |
-| Context bloat          | Identity, rules, and personality load only when they are relevant                                               |
-| Cost runaway           | Cheap **swarm** workers for routine jobs, heavier models reserved for standing agents, all under a spending cap |
-| Premature "done"       | Automated checks plus a separate grader before any work closes                                                  |
-| Weak accountability    | Signed handoffs and a log of every governance decision                                                          |
-| Chat as the only queue | A shared **workspace** and **job board** for durable, asynchronous work                                         |
-| Stale memory           | Nightly **consolidation** that summarizes old context instead of dropping it                                    |
-| Runaway autonomy       | **Modes** and **seasons** that scope how independent the system is                                              |
+| **Problem**            | **Response**                                                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                                                           |
+| Ungoverned tools       | **Gatekeepers** own powerful capabilities; others route to the owner or borrow access for a limited time                                                |
+| Context bloat          | Identity, rules, and personality load only when they are relevant                                                                                       |
+| Cost runaway           | Targeted LLM tier usage; Cheap **swarm** workers for routine jobs, heavier models reserved for standing agents/important task, all under a spending cap |
+| Premature "done"       | Automated checks plus a separate grader before any work closes                                                                                          |
+| Weak accountability    | Signed handoffs and a log of every governance decision                                                                                                  |
+| Chat as the only queue | A shared **workspace** and **job board** for durable, asynchronous work                                                                                 |
+| Stale memory           | Nightly **consolidation** that summarizes old context instead of dropping it                                                                            |
+| Runaway autonomy       | **Modes** and **seasons** that scope how independent the system is                                                                                      |
+
+
 
 The "neuro" part is a loose metaphor. Agents map to brain functions like attention, memory, and reflection. It helps name the parts and nothing more.
 
@@ -47,7 +50,7 @@ The standing cast is a persistent org chart of nine agents, each with a stable i
 | Swarm        | reader, reviewer, summarizer, … | One-shot workers, outside the tree    |
 
 ```
-Jake (owner, human, outside the cast)
+Jake (me)
  │
  └── Homer (executive) ───────────── dispatch: all
       └── Stuart (coordination) ──── dispatch: team
@@ -63,26 +66,26 @@ Jake (owner, human, outside the cast)
                 ├── Robin (governance)
                 └── Nerva (security)
 
-Swarm pool ── summon ──▶ reader · reviewer · summarizer · test author · …
+Swarm pool ──▶ reader · reviewer · summarizer · test author · …
          ▲
-         └── invoked by any agent in the standing cast; outside the tree
+         └── summoned by any agent in the standing cast; outside the hierarchy
 ```
 
-Below Homer, Stuart handles coordination: arbitrating between agents, running the project portfolio, and keeping the job board moving. The triad under him does the everyday cognition, with Wright building, Argus researching and owning the cluster's connection to the outside web, and Lucy holding long term context and tending memory. The specialists cover narrower domains that each deserve a dedicated owner: Ira for charts and the observation interface, Robin for governance and version control, and Nerva for security and anything physical in the house. Tess sits beneath Wright as a deliberate check on his work, which is worth describing on its own.
+Below Homer, Stuart handles coordination: arbitrating between agents, running the project portfolio, and keeping the job board moving. The triad under him does the everyday cognition, with Wright building, Argus researching and owning the cluster's connection to the outside web, and Lucy holding long term context and tending memory. The specialists cover narrower domains that each deserve a dedicated owner: Ira for charts and the observation interface, Robin for governance and version control, and Nerva for security monitoring and interacting with anything physical in the house. Tess sits beneath Wright as a deliberate check on his work, which is worth describing on its own.
 
 #### How work moves
 
 Keeping the ways agents talk to each other distinct is part of what keeps the system easy to reason about. A dispatch is a blocking, signed handoff from one standing agent to another, used whenever a task needs real judgment or coordination. A summon is a lighter, one-shot call down to a swarm worker for bounded text work such as reading a document, summarizing it, or drafting tests. For anything that should outlive a single conversation, agents post findings to a shared workspace and pick up tasks from a job board, so long work can proceed in the background instead of living inside one chat thread. Agents can also ask each other read-only questions without handing off any work at all. Every one of these paths is signed and checked against policy, so the system always knows who asked for what and whether they were allowed to.
 
-The swarm sits apart from all of this on purpose. Its workers are cheap, stateless, and have no tools of their own; they take text in and return text out, and a standing agent decides what to do with the result. That keeps the cost of routine parallel work low and the surface for mistakes small.
+The swarm sits apart from all of this on purpose. Its workers are cheap, stateless, and have no tools of their own; they take chunks in and return chunks out, and a standing agent decides what to do with the result. That keeps the cost of routine parallel work low and the surface for mistakes small.
 
 #### Evidence before "done"
 
 Building software is where an unsupervised agent most often reports success it has not actually earned, so coding work follows a planner, generator, evaluator pattern that keeps those roles in separate hands. Stuart frames the task and passes it to Wright, who agrees on acceptance criteria up front, sometimes has a swarm worker draft the tests first, and then implements against that contract. Before anything counts as finished, an automated suite produces objective evidence that it works, and a separate evaluator, Tess, reviews the result in a clean context against a fixed rubric, with no ability to edit what she is grading. She returns a pass or sends it back with specific findings. Completion always rests on that evidence rather than an agent's own confidence, which is the same discipline that keeps the swarm cheap applied to work that matters more.
 
-#### Owners for dangerous tools
+#### Owners for Powerful tools
 
-Some capabilities are risky enough that they should not be in every agent's hands: reaching out to the open web, writing to version control, reading the cold archive, or actuating anything physical. Each of these has a single owner. By default, an agent that needs one routes the request to that owner, who carries it out and stays accountable for it. When going through the owner would be needlessly slow, the owner can grant a narrow, time-limited permission for the other agent to act directly, and that borrowed access still passes through the same safety checks. The effect is that powerful actions always trace back to someone responsible for them.
+Some capabilities are powerful enough that they should not be in every agent's hands: reaching out to the open web, writing to version control, reading the cold memory archive, or actuating anything physical. Each of these has a single owner. By default, an agent that needs one routes the request to that owner, who carries it out and stays accountable for it. When going through the owner would be needlessly slow, the owner can grant a narrow, time-limited permission for the other agent to act directly, and that borrowed access still passes through the same safety checks. The effect is that powerful actions always trace back to someone responsible for them.
 
 Underneath this sit four pillars, Security, Reliability, Pithiness, and Clarity, which act as the standing contract for how agents behave. They translate into concrete habits throughout the system, from signed handoffs and narrow file access to bounded retries and a redaction pass before anything is published.
 
@@ -92,7 +95,7 @@ A persistent cast creates a problem that one-off agents avoid. If every agent dr
 
 #### A sense of time and posture
 
-The cluster has a notion of what it should be doing right now. A mode is its current operating state, shaping how it routes requests, how patient it is, how cautious it is, and whether personality is allowed at all. Those states span an ordinary workday, a quiet overnight window for consolidating memory, and a security lockdown, among others. Seasons sit above modes as month long rhythms that schedule those states across each day and hold the cluster to a weekly spending limit. Just as important, autonomy is opt-in: background watching and scheduled sweeps stay off until I enable them, while ordinary interactive use is always available. Together these let me decide exactly how much independence the system has at any given time, instead of facing a single on-or-off switch.
+The cluster has a notion of what it should be doing right now. A mode is its current operating state, shaping how it routes requests, how patient it is, how cautious it is, and whether personality is allowed at all. Those modes include states like; an ordinary workday, a quiet overnight period for consolidating memory, and a security lockdown, among others. Seasons sit above modes as longer-term rhythms that schedule those states across each day, week, or month and hold the cluster to a scheduled spending limit. Just as important, autonomy is opt-in: background watching and scheduled sweeps stay off until I enable them, while ordinary interactive use is always available. Together these let me decide exactly how much independence the system has at any given time, instead of facing a single on-or-off switch.
 
 To make sure the structure actually holds up under load, the cluster periodically runs drills at escalating cost, from free static checks up to full multi agent exercises, confirming that agents still hand off and recover the way they are supposed to.
 
@@ -110,12 +113,12 @@ When work needs to go beyond the home network, such as opening an issue or a pul
 
 #### Seeing what it does
 
-A system this active is only trustworthy if you can watch it work. A read-only portal renders the cluster's live state, its agents, projects, tasks, pending proposals, and governance queue, and a single ledger records every model call so any request can be followed from start to finish. The people building that portal develop it against fake data, and the live aggregate view is held to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context.
+A system this active is only trustworthy if you can watch it work. An observation portal/command center renders the cluster's live state; its agents, projects, tasks, pending proposals, and governance queue, and a single ledger records every LLM model call so any request can be followed from start to finish. The live aggregate view of all agent/cluster data is locked to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context. No Argus, you can't try to read what Lucy was thinking about this morning. 
 
-#### One interface, editor and cluster
+#### One interface, editor, and cluster
 
-Finally, the same operations the agents use are exposed to my editor through MCP, so I can check status, hand off work, search memory, or summon a worker without leaving the place I already write code. A single configuration defines those tools, the agents' commands, and the swarm roles together, which keeps the editor and the running cluster describing the same system.
+Finally, the same operations the agents use are exposed to my Cursor editor through MCP, so I can check status, hand off work, search memory, or summon a worker without leaving the place I already write code. A single configuration defines those tools, the agents' commands, and the swarm roles together, which keeps the editor and the running cluster describing the same system.
 
 #### Putting it together
 
-Taken as a whole, these systems describe a home cluster that behaves like a small, accountable team rather than a single tireless chatbot. It has clear roles and one point of contact, cheap help for routine work, evidence before anything is called done, named owners for every dangerous tool, context that stays lean until it needs to be rich, autonomy I can dial up or down, real process for work that outlasts a conversation, memory that ages gracefully, and enough visibility to trust the whole thing while it runs.
+Taken as a whole, these systems describe a home cluster that behaves like a small, accountable team rather than a single tireless chatbot. It has clear roles and one point of contact, cheap help for routine work, evidence before anything is called done, named owners for every powerful tool, context that stays lean until it needs to be rich, autonomy I can dial up or down, real process for work that outlasts a conversation, memory that ages gracefully, and enough visibility to trust the whole thing while it runs.
