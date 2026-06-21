@@ -1,7 +1,7 @@
 ---
 title: Setting Up a Home Neuroagentic Network
 date: 2026-06-20T22:49:00.000-05:00
-image: /img/uploads/applehand-logo.webp
+image: /img/uploads/agentic-brain.jpg
 image_alt: a stylized brain with segments depicting an ai agent hierarchy of roles
 category: Technical
 tags:
