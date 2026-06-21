@@ -92,6 +92,8 @@ The swarm sits apart from all of this on purpose. Its workers are cheap, statele
 
 Agents do not all get the same capabilities. A **tool** here is anything an agent may use, and tools come in three kinds: **rules** (always-on or scope-based guidance), **skills** (playbooks pulled on demand), and **commands** (deterministic scripts and handoffs). Which kind fits depends on when it should load and how much judgment it needs.
 
+Context works the same way. Each markdown layer declares when it should load: core identity always, dispatch guidance only for agents that hand off work, personality only when the current mode allows it, file-type rules when the task matches. A context manifest resolves that ordered list at sync time and assembles one prompt per agent. Skills stay out until invoked. Real work gets a lean default; richer layers load only when the situation calls for them.
+
 A few commands are powerful enough that they should not sit in every agent's hands: reaching out to the open web, writing to version control, reading the cold memory archive, observing the full cluster state, or actuating anything physical. Each of those is gated to a single owner. Another agent that needs one routes a request to that owner, or borrows a narrow, time-limited grant that still passes the same safety checks on the gateway. Powerful actions always trace back to someone responsible for them.
 
 <details>
@@ -116,7 +118,7 @@ Building software is where an unsupervised agent most often reports success it h
 **Security**, **Reliability**, **Precision**, and **Clarity** are the standing contract for how every agent behaves. Each maps to habits the cluster actually enforces, not ideals on a page.
 
 <details>
-<summary>The four pillars, and keeping prompts lean</summary>
+<summary>The four pillars</summary>
 
 **Security:** no secret leakage, narrow access, gated egress, no silent self-modification. Keys stay in Keychain; drafts get redacted before they leave home.
 
@@ -125,8 +127,6 @@ Building software is where an unsupervised agent most often reports success it h
 **Precision:** exactly the detail the task needs, nothing more. Short prompts, lean identity files, search memory before re-asking, delegate the minimum scope, no extra machinery when a simpler path works.
 
 **Clarity:** explicit ownership, structured findings with references, logged governance transitions, and a fixed publication chain (draft, redaction, review, admin approval).
-
-Precision shows up most in how context is built. If every agent dragged its full identity, history, and personality into every prompt, context would balloon and cost with it. So context is assembled to fit the moment: core identity and rules load when they bear on the task, deeper skills are pulled in only when a job calls for them, and personality is kept separate and added only in social or demo settings. Real work gets a lean prompt; a showcase gets a richer one.
 
 </details>
 
