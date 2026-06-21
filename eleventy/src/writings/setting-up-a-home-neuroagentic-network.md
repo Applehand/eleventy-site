@@ -102,26 +102,18 @@ Some **tools** are powerful enough that they should not sit in every agent's rep
 
 #### The four pillars
 
-Four pillars act as the standing contract for how agents behave: **Security**, **Reliability**, **Precision**, and **Clarity**. They are not slogans. Each one maps to concrete habits enforced across the cluster, from signed handoffs and narrow file access to bounded retries, structured findings, and a redaction pass before anything is published.
-
-#### Precision
-
-Precision is the pillar I lean on most day to day. It means outputs carry exactly the detail and scope the task requires: no filler, no sprawl, no extra machinery when a simpler path works.
-
-In practice, that shows up everywhere. Swarm role prompts stay short and task-shaped. Identity files stay focused so they do not bloat every prompt. Homer keeps answers direct; dispatch and summon calls include a one-sentence rationale, not an essay. Personality and flavor are opt-in for demo or social settings, not the default path for real work. Before re-asking a question, agents search memory. Before waking a standing agent, they delegate the minimum scope a swarm worker can handle. Governance screens prune duplicate or low-value proposals before anyone spends tokens on a full review.
-
-What Precision pushes back against: verbose prompts that describe what an agent *is* instead of what it should *do*; identity files that grow into essays and load on every run; adding roles, pipelines, or layers without clear functional value; summoning a worker for a lookup that one memory search would settle.
-
-The audit layer flags when context files or prompts start growing beyond what the job needs. Admin review of identity diffs is the backstop. Precision keeps the cluster usable over months, not just impressive on day one.
+**Security**, **Reliability**, **Precision**, and **Clarity** are the standing contract for how agents behave. Each maps to habits the cluster actually enforces.
 
 <details>
-<summary>Security, Reliability, and Clarity</summary>
+<summary>Security, Reliability, Precision, and Clarity</summary>
 
-**Security** means no secret leakage, no unnecessary access, no unsafe egress, and no silent self-modification. Dispatch requires a signing key verified at the gateway. External fetches pass through a domain-scoped choke point. Archive reads are Lucy-owned with an audit trail. API keys live in the macOS Keychain, not in prompts or repos. Drafts pass through a redaction skill before they leave home context.
+**Security:** no secret leakage, narrow access, gated egress, no silent self-modification. Keys stay in Keychain; drafts get redacted before they leave home.
 
-**Reliability** means observable behavior, bounded retries and timeouts, durable state where it matters, and clear incident escalation. A coordinator watchdog restarts roles that miss heartbeats. Mode state persists across restarts. Retries are capped with backoff. Incident mode routes to stronger models when quality is not enough for the risk level. Long work checkpoints to the database instead of dying inside a container timeout.
+**Reliability:** bounded retries and timeouts, durable state where it matters, watchdog restarts for dead roles, incident mode when quality is not enough for the risk.
 
-**Clarity** means explicit ownership, explainable dispatch, structured evidence, and understandable failures. Every finding names its agent, kind, summary, and references. Governance transitions are logged. The roster matches configuration; there are no phantom agents. Publication follows a fixed provenance chain: source draft, redaction, verifier when needed, admin approval. No agent bypasses that chain.
+**Precision:** exactly the detail the task needs, nothing more. Short prompts, lean identity files, search memory before re-asking, delegate the minimum scope, no extra machinery when a simpler path works.
+
+**Clarity:** explicit ownership, structured findings with references, logged governance transitions, and a fixed publication chain (draft, redaction, review, admin approval).
 
 </details>
 
