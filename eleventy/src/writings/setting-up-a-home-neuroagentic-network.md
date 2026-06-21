@@ -8,9 +8,8 @@ tags:
   - writings
 status: Published
 visibility: false
-description: Meet the standing cast of nine agents designed to live and work on
-  my local network. They each have a stable identity and a dedicated lane of
-  responsibility.
+description: Meet the nine agents that run my home cluster, plus the hardware
+  they sit on and the rules that keep their work accountable.
 ---
 Most agent setups collapse into a single chat window with one personality and one set of tools. That is fine for a demo, but it falls apart over a longer run. The context window fills with history that no longer matters, tools fire without oversight, costs climb, and it gets hard to say which decision came from where.
 
