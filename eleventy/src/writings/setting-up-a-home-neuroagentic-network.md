@@ -1,6 +1,8 @@
 ---
 title: Setting Up a Home Neuroagentic Network
 date: 2026-06-14T18:00:00.000Z
+image: /img/uploads/gemini_generated_image_a69j2la69j2la69j.png
+image_alt: a stylized brain with segments depicting an ai agent hierarchy of roles
 category: Technical
 tags:
   - writings
