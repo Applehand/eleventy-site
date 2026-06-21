@@ -14,7 +14,15 @@ description: Meet the standing cast of nine agents designed to live and work on
 ---
 Most agent setups collapse into a single chat window with one personality and one set of tools. That is fine for a demo, but it falls apart over a longer run. The context window fills with history that no longer matters, tools fire without oversight, costs climb, and it gets hard to say which decision came from where.
 
-A home neuroagentic network takes the opposite approach. It is a small organization of persistent agents, supported by a pool of short-lived workers, that pass work to each other through signed handoffs over a shared message bus. The rest of this post walks through the systems that hold that organization together, and the design problem each one is meant to solve.
+A home neuroagentic network takes the opposite approach. Physical machines stand in for brain regions, a software org chart stands in for cognitive roles, and the two layers pass work through signed handoffs over a shared message bus. The rest of this post walks through those systems and the design problem each one is meant to solve.
+
+#### The network: hardware and software
+
+"Neuroagentic" means the cluster is shaped like a brain at two levels. Hardware nodes handle sensation, routing, and compute; software agents handle judgment, memory, and action. The mapping is a design aid, not a constraint. Where biology and engineering disagree, engineering wins.
+
+**Hardware.** A Mac Studio is the prefrontal cortex: the central node where all LLM work runs, including the standing agents, the swarm pool, and long-term memory. A lightweight Raspberry Pi is the thalamus, a stateless gateway at the edge that receives outside input (chat, Discord, dashboards) and forwards it inward without running models. A second, larger Raspberry Pi is the hippocampus: the MQTT message bus, the process watchdog, and home automation. Sensory input enters at the gateway, crosses the coordinator, and reaches cognition on the Studio.
+
+**Software.** On that hardware sits the agent hierarchy below: nine persistent agents with fixed lanes, plus short-lived swarm workers for cheap parallel tasks. Deterministic routing rules act as a basal ganglia layer, sending simple requests to scripts instead of waking a model. Together, the nodes are the nervous system; the cast is the mind running on it.
 
 #### Why a hierarchy
 
@@ -31,8 +39,6 @@ A single agent asked to be executive, engineer, researcher, security officer, an
 | Chat as the only queue | A shared workspace and jobboard for durable, asynchronous work                                                                                                 |
 | Stale memory           | Nightly consolidation that summarizes old context instead of dropping it                                                                                       |
 | Runaway autonomy       | Modes and seasons that scope how independent the system is                                                                                                     |
-
-The "neuro" part is a loose metaphor. Agents map to brain functions like attention, memory, and reflection. It helps name the parts and nothing more.
 
 #### The standing cast
 
@@ -99,7 +105,7 @@ To make sure the structure actually holds up under load, the cluster periodicall
 
 #### Structure for long work
 
-Not everything is a quick request. Some work is a project that runs for days, and that needs more structure than a chat thread. Ideas enter as proposals and move through a ledger with real states, from pending to approved, deferred, or rejected, after passing a review chain that weighs them for duplication, priority, risk, cost, and governance before anyone spends effort. Approved proposals become projects with their own goals, milestones, and task lists. The larger or more irreversible the work, the higher its approval has to climb, ultimately to me for anything that cannot be undone. The intent is to give long horizon work the same intake, ownership, and checkpoints a small team would use.
+Not everything is a quick request. Some work is a project that runs for days, and that needs more structure than a chat thread. Ideas enter as proposals and move through a ledger with real states, from pending to approved, deferred, or rejected, after passing a review chain that weighs them for duplication, priority, risk, cost, and governance before anyone spends effort. Approved proposals become projects with their own goals, milestones, and task lists. The larger or more irreversible the work, the higher its approval has to climb, ultimately to me for anything that cannot be undone. When that work touches shared code, it usually arrives as a GitHub pull request I merge or close. The intent is to give long horizon work the same intake, ownership, and checkpoints a small team would use.
 
 #### Memory that ages gracefully
 
@@ -107,7 +113,7 @@ Memory is tiered so that recent, relevant context stays close while older materi
 
 #### Governance for anything that leaves home
 
-When work needs to go beyond the home network, such as opening an issue or a pull request, it passes through a governance loop first. Findings are validated, triaged, and adjudicated up the chain before anything is written externally, sensitive details are redacted on the way out, and every step is recorded. External action carries the most risk, so it gets the most oversight.
+When work needs to go beyond the home network, it passes through a governance loop first. Findings are validated, triaged, and adjudicated up the chain before anything is written externally, sensitive details are redacted on the way out, and every step is recorded. The cluster opens GitHub issues and pull requests when it is ready to act; I approve or reject them there. External action carries the most risk, so it gets the most oversight.
 
 #### Seeing what it does
 
