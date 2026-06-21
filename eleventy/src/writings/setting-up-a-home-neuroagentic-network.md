@@ -27,17 +27,17 @@ A home neuroagentic network takes a different approach. Hardware maps to brain r
 
 A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system more predictable. Most of the design choices here start from that split.
 
-| **Problem**            | **Response**                                                                                                                                                   |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                                                                  |
-| Ungoverned tools       | Three tool kinds (rules, skills, commands) plus gatekeepers for high-risk commands; others route to the owner or borrow access for a limited time |
-| Context bloat          | Identity, rules, and personality load only when they are relevant                                                                                              |
+| **Problem**            | **Response**                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                                                                      |
+| Ungoverned tools       | Three tool kinds (rules, skills, commands) plus gatekeepers for high-risk commands; others route to the owner or borrow access for a limited time                  |
+| Context bloat          | Identity, rules, and personality load only when they are relevant                                                                                                  |
 | Cost runaway           | Targeted LLM tier usage; cheap swarm workers for routine jobs, heavier models reserved for standing agents and important tasks, all under a scheduled spending cap |
-| Premature "done"       | Automated checks plus a separate grader before any work closes                                                                                                 |
-| Weak accountability    | Signed handoffs and a log of every governance decision                                                                                                         |
-| Chat as the only queue | A shared workspace and job board for durable, asynchronous work                                                                                                 |
-| Stale memory           | Nightly consolidation that summarizes old context instead of dropping it                                                                                       |
-| Runaway autonomy       | Modes and seasons that scope how independent the system is                                                                                                     |
+| Premature "done"       | Automated checks plus a separate grader before any work closes                                                                                                     |
+| Weak accountability    | Signed handoffs and a log of every governance decision                                                                                                             |
+| Chat as the only queue | A shared workspace and job board for durable, asynchronous work                                                                                                    |
+| Stale memory           | Nightly consolidation that summarizes old context instead of dropping it                                                                                           |
+| Runaway autonomy       | Modes and seasons that scope how independent the system is                                                                                                         |
 
 #### The standing cast
 
@@ -98,9 +98,9 @@ Each agent carries a different subset of these capabilities, declared in one cen
 
 Building software is where an unsupervised agent most often reports success it has not actually earned, so coding work follows a planner, generator, evaluator pattern that keeps those roles in separate hands. Stuart frames the task and passes it to Wright, who agrees on acceptance criteria up front, sometimes has a swarm worker draft the tests first, and then implements against that contract. Before anything counts as finished, an automated suite produces objective evidence that it works, and a separate evaluator, Tess, reviews the result in a clean context against a fixed rubric, with no ability to edit what she is grading. She returns a pass or sends it back with specific findings. Completion rests on that evidence rather than an agent's own confidence.
 
-#### Owners for powerful commands
+#### Owners for powerful tools
 
-Some **commands** are powerful enough that they should not sit in every agent's tool list: reaching out to the open web, writing to version control, reading the cold memory archive, observing the full cluster state, or actuating anything physical. Each gated command has a single owner. By default, an agent that needs one routes the request to that owner via dispatch, who carries it out and stays accountable for it. When going through the owner would be too slow, the owner can use an attestation skill to issue a narrow, time-limited permission for the other agent to invoke the command directly. That borrowed access still passes through the same safety checks on the gateway. Powerful actions always trace back to someone responsible for them.
+Some **tools** are powerful enough that they should not sit in every agent's repertoire: reaching out to the open web, writing to version control, reading the cold memory archive, observing the full cluster state, or actuating anything physical. Each gated command has a single owner. By default, an agent that needs a certain tool routes a request to that owner via dispatch, who carries it out and stays accountable for it. When going through the owner would be too slow, the owner can use an attestation to issue a narrow, time-limited permission for the other agent to invoke the tool directly. That borrowed access still passes through the same safety checks on the gateway. Powerful actions always trace back to someone responsible for them.
 
 Underneath this sit four pillars, Security, Reliability, Pithiness, and Clarity, which act as the standing contract for how agents behave. They translate into concrete habits throughout the system, from signed handoffs and narrow file access to bounded retries and a redaction pass before anything is published.
 
