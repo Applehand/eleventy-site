@@ -1,6 +1,6 @@
 ---
 title: Setting Up a Home Neuroagentic Network
-date: 2026-06-14T18:00:00.000Z
+date: 2026-06-20T22:49:00.000-05:00
 image: /img/uploads/gemini_generated_image_a69j2la69j2la69j.png
 image_alt: a stylized brain with segments depicting an ai agent hierarchy of roles
 category: Technical
@@ -19,17 +19,17 @@ A home neuroagentic network takes the opposite approach. It is a small organizat
 
 A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system far more predictable, and most of the design below follows from that one choice.
 
-| Problem | Response |
-|---------|----------|
-| Role confusion | One lane per standing agent: build, research, governance, security, and so on |
-| Ungoverned tools | **Gatekeepers** own dangerous capabilities; others route to the owner or borrow access for a limited time |
-| Context bloat | Identity, rules, and personality load only when they are relevant |
-| Cost runaway | Cheap **swarm** workers for routine jobs, heavier models reserved for standing agents, all under a spending cap |
-| Premature "done" | Automated checks plus a separate grader before any work closes |
-| Weak accountability | Signed handoffs and a log of every governance decision |
-| Chat as the only queue | A shared **workspace** and **job board** for durable, asynchronous work |
-| Stale memory | Nightly **consolidation** that summarizes old context instead of dropping it |
-| Runaway autonomy | **Modes** and **seasons** that scope how independent the system is |
+| Problem                | Response                                                                                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                   |
+| Ungoverned tools       | **Gatekeepers** own dangerous capabilities; others route to the owner or borrow access for a limited time       |
+| Context bloat          | Identity, rules, and personality load only when they are relevant                                               |
+| Cost runaway           | Cheap **swarm** workers for routine jobs, heavier models reserved for standing agents, all under a spending cap |
+| Premature "done"       | Automated checks plus a separate grader before any work closes                                                  |
+| Weak accountability    | Signed handoffs and a log of every governance decision                                                          |
+| Chat as the only queue | A shared **workspace** and **job board** for durable, asynchronous work                                         |
+| Stale memory           | Nightly **consolidation** that summarizes old context instead of dropping it                                    |
+| Runaway autonomy       | **Modes** and **seasons** that scope how independent the system is                                              |
 
 The "neuro" part is a loose metaphor. Agents map to brain functions like attention, memory, and reflection. It helps name the parts and nothing more.
 
@@ -37,14 +37,14 @@ The "neuro" part is a loose metaphor. Agents map to brain functions like attenti
 
 The standing cast is a persistent org chart of nine agents, each with a stable identity and a single lane of responsibility. I sit outside the tree as the owner and final authority, and Homer is the only agent I speak to directly. Everything I ask flows down through him, and anything that needs my attention comes back up the same way.
 
-| Level | Who | Role |
-|-------|-----|------|
-| Executive | Homer | My interface to the cluster |
-| Coordination | Stuart | Plans work and keeps the team in sync |
-| Triad | Wright, Argus, Lucy | Build, research, reflection |
-| Specialists | Ira, Robin, Nerva | Visualization, governance, security |
-| Evaluator | Tess | Grades Wright's output |
-| Swarm | reader, reviewer, summarizer, … | One-shot workers, outside the tree |
+| Level        | Who                             | Role                                  |
+| ------------ | ------------------------------- | ------------------------------------- |
+| Executive    | Homer                           | My interface to the cluster           |
+| Coordination | Stuart                          | Plans work and keeps the team in sync |
+| Triad        | Wright, Argus, Lucy             | Build, research, reflection           |
+| Specialists  | Ira, Robin, Nerva               | Visualization, governance, security   |
+| Sub-Agents   | Tess (Build eval)               | Subordinate to a higher tier agent    |
+| Swarm        | reader, reviewer, summarizer, … | One-shot workers, outside the tree    |
 
 ```
 Jake (owner, human, outside the cast)
@@ -65,7 +65,7 @@ Jake (owner, human, outside the cast)
 
 Swarm pool ── summon ──▶ reader · reviewer · summarizer · test author · …
          ▲
-         └── invoked by standing cast; outside the tree
+         └── invoked by any agent in the standing cast; outside the tree
 ```
 
 Below Homer, Stuart handles coordination: arbitrating between agents, running the project portfolio, and keeping the job board moving. The triad under him does the everyday cognition, with Wright building, Argus researching and owning the cluster's connection to the outside web, and Lucy holding long term context and tending memory. The specialists cover narrower domains that each deserve a dedicated owner: Ira for charts and the observation interface, Robin for governance and version control, and Nerva for security and anything physical in the house. Tess sits beneath Wright as a deliberate check on his work, which is worth describing on its own.
