@@ -174,3 +174,22 @@ main > section {
     clip-path: circle(50% at 50% 50%);
     margin: 20px auto;
   }
+
+main table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    border: 1px solid #EAD1C5;
+}
+
+main table th,
+main table td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #EAD1C5;
+    text-align: left;
+    vertical-align: top;
+}
+
+main table th {
+    background-color: #F5EBE4;
+}
