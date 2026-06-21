@@ -20,25 +20,23 @@ A home neuroagentic network takes the opposite approach. It is a small organizat
 
 A single agent asked to be executive, engineer, researcher, security officer, and accountant will quietly default to whichever role is easiest at the time. Splitting those responsibilities into fixed lanes, each with a clear owner, makes the system far more predictable and observable, and most of the design below follows from that one necessity.
 
-| **Problem**            | **Response**                                                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                                                           |
-| Ungoverned tools       | **Gatekeepers** own powerful capabilities; others route to the owner or borrow access for a limited time                                                |
-| Context bloat          | Identity, rules, and personality load only when they are relevant                                                                                       |
-| Cost runaway           | Targeted LLM tier usage; Cheap **swarm** workers for routine jobs, heavier models reserved for standing agents/important task, all under a spending cap |
-| Premature "done"       | Automated checks plus a separate grader before any work closes                                                                                          |
-| Weak accountability    | Signed handoffs and a log of every governance decision                                                                                                  |
-| Chat as the only queue | A shared **workspace** and **job board** for durable, asynchronous work                                                                                 |
-| Stale memory           | Nightly **consolidation** that summarizes old context instead of dropping it                                                                            |
-| Runaway autonomy       | **Modes** and **seasons** that scope how independent the system is                                                                                      |
-
-
+| **Problem**            | **Response**                                                                                                                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Role confusion         | One lane per standing agent: build, research, governance, security, and so on                                                                                  |
+| Ungoverned tools       | Gatekeepers own powerful capabilities; others route to the owner or borrow access for a limited time                                                           |
+| Context bloat          | Identity, rules, and personality load only when they are relevant                                                                                              |
+| Cost runaway           | Targeted LLM tier usage; Cheap swarm workers for routine jobs, heavier models reserved for standing agents/important tasks, all under a scheduled spending cap |
+| Premature "done"       | Automated checks plus a separate grader before any work closes                                                                                                 |
+| Weak accountability    | Signed handoffs and a log of every governance decision                                                                                                         |
+| Chat as the only queue | A shared workspace and jobboard for durable, asynchronous work                                                                                                 |
+| Stale memory           | Nightly consolidation that summarizes old context instead of dropping it                                                                                       |
+| Runaway autonomy       | Modes and seasons that scope how independent the system is                                                                                                     |
 
 The "neuro" part is a loose metaphor. Agents map to brain functions like attention, memory, and reflection. It helps name the parts and nothing more.
 
 #### The standing cast
 
-The standing cast is a persistent org chart of nine agents, each with a stable identity and a single lane of responsibility. I sit outside the tree as the owner and final authority, and Homer is the only agent I speak to directly. Everything I ask flows down through him, and anything that needs my attention comes back up the same way.
+The standing cast is a persistent org chart of nine agents, each with a stable identity and a dedicated lane of responsibility. I sit outside the tree as the owner (and as a human) with final authority, and Homer is the only agent I speak to directly. Everything I ask flows down through him, and anything that needs my attention comes back up the same way.
 
 | Level        | Who                             | Role                                  |
 | ------------ | ------------------------------- | ------------------------------------- |
@@ -113,7 +111,7 @@ When work needs to go beyond the home network, such as opening an issue or a pul
 
 #### Seeing what it does
 
-A system this active is only trustworthy if you can watch it work. An observation portal/command center renders the cluster's live state; its agents, projects, tasks, pending proposals, and governance queue, and a single ledger records every LLM model call so any request can be followed from start to finish. The live aggregate view of all agent/cluster data is locked to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context. No Argus, you can't try to read what Lucy was thinking about this morning. 
+A system this active is only trustworthy if you can watch it work. An observation portal/command center renders the cluster's live state; its agents, projects, tasks, pending proposals, and governance queue, and a single ledger records every LLM model call so any request can be followed from start to finish. The live aggregate view of all agent/cluster data is locked to the executive layer, so observability stays a window onto the system rather than a backdoor into everyone's context. (No Argus, you can't try to read what Lucy was thinking about this morning.) 
 
 #### One interface, editor, and cluster
 
