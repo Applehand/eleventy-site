@@ -8,7 +8,6 @@ export class Player {
     this.x = x;
     this.y = y;
     this.rotation = 0;
-    this.flipV = false;
     this.canMove = false;
     this.mouseX = x;
     this.mouseY = y;
@@ -34,7 +33,6 @@ export class Player {
 
       const targetAngle = Math.atan2(ny, nx);
       this.rotation = lerpAngle(this.rotation, targetAngle, 0.75);
-      this.flipV = this.mouseX > this.x;
     }
   }
 
@@ -42,7 +40,7 @@ export class Player {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.rotation);
-    if (this.flipV) ctx.scale(1, -1);
+    ctx.scale(1, -1);
 
     // Body
     ctx.beginPath();
