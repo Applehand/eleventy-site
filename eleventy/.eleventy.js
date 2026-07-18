@@ -13,6 +13,7 @@ export default function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("audit.js");
   eleventyConfig.addPassthroughCopy("src/robots.txt");
   eleventyConfig.addPassthroughCopy("src/bill");
+  eleventyConfig.addPassthroughCopy("src/btb");
 
   eleventyConfig.addPassthroughCopy({
     "node_modules/reveal.js/dist": "reveal/dist",

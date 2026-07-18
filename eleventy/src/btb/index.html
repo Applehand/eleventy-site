@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bop Them Boids</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game-root">
+    <canvas id="game-canvas" width="1280" height="720"></canvas>
+
+    <div id="hud">
+      <div id="score-container">
+        <span id="score-label">Boids Bopped: 0</span>
+      </div>
+
+      <div id="start-button-container">
+        <button id="start-button" type="button">BOP THEM BOIDS</button>
+      </div>
+
+      <div id="countdown-container" class="hidden">
+        <span id="countdown-label"></span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
