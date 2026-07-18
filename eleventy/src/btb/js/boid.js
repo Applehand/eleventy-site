@@ -103,7 +103,7 @@ export class Boid {
       this.vy = Math.sin(angle) * BOID_CONFIG.minSpeed;
     }
 
-    const targetRotation = Math.atan2(this.vy, this.vx);
+    const targetRotation = Math.atan2(this.vy, this.vx) + Math.PI / 2;
     this.rotation = lerpAngle(this.rotation, targetRotation, 1);
 
     this.x += this.vx;

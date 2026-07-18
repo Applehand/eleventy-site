@@ -1,7 +1,6 @@
 export const PLAYER_CONFIG = {
   speed: 400,
   radius: 28,
-  artOffset: (-120 * Math.PI) / 180,
 };
 
 export class Player {
@@ -34,7 +33,7 @@ export class Player {
       this.y += ny * PLAYER_CONFIG.speed * dt;
 
       const targetAngle = Math.atan2(ny, nx);
-      this.rotation = lerpAngle(this.rotation, targetAngle, 0.75) + PLAYER_CONFIG.artOffset;
+      this.rotation = lerpAngle(this.rotation, targetAngle, 0.75);
       this.flipV = this.mouseX > this.x;
     }
   }
