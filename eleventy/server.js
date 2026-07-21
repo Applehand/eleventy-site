@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import fs from "fs";
 import os from "os";
+import { Readable } from "node:stream";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,59 @@ const siteOrigin = "https://applehand.dev";
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+// --- GEOAssistant RAG API proxy (smolpi -> bigpi over Tailscale) ---
+// Bound narrowly to the 4 known rag-geo-api routes (not a blanket /api/*
+// wildcard) so this can never shadow other /api/* routes on this site,
+// e.g. the existing /api/status below.
+const RAG_API_BASE = process.env.RAG_API_BASE || "https://bigpi.tailf96765.ts.net:8100";
+const RAG_API_PATHS = new Set(["/api/healthz", "/api/quota", "/api/knobs", "/api/chat"]);
+
+app.use(express.json());
+
+async function proxyToRagApi(req, res) {
+  const targetUrl = `${RAG_API_BASE}${req.originalUrl}`;
+  const headers = { "content-type": req.headers["content-type"] || "application/json" };
+  if (req.headers.cookie) headers.cookie = req.headers.cookie;
+  // Forward the real client IP so bigpi's per-IP soft quota cap applies to
+  // actual visitors, not to smolpi's own address.
+  headers["x-forwarded-for"] = req.headers["x-forwarded-for"] || req.ip || "";
+
+  const init = { method: req.method, headers };
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    init.body = JSON.stringify(req.body ?? {});
+  }
+
+  let upstream;
+  try {
+    upstream = await fetch(targetUrl, init);
+  } catch (err) {
+    res.status(502).json({ error: "rag-geo-api unreachable", detail: String(err?.message || err) });
+    return;
+  }
+
+  res.status(upstream.status);
+  for (const [key, value] of upstream.headers.entries()) {
+    const lower = key.toLowerCase();
+    if (lower === "content-length" || lower === "set-cookie" || lower === "content-encoding") continue;
+    res.setHeader(key, value);
+  }
+  // Node 20's fetch Headers exposes multiple Set-Cookie values via
+  // getSetCookie(); plain .get()/.entries() would incorrectly join them.
+  const cookies = typeof upstream.headers.getSetCookie === "function" ? upstream.headers.getSetCookie() : [];
+  if (cookies.length) res.setHeader("set-cookie", cookies);
+
+  if (!upstream.body) {
+    res.end();
+    return;
+  }
+  Readable.fromWeb(upstream.body).pipe(res);
+}
+
+app.all("/api/*", (req, res, next) => {
+  if (!RAG_API_PATHS.has(req.path)) return next();
+  return proxyToRagApi(req, res);
+});
 
 const SKIP_EXTENSIONS = new Set([
   ".css",
