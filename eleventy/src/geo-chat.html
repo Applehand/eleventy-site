@@ -1,5 +1,5 @@
 ---
-title: AI Search Manual assistant
+title: AI Search Manual GEOAssistant
 permalink: /geo-chat/
 ---
 
@@ -8,9 +8,9 @@ permalink: /geo-chat/
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 
 <style>
-	:root{ --ink:#000; --paper:#fff; --muted:#777; --pad:14px; --ok:#00c853; --warn:#ffab00; --err:#d50000; }
+	:root{ --ink:#000; --paper:#fff; --muted:#777; --pad:14px; --ok:#00c853; --warn:#ffab00; --err:#d50000; --accent:#635bff; }
 	*{box-sizing:border-box}
-	body{ background:var(--paper); color:var(--ink); font:16px ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; max-width:840px; margin:40px auto; padding:0 var(--pad); line-height:1.5; }
+	body{ background:var(--paper); color:var(--ink); font:16px ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; max-width:900px; margin:40px auto; padding:0 var(--pad); line-height:1.5; }
 	h1{ font:800 28px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; text-transform:uppercase; letter-spacing:.02em; margin:0 0 8px }
 	.tagline{ margin:0 0 12px; color:var(--muted); font-weight:600 }
 	.card{ border:2.5px solid var(--ink); box-shadow:8px 8px 0 var(--ink); border-radius:8px; background:var(--paper); padding:var(--pad) }
@@ -21,8 +21,9 @@ permalink: /geo-chat/
 	details.disclosure>summary::before{ content:"▸" }
 	details.disclosure[open]>summary::before{ content:"▾" }
 	details.disclosure .content{ padding:12px 14px }
+	details.disclosure .content code{ background:#f0f0f0; padding:1px 5px; border-radius:4px }
 
-	.statusbar{ display:flex; align-items:center; gap:10px; margin:12px 0 18px }
+	.statusbar{ display:flex; align-items:center; gap:10px; margin:12px 0 18px; flex-wrap:wrap }
 	.pill{ display:inline-flex; align-items:center; gap:8px; border:2px solid var(--ink); padding:6px 12px; border-radius:999px; box-shadow:3px 3px 0 var(--ink); font-weight:700; font-size:13px; background:var(--paper) }
 	.dot{ width:10px; height:10px; border-radius:50%; background:#999; border:2px solid var(--ink) }
 	.pill.ok .dot{ background:var(--ok) } .pill.warn .dot{ background:var(--warn) } .pill.err .dot{ background:var(--err) }
@@ -31,14 +32,16 @@ permalink: /geo-chat/
 
 	label{ font-weight:800; display:block; margin:8px 0 8px }
 	textarea{ width:100%; padding:12px; border:2px solid var(--ink); border-radius:10px; background:var(--paper); box-shadow:4px 4px 0 var(--ink); font:inherit; resize:vertical; min-height:96px }
-	.controls{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 6px }
+	.controls{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 6px; align-items:center }
 	.btn{ border:2px solid var(--ink); background:var(--paper); padding:10px 14px; border-radius:10px; box-shadow:4px 4px 0 var(--ink); font-weight:800; cursor:pointer; user-select:none }
 	.btn:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink) }
 	.btn:active{ transform:translate(0,0); box-shadow:2px 2px 0 var(--ink) }
 	.btn[disabled]{ opacity:.6; cursor:not-allowed; transform:none; box-shadow:4px 4px 0 var(--ink) }
+	.btn.mode{ background:#f5f5f5 }
+	.btn.mode.active{ background:var(--accent); color:#fff }
 
 	#outWrap{ position:relative }
-	#out{ min-height:160px; white-space:pre-wrap; border:2px dashed var(--ink); border-radius:10px; padding:var(--pad); background:#f7f7f7; box-shadow:inset 0 0 0 4px #fff }
+	#out{ min-height:120px; white-space:pre-wrap; border:2px dashed var(--ink); border-radius:10px; padding:var(--pad); background:#f7f7f7; box-shadow:inset 0 0 0 4px #fff }
 	#caret{ display:none }
 	.streaming #caret{ display:inline-block; width:10px; height:1.1em; background:var(--ink); vertical-align:baseline; animation:blink 1s steps(1,end) infinite }
 	@keyframes blink{ 50%{ opacity:0 } }
@@ -50,53 +53,109 @@ permalink: /geo-chat/
 
 	.mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace }
 	.muted{ color:var(--muted) }
+
+	/* Knobs panel */
+	.knobs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+	.knob{ display:flex; flex-direction:column; gap:4px }
+	.knob .row{ display:flex; align-items:center; gap:8px }
+	.knob input[type="range"]{ flex:1 }
+	.knob input[type="checkbox"]{ width:18px; height:18px }
+	.knob select{ padding:6px 8px; border:2px solid var(--ink); border-radius:8px; font:inherit; font-weight:700 }
+	.knob .val{ font-weight:800; font-variant-numeric:tabular-nums; min-width:1.6em; text-align:right }
+
+	/* Step-through timeline */
+	#timeline{ display:none; flex-direction:column; gap:10px; margin:14px 0 }
+	.step-mode #timeline{ display:flex }
+	.tl-step{ border:2px solid var(--ink); border-radius:8px; padding:10px 12px; background:#fff; box-shadow:4px 4px 0 var(--ink); opacity:.35 }
+	.tl-step.done{ opacity:1 }
+	.tl-step .tl-head{ font-weight:800; display:flex; gap:8px; align-items:center }
+	.tl-step .tl-head .tag{ font-size:11px; border:1.5px solid var(--ink); border-radius:6px; padding:1px 6px; background:#f5f5f5 }
+	.tl-step .tl-body{ margin-top:6px; font-size:14px }
+	.chunk-row{ display:flex; gap:8px; align-items:baseline; padding:4px 0; border-top:1px dashed #ccc }
+	.chunk-row:first-child{ border-top:none }
+	.chunk-row .modtag{ font-size:11px; font-weight:800; border-radius:5px; padding:0 5px; border:1.5px solid var(--ink) }
+	.chunk-row .modtag.image{ background:#fff2cc } .chunk-row .modtag.text{ background:#e0f7fa }
+	.chunk-row .score{ margin-left:auto; color:var(--muted); font-size:12px }
+
+	/* Citations */
+	#citations{ margin-top:14px; display:none }
+	#citations.show{ display:block }
+	#citations ol{ margin:6px 0 0; padding-left:22px }
+	#citations li{ margin:4px 0 }
+	#citations a{ color:var(--accent); font-weight:700; text-decoration:none }
+	#citations a:hover{ text-decoration:underline }
 </style>
 
 <h1>AI Search Manual GEOAssistant</h1>
 <p class="tagline">
-  A RAG-assisted GEO chatbot that answers with context from the
-  <a href="https://ipullrank.com/ai-search-manual" target="_blank" rel="noopener">AI Search Manual</a>.
+  A multimodal RAG chatbot that answers strictly from the
+  <a href="https://ipullrank.com/ai-search-manual" target="_blank" rel="noopener">AI Search Manual</a> —
+  text &amp; page-screenshot retrieval, streamed and grounded in citations.
 </p>
 
 <details class="disclosure">
   <summary>..what?</summary>
   <div class="content">
     <p>
-      This is a <a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">retrieval-augmented generation</a> (RAG) demo. The AI Search Manual has been <a href="https://www.pinecone.io/learn/chunking-strategies/">chunked</a> and
-      <a href="https://www.pinecone.io/learn/vector-embeddings-for-developers/#:~:text=about%20the%20data.-,What%20are%20vector%20embeddings%3F,-Before%20we%20delve">embedded</a> into a <a href="https://www.trychroma.com/">Chroma</a> vector database. For each question, the app retrieves the most
-      relevant chunks and prompts a local model (gpt-oss:20b from <a href="https://openai.com/index/introducing-gpt-oss/">OpenAI's recent open source release</a>) served by <a href="https://ollama.com/">Ollama</a> to compose an answer with context.
+      This is a <a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">retrieval-augmented generation</a> (RAG) demo.
+      The manual's 23 chapters were re-crawled, heading-aware chunked, and embedded — both as text chunks <em>and</em> as full-page screenshots —
+      with Google's <code>gemini-embedding-2</code> into a <a href="https://www.trychroma.com/">Chroma</a> vector database. Each question is embedded,
+      the closest text/image chunks are retrieved, and <code>gemini-3.5-flash-lite</code> composes a streamed answer strictly from that
+      retrieved context (it's instructed to say so if the context doesn't support an answer).
     </p>
     <p>
-      The compute is running on my MacBook (<em>FastAPI + Ollama + Chroma</em>)... probably. This web UI and a tiny
-      Flask proxy live on my <a href="https://www.raspberrypi.com/products/raspberry-pi-5/">Raspberry&nbsp;Pi</a>. Requests flow like
-      <span class="mono">Browser → Pi → Mac (LAN)</span> and stream tokens back in real time.
-      A <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a> exposes only the Pi, keeping the Mac private on my local network.
+      Compute: the vector store, embeddings, and generation all run on a self-hosted <a href="https://www.raspberrypi.com/products/raspberry-pi-5/">Raspberry&nbsp;Pi</a>
+      (<span class="mono">bigpi</span>, FastAPI + Chroma + Gemini API) on my home network. This page and a thin same-origin proxy live on a second Pi
+      (<span class="mono">smolpi</span>), which is the only thing a <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a> exposes publicly.
+      Requests flow <span class="mono">Browser → smolpi (public) → bigpi (Tailscale, private)</span> and stream tokens back over SSE.
+    </p>
+    <p>
+      Free queries are capped per-session (cookie) and per-IP, enforced server-side — the knobs below are real, but always clamped to safe
+      ranges server-side regardless of what the client sends. Turn on <strong>Step-through</strong> to see retrieval happen before the model answers.
     </p>
   </div>
 </details>
 
 <div class="statusbar">
 	<div id="apiPill" class="pill"><span class="dot"></span><span id="apiText">Checking API…</span> <small id="latency" class="muted mono"></small></div>
+	<div id="quotaPill" class="pill"><span class="dot"></span><span id="quotaText">Quota…</span></div>
 	<div class="grow"></div>
+	<button type="button" id="knobsToggle" class="btn">Knobs ⚙</button>
 </div>
+
+<details class="disclosure" id="knobsPanel">
+  <summary>Educational knobs</summary>
+  <div class="content">
+    <div id="knobs" class="knobs"><span class="muted">Loading knob schema…</span></div>
+  </div>
+</details>
 
 <div id="loader" aria-hidden="true"></div>
 
 <form id="f" class="card" autocomplete="off">
 	<label for="q">Question</label>
-	<textarea id="q" placeholder="Ask…">What does the AI Search Manual say about changes in user behavior?</textarea>
+	<textarea id="q" placeholder="Ask…">What does the AI Search Manual say about query fan-out?</textarea>
 
 	<div class="controls">
 		<button id="ask" class="btn">Ask</button>
 		<button type="button" id="cancel" class="btn" disabled>Cancel</button>
+		<button type="button" id="modeAnswer" class="btn mode active">Answer</button>
+		<button type="button" id="modeStep" class="btn mode">Step-through</button>
 		<div class="grow"></div>
 		<button type="button" id="copy" class="btn">Copy</button>
 		<button type="button" id="clear" class="btn">Clear</button>
 	</div>
 
+	<div id="timeline"></div>
+
 	<div id="outWrap">
 		<div id="out" class="mono" aria-live="polite"></div>
 		<span id="caret" aria-hidden="true"></span>
+	</div>
+
+	<div id="citations">
+		<strong>Sources</strong>
+		<ol id="citationsList"></ol>
 	</div>
 </form>
 
@@ -107,21 +166,35 @@ const API_BASE = (window.GEOCHAT_API || "/api").replace(/\/$/, "");
 const $ = (s)=>document.querySelector(s);
 const bodyEl = document.body;
 const apiPill = $("#apiPill"), apiText = $("#apiText"), latencyEl = $("#latency");
+const quotaPill = $("#quotaPill"), quotaText = $("#quotaText");
 const out = $("#out"), caret = $("#caret");
 const qEl = $("#q");
 const askBtn = $("#ask"), cancelBtn = $("#cancel"), copyBtn = $("#copy"), clearBtn = $("#clear");
+const modeAnswerBtn = $("#modeAnswer"), modeStepBtn = $("#modeStep");
+const timelineEl = $("#timeline");
+const citationsEl = $("#citations"), citationsListEl = $("#citationsList");
 let controller = null;
+let mode = "answer";
+let knobSchema = null;
 
 function setBusy(b){
 	bodyEl.classList.toggle("busy", b);
 	askBtn.disabled = b; cancelBtn.disabled = !b;
-	/* disable & blur textarea so the blinking caret disappears while generating */
 	qEl.disabled = b; if(b){ qEl.blur(); }
-	/* streaming visuals */
 	out.parentElement.classList.toggle("streaming", b);
 	caret.style.display = b ? "inline-block" : "none";
 }
 function autoScroll(){ out.scrollTop = out.scrollHeight; }
+
+function setModePill(m){
+	mode = m;
+	modeAnswerBtn.classList.toggle("active", m==="answer");
+	modeStepBtn.classList.toggle("active", m==="step");
+	bodyEl.classList.toggle("step-mode", m==="step");
+}
+modeAnswerBtn.addEventListener("click", ()=>setModePill("answer"));
+modeStepBtn.addEventListener("click", ()=>setModePill("step"));
+$("#knobsToggle").addEventListener("click", ()=>{ $("#knobsPanel").open = !$("#knobsPanel").open; });
 
 async function healthCheck(){
 	try{
@@ -137,7 +210,76 @@ async function healthCheck(){
 		apiPill.classList.remove("ok","warn"); apiPill.classList.add("err"); apiText.textContent = "API unreachable"; latencyEl.textContent="";
 	}
 }
-healthCheck();
+
+async function refreshQuota(){
+	try{
+		const r = await fetch(`${API_BASE}/quota`, { credentials:"same-origin", cache:"no-store" });
+		if(!r.ok) throw new Error();
+		const j = await r.json();
+		quotaPill.classList.remove("err");
+		quotaPill.classList.toggle("warn", j.remaining <= 1 && j.remaining > 0);
+		quotaPill.classList.toggle("ok", j.remaining > 1);
+		quotaText.textContent = `${j.remaining} free ${j.remaining===1?"query":"queries"} left`;
+	}catch(e){
+		quotaPill.classList.remove("ok","warn"); quotaPill.classList.add("err"); quotaText.textContent = "Quota unknown";
+	}
+}
+
+function renderKnobs(schema){
+	knobSchema = schema;
+	const wrap = $("#knobs");
+	wrap.innerHTML = "";
+	for(const [key, spec] of Object.entries(schema)){
+		const knob = document.createElement("div"); knob.className = "knob";
+		const lab = document.createElement("label"); lab.textContent = key.replace(/_/g," "); lab.style.margin = "0 0 2px"; lab.style.fontSize="13px";
+		knob.appendChild(lab);
+		const row = document.createElement("div"); row.className = "row";
+		if(spec.type === "int"){
+			const input = document.createElement("input");
+			input.type = "range"; input.min = spec.min; input.max = spec.max; input.value = spec.default; input.dataset.knob = key;
+			const val = document.createElement("span"); val.className = "val"; val.textContent = spec.default;
+			input.addEventListener("input", ()=>{ val.textContent = input.value; });
+			row.append(input, val);
+		} else if(spec.type === "bool"){
+			const input = document.createElement("input"); input.type = "checkbox"; input.checked = !!spec.default; input.dataset.knob = key;
+			row.appendChild(input);
+		} else if(spec.type === "enum"){
+			const select = document.createElement("select"); select.dataset.knob = key;
+			for(const opt of spec.options){
+				const o = document.createElement("option"); o.value = opt; o.textContent = opt; if(opt===spec.default) o.selected = true;
+				select.appendChild(o);
+			}
+			row.appendChild(select);
+		}
+		knob.appendChild(row);
+		wrap.appendChild(knob);
+	}
+}
+
+function collectKnobs(){
+	if(!knobSchema) return {};
+	const out = {};
+	for(const key of Object.keys(knobSchema)){
+		const el = document.querySelector(`[data-knob="${key}"]`);
+		if(!el) continue;
+		if(el.type === "checkbox") out[key] = el.checked;
+		else if(el.tagName === "SELECT") out[key] = el.value;
+		else out[key] = Number(el.value);
+	}
+	return out;
+}
+
+async function loadKnobs(){
+	try{
+		const r = await fetch(`${API_BASE}/knobs`, { cache:"no-store" });
+		if(!r.ok) throw new Error();
+		renderKnobs(await r.json());
+	}catch(e){
+		$("#knobs").innerHTML = '<span class="muted">Could not load knob schema.</span>';
+	}
+}
+
+healthCheck(); refreshQuota(); loadKnobs();
 setInterval(healthCheck, 15000);
 
 /* Keyboard: Enter to submit, Shift+Enter newline, Esc to cancel */
@@ -146,29 +288,117 @@ qEl.addEventListener("keydown",(e)=>{
 	if(e.key==="Escape" && cancelBtn.disabled===false){ cancelBtn.click(); }
 });
 
-function renderError(msg){ out.textContent = `[error] ${msg}`; }
+function renderError(msg){ out.textContent += `\n[error] ${msg}`; }
 
-/* Single path: streaming ask */
+const STEP_ORDER = ["quota","embed","retrieve","pack","generate","done"];
+const STEP_LABELS = {
+	quota: "Quota check", embed: "Embed question", retrieve: "Retrieve chunks",
+	pack: "Pack context", generate: "Generate answer", done: "Done",
+};
+
+function resetTimeline(){
+	timelineEl.innerHTML = "";
+	for(const key of STEP_ORDER){
+		const div = document.createElement("div");
+		div.className = "tl-step"; div.dataset.step = key;
+		div.innerHTML = `<div class="tl-head"><span class="tag">${key}</span> ${STEP_LABELS[key]}</div><div class="tl-body"></div>`;
+		timelineEl.appendChild(div);
+	}
+}
+
+function markStep(key, bodyHtml){
+	const div = timelineEl.querySelector(`[data-step="${key}"]`);
+	if(!div) return;
+	div.classList.add("done");
+	if(bodyHtml !== undefined) div.querySelector(".tl-body").innerHTML = bodyHtml;
+}
+
+function modTag(m){ return `<span class="modtag ${m}">${m}</span>`; }
+
+function renderCitations(citations){
+	citationsListEl.innerHTML = "";
+	if(!citations || !citations.length){ citationsEl.classList.remove("show"); return; }
+	for(const c of citations){
+		const li = document.createElement("li");
+		const label = [c.chapter, c.heading].filter(Boolean).join(" — ") || c.source_url || "source";
+		li.innerHTML = c.source_url
+			? `${modTag(c.modality)} <a href="${c.source_url}" target="_blank" rel="noopener">${label}</a>`
+			: `${modTag(c.modality)} ${label}`;
+		citationsListEl.appendChild(li);
+	}
+	citationsEl.classList.add("show");
+}
+
+/* Minimal SSE parser over a fetch() ReadableStream (EventSource can't POST). */
+async function* parseSSE(body){
+	const reader = body.getReader();
+	const dec = new TextDecoder();
+	let buf = "";
+	for(;;){
+		const { value, done } = await reader.read();
+		if(done) break;
+		buf += dec.decode(value, { stream:true });
+		let idx;
+		while((idx = buf.indexOf("\n\n")) !== -1){
+			const raw = buf.slice(0, idx); buf = buf.slice(idx+2);
+			let event = "message", data = "";
+			for(const line of raw.split("\n")){
+				if(line.startsWith("event:")) event = line.slice(6).trim();
+				else if(line.startsWith("data:")) data += line.slice(5).trim();
+			}
+			if(data) yield { event, data: JSON.parse(data) };
+		}
+	}
+}
+
 $("#f").addEventListener("submit", async (e)=>{
 	e.preventDefault();
-	setBusy(true); out.textContent=""; controller = new AbortController();
+	setBusy(true);
+	out.textContent = ""; citationsEl.classList.remove("show");
+	resetTimeline();
+	controller = new AbortController();
 	try{
 		const res = await fetch(`${API_BASE}/chat`, {
 			method:"POST", headers:{ "Content-Type":"application/json" },
-			body: JSON.stringify({ question: qEl.value }),
+			credentials: "same-origin",
+			body: JSON.stringify({ question: qEl.value, mode, knobs: collectKnobs() }),
 			signal: controller.signal
 		});
 		if(!res.ok || !res.body) throw new Error(await res.text());
-		const reader = res.body.getReader(); const dec = new TextDecoder();
-		for(;;){
-			const { value, done } = await reader.read();
-			if(done) break;
-			out.textContent += dec.decode(value, { stream:true });
-			autoScroll();
+		for await(const { event, data } of parseSSE(res.body)){
+			if(event === "quota"){
+				markStep("quota", `remaining: <strong>${data.remaining}</strong>`);
+			} else if(event === "embed"){
+				markStep("embed", data.ok ? "embedded ✓" : "failed");
+			} else if(event === "retrieve"){
+				if(data.chunks){
+					const rows = data.chunks.map(c=>{
+						const label = [c.chapter, c.heading].filter(Boolean).join(" — ");
+						const score = (c.score!=null) ? `<span class="score">${Number(c.score).toFixed(3)}</span>` : "";
+						return `<div class="chunk-row">${modTag(c.modality)} <span>${label||c.source_url||""}</span> ${score}</div>`;
+					}).join("");
+					markStep("retrieve", rows || '<span class="muted">no chunks retrieved</span>');
+				} else {
+					markStep("retrieve", `${data.chunk_count} chunk(s) retrieved`);
+				}
+			} else if(event === "pack"){
+				markStep("pack", `char budget used: <strong>${data.char_budget_used}</strong> · modalities: ${data.knobs?.modalities ?? ""}`);
+			} else if(event === "generate"){
+				markStep("generate", "streaming…");
+				out.textContent += data.delta; autoScroll();
+			} else if(event === "done"){
+				markStep("generate", "streaming ✓");
+				markStep("done", "");
+				renderCitations(data.citations);
+				refreshQuota();
+			} else if(event === "error"){
+				renderError(`${data.message}${data.status ? ` (${data.status})` : ""}`);
+				refreshQuota();
+			}
 		}
-	}catch(e){
-		if(e.name === "AbortError"){ out.textContent += "\n[stream canceled]"; }
-		else{ renderError(e.message || e); }
+	}catch(err){
+		if(err.name === "AbortError"){ out.textContent += "\n[stream canceled]"; }
+		else{ renderError(err.message || err); }
 	}finally{
 		setBusy(false); controller = null;
 	}
@@ -178,5 +408,5 @@ cancelBtn.addEventListener("click", ()=>{ if(controller) controller.abort(); });
 copyBtn.addEventListener("click", async ()=>{
 	try{ await navigator.clipboard.writeText(out.textContent); copyBtn.textContent="Copied!"; setTimeout(()=>copyBtn.textContent="Copy",900); }catch{}
 });
-clearBtn.addEventListener("click", ()=>{ out.textContent=""; qEl.focus(); });
+clearBtn.addEventListener("click", ()=>{ out.textContent=""; citationsEl.classList.remove("show"); resetTimeline(); qEl.focus(); });
 </script>
