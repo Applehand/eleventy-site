@@ -14,11 +14,13 @@ const siteOrigin = "https://applehand.dev";
 const app = express();
 const port = process.env.PORT || 8080;
 
-// --- GEOAssistant RAG API proxy (smolpi -> bigpi over Tailscale) ---
+// --- GEOAssistant RAG API proxy (public host -> private backend) ---
 // Bound narrowly to the 4 known rag-geo-api routes (not a blanket /api/*
 // wildcard) so this can never shadow other /api/* routes on this site,
 // e.g. the existing /api/status below.
-const RAG_API_BASE = process.env.RAG_API_BASE || "https://bigpi.tailf96765.ts.net:8100";
+// The real backend URL is deployment config, not code: set RAG_API_BASE
+// in the environment (e.g. in the systemd unit / .env on the proxy host).
+const RAG_API_BASE = process.env.RAG_API_BASE || "http://127.0.0.1:8100";
 const RAG_API_PATHS = new Set(["/api/healthz", "/api/quota", "/api/knobs", "/api/chat"]);
 
 app.use(express.json());
