@@ -49,7 +49,6 @@ permalink: /graff/
 
       <div class="status" aria-live="polite">
         <span class="pill" id="api-status">Checking service…</span>
-        <span class="pill" id="registry-status">Schema.org registry…</span>
         <span class="pill" id="quota-status">Generation quota…</span>
         <span
           class="pill usage-pill"
@@ -390,6 +389,7 @@ permalink: /graff/
               types, 1,529 properties, plus enumerations) compiled into a local database. Every
               type and property in the output is validated against it: domains, ranges, and
               subtype relations. Unknown terms are dropped, not published.
+              <span id="registry-version" class="hint"></span>
             </li>
             <li>
               <strong>Gemini ops router</strong>: when AI is enabled, Gemini works through

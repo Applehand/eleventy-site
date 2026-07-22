@@ -1259,10 +1259,10 @@ async function initStatus() {
       health.ok ? "Service ready" : "Service degraded",
       health.ok ? "ok" : "warn",
     );
-    const version = health.registry?.schema_version
-      ? `Schema.org v${health.registry.schema_version}`
-      : "Schema.org registry unavailable";
-    setPill("#registry-status", version, health.registry ? "ok" : "warn");
+    const versionNote = $("#registry-version");
+    if (versionNote && health.registry?.schema_version) {
+      versionNote.textContent = ` Currently loaded: Schema.org v${health.registry.schema_version}.`;
+    }
     quotaState = {
       enforced: quota.quota_enforced !== false,
       remaining: quota.model_operations_remaining,
@@ -1271,7 +1271,6 @@ async function initStatus() {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Service unavailable";
     setPill("#api-status", message, "error");
-    setPill("#registry-status", "Registry unknown", "error");
     setPill("#quota-status", "Quota unknown", "error");
   }
 }
