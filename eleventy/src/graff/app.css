@@ -1245,6 +1245,8 @@ details[open] > summary::before {
 
 .node-panel {
   position: absolute;
+  top: 10px;
+  right: 10px;
   z-index: 50;
   width: 290px;
   max-height: 230px;

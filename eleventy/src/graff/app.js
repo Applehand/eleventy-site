@@ -1177,18 +1177,11 @@ function createForceGraph(container, data, detailsById) {
       )
       .join("");
     panel.innerHTML = `
-      <p class="node-panel-title">${escapeHtml(details.types.join(", "))}</p>
+      <p class="node-panel-title">${escapeHtml(node.label)}</p>
       <p class="node-panel-sub">suggested fields in this entity's snippet</p>
       ${rows || '<p class="node-panel-sub">No fields beyond identity.</p>'}
     `;
-    const rect = svg.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    const screenX = rect.left - containerRect.left + ((node.x - view.x) / view.w) * rect.width;
-    const screenY = rect.top - containerRect.top + ((node.y - view.y) / view.h) * rect.height;
     panel.hidden = false;
-    const panelWidth = 290;
-    panel.style.left = `${Math.max(8, Math.min(containerRect.width - panelWidth - 8, screenX + 18))}px`;
-    panel.style.top = `${Math.max(8, screenY - 30)}px`;
   }
 
   function scheduleHide() {
