@@ -1086,7 +1086,11 @@ details[open] > summary::before {
   box-shadow: 2px 2px 0 var(--accent);
 }
 
-.tip::after {
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]::after {
   content: attr(data-tip);
   position: absolute;
   bottom: calc(100% + 10px);
@@ -1112,8 +1116,8 @@ details[open] > summary::before {
   z-index: 60;
 }
 
-.tip:hover::after,
-.tip:focus-visible::after {
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
   opacity: 1;
   visibility: visible;
 }
