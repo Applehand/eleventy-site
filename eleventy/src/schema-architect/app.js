@@ -271,7 +271,13 @@ function showResults(blueprint, remaining) {
     summary.textContent = parts.join(" ");
   }
 
-  renderDiagram(blueprint.mermaid);
+  void renderDiagram(blueprint.mermaid).catch(() => {
+    const diagram = $("#diagram");
+    if (diagram) {
+      diagram.innerHTML =
+        '<p class="hint">Could not render the graph diagram. Open “Graph source” below to view the raw definition.</p>';
+    }
+  });
   renderRichResults(blueprint.rich_results || []);
   renderScaffolds(blueprint.scaffolds);
   latestScaffolds = blueprint.scaffolds;
