@@ -84,6 +84,22 @@ permalink: /geo-chat/
 	#citations li{ margin:4px 0 }
 	#citations a{ color:var(--accent); font-weight:700; text-decoration:none }
 	#citations a:hover{ text-decoration:underline }
+
+	/* Retrieved page screenshots */
+	#shots{ margin-top:14px; display:none }
+	#shots.show{ display:block }
+	.shot-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-top:8px }
+	.shot{ border:2px solid var(--ink); border-radius:8px; overflow:hidden; box-shadow:4px 4px 0 var(--ink); background:#fff; display:block; text-decoration:none; color:inherit }
+	.shot:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink) }
+	.shot img{ display:block; width:100%; height:180px; object-fit:cover; object-position:top; border-bottom:2px solid var(--ink) }
+	.shot .cap{ font-size:12px; font-weight:700; padding:6px 8px; line-height:1.3 }
+
+	/* "Why no answer" diagnosis panel */
+	#diagnosis{ margin-top:14px; display:none; border:2px solid var(--ink); border-radius:8px; box-shadow:4px 4px 0 var(--ink); background:#fff8e1; padding:12px 14px }
+	#diagnosis.show{ display:block }
+	#diagnosis h3{ margin:0 0 6px; font-size:15px }
+	#diagnosis .hint{ font-size:13px; margin-top:8px }
+	#diagnosis .chunk-row{ font-size:13px }
 </style>
 
 <h1>AI Search Manual GEOAssistant</h1>
@@ -112,6 +128,8 @@ permalink: /geo-chat/
     <p>
       Free queries are capped per-session (cookie) and per-IP, enforced server-side — the knobs below are real, but always clamped to safe
       ranges server-side regardless of what the client sends. Turn on <strong>Step-through</strong> to see retrieval happen before the model answers.
+      Retrieved page screenshots render below each answer, and if the model can't answer from the retrieved context, a
+      <strong>Why no answer?</strong> panel shows exactly what retrieval pulled and how close it got.
     </p>
   </div>
 </details>
@@ -157,6 +175,17 @@ permalink: /geo-chat/
 		<strong>Sources</strong>
 		<ol id="citationsList"></ol>
 	</div>
+
+	<div id="shots">
+		<strong>Retrieved page screenshots</strong>
+		<span class="muted" style="font-size:13px"> — what the model actually looked at</span>
+		<div class="shot-grid" id="shotGrid"></div>
+	</div>
+
+	<div id="diagnosis">
+		<h3>Why no answer?</h3>
+		<div id="diagBody"></div>
+	</div>
 </form>
 
 <script>
@@ -173,6 +202,8 @@ const askBtn = $("#ask"), cancelBtn = $("#cancel"), copyBtn = $("#copy"), clearB
 const modeAnswerBtn = $("#modeAnswer"), modeStepBtn = $("#modeStep");
 const timelineEl = $("#timeline");
 const citationsEl = $("#citations"), citationsListEl = $("#citationsList");
+const shotsEl = $("#shots"), shotGridEl = $("#shotGrid");
+const diagnosisEl = $("#diagnosis"), diagBodyEl = $("#diagBody");
 let controller = null;
 let mode = "answer";
 let knobSchema = null;
@@ -329,6 +360,46 @@ function renderCitations(citations){
 	citationsEl.classList.add("show");
 }
 
+function renderShots(citations){
+	shotGridEl.innerHTML = "";
+	const withMedia = (citations || []).filter(c => c.media && c.media.thumb);
+	if(!withMedia.length){ shotsEl.classList.remove("show"); return; }
+	for(const c of withMedia){
+		const a = document.createElement("a");
+		a.className = "shot";
+		a.href = `${API_BASE}${c.media.full.replace(/^\/api/, "")}`;
+		a.target = "_blank"; a.rel = "noopener";
+		const caption = c.heading || c.chapter || "page";
+		a.innerHTML = `<img loading="lazy" alt="Page screenshot: ${caption}"><div class="cap">${caption}</div>`;
+		a.querySelector("img").src = `${API_BASE}${c.media.thumb.replace(/^\/api/, "")}`;
+		shotGridEl.appendChild(a);
+	}
+	shotsEl.classList.add("show");
+}
+
+function renderDiagnosis(d){
+	const rows = (d.retrieved || []).map(c=>{
+		const label = [c.chapter, c.heading].filter(Boolean).join(" — ") || c.source_url || "";
+		const score = (c.score!=null) ? `<span class="score">dist ${Number(c.score).toFixed(3)}</span>` : "";
+		return `<div class="chunk-row">${modTag(c.modality)} <span>${label}</span> ${score}</div>`;
+	}).join("");
+	const best = (d.best_score!=null) ? Number(d.best_score).toFixed(3) : "n/a";
+	const weak = d.best_score!=null && d.best_score > 0.55;
+	const intro = d.reason === "no_answer_text"
+		? "The model returned an empty answer. Here's what retrieval found:"
+		: "The model reported the retrieved context couldn't support an answer. Here's what retrieval actually pulled:";
+	diagBodyEl.innerHTML = `
+		<div style="font-size:13px">${intro}</div>
+		<div style="margin-top:6px">${rows || '<span class="muted">nothing was retrieved</span>'}</div>
+		<div class="hint">
+			Closest match distance: <strong>${best}</strong> (cosine distance — lower is closer; above ~0.55 usually means the manual
+			doesn't discuss your topic in these terms).
+			${weak || !rows ? "Try rephrasing with the manual's own vocabulary (e.g. \u201Cquery fan-out\u201D, \u201Crelevance engineering\u201D, \u201Ccitations\u201D), or raise <em>top k text</em> in the knobs." :
+			"Retrieval looks reasonable — the chunks may mention your terms without actually answering the question. Try a more specific question about one of the chapters listed above."}
+		</div>`;
+	diagnosisEl.classList.add("show");
+}
+
 /* Minimal SSE parser over a fetch() ReadableStream (EventSource can't POST). */
 async function* parseSSE(body){
 	const reader = body.getReader();
@@ -355,6 +426,7 @@ $("#f").addEventListener("submit", async (e)=>{
 	e.preventDefault();
 	setBusy(true);
 	out.textContent = ""; citationsEl.classList.remove("show");
+	shotsEl.classList.remove("show"); diagnosisEl.classList.remove("show");
 	resetTimeline();
 	controller = new AbortController();
 	try{
@@ -386,10 +458,13 @@ $("#f").addEventListener("submit", async (e)=>{
 			} else if(event === "generate"){
 				markStep("generate", "streaming…");
 				out.textContent += data.delta; autoScroll();
+			} else if(event === "diagnosis"){
+				renderDiagnosis(data);
 			} else if(event === "done"){
 				markStep("generate", "streaming ✓");
 				markStep("done", "");
 				renderCitations(data.citations);
+				renderShots(data.citations);
 				refreshQuota();
 			} else if(event === "error"){
 				renderError(`${data.message}${data.status ? ` (${data.status})` : ""}`);
@@ -408,5 +483,5 @@ cancelBtn.addEventListener("click", ()=>{ if(controller) controller.abort(); });
 copyBtn.addEventListener("click", async ()=>{
 	try{ await navigator.clipboard.writeText(out.textContent); copyBtn.textContent="Copied!"; setTimeout(()=>copyBtn.textContent="Copy",900); }catch{}
 });
-clearBtn.addEventListener("click", ()=>{ out.textContent=""; citationsEl.classList.remove("show"); resetTimeline(); qEl.focus(); });
+clearBtn.addEventListener("click", ()=>{ out.textContent=""; citationsEl.classList.remove("show"); shotsEl.classList.remove("show"); diagnosisEl.classList.remove("show"); resetTimeline(); qEl.focus(); });
 </script>

@@ -22,6 +22,8 @@ const port = process.env.PORT || 8080;
 // in the environment (e.g. in the systemd unit / .env on the proxy host).
 const RAG_API_BASE = process.env.RAG_API_BASE || "http://127.0.0.1:8100";
 const RAG_API_PATHS = new Set(["/api/healthz", "/api/quota", "/api/knobs", "/api/chat"]);
+// GET-only prefix for retrieved-screenshot images (/api/media/<slug>/<variant>.jpg).
+const RAG_MEDIA_PREFIX = "/api/media/";
 
 app.use(express.json());
 
@@ -71,7 +73,8 @@ async function proxyToRagApi(req, res) {
 }
 
 app.all("/api/*", (req, res, next) => {
-  if (!RAG_API_PATHS.has(req.path)) return next();
+  const isMedia = req.method === "GET" && req.path.startsWith(RAG_MEDIA_PREFIX);
+  if (!RAG_API_PATHS.has(req.path) && !isMedia) return next();
   return proxyToRagApi(req, res);
 });
 
