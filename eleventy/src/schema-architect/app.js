@@ -341,13 +341,37 @@ function renderRichResults(items) {
     const policy = item.policy_url
       ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">${escapeHtml(item.feature_name)} in Search Central</a>`
       : "";
+    const status =
+      item.eligible === false
+        ? '<p class="hint">Not yet eligible — add the missing required properties listed below.</p>'
+        : "";
     card.innerHTML = `
       <h4>${escapeHtml(item.feature_name)}${item.template_name ? ` · ${escapeHtml(item.template_name)}` : ""}</h4>
+      ${status}
       <p>${escapeHtml(item.message)}</p>
       ${policy}
     `;
     container.append(card);
   }
+}
+
+function renderFindings(findings) {
+  const container = $("#schema-findings");
+  if (!container) return;
+  const errors = (findings || []).filter((item) => item.severity === "error");
+  if (!errors.length) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  const list = document.createElement("ul");
+  for (const finding of errors.slice(0, 8)) {
+    const item = document.createElement("li");
+    item.textContent = finding.message;
+    list.append(item);
+  }
+  container.replaceChildren(list);
 }
 
 function escapeHtml(value) {
@@ -422,6 +446,7 @@ function downloadBlueprint(blueprint) {
     generated_at: new Date().toISOString(),
     graph: blueprint.graph,
     rich_results: blueprint.rich_results,
+    findings: blueprint.findings,
     scaffolds: blueprint.scaffolds.map((scaffold) => ({
       label: scaffold.label,
       template_name: scaffold.template_name,
@@ -458,6 +483,7 @@ function showResults(blueprint, remaining) {
         '<p class="hint">Could not render the graph diagram. Open “Graph source” below to view the raw definition.</p>';
     }
   });
+  renderFindings(blueprint.findings || []);
   renderRichResults(blueprint.rich_results || []);
   renderScaffolds(blueprint.scaffolds);
   latestBlueprint = blueprint;
