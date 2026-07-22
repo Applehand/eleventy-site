@@ -912,43 +912,54 @@ details[open] > summary::before {
 
 .section-rail {
   position: fixed;
-  right: 14px;
+  right: 18px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 16px;
-  border-right: 3px solid var(--line);
-  padding-right: 9px;
+  gap: 34px;
+  border-right: 4px solid var(--line);
+  padding: 16px 14px 16px 0;
   z-index: 40;
 }
 
 .section-rail a {
-  display: block;
-  width: 15px;
-  height: 4px;
-  background: var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 44px;
+  height: 22px;
   position: relative;
 }
 
-.section-rail a:hover,
-.section-rail a[data-active] {
-  background: var(--accent);
+.section-rail a::before {
+  content: "";
   width: 24px;
+  height: 7px;
+  background: var(--line);
+  transition:
+    width 120ms ease,
+    background 120ms ease;
+}
+
+.section-rail a:hover::before,
+.section-rail a[data-active]::before {
+  background: var(--accent);
+  width: 40px;
 }
 
 .section-rail a::after {
   content: attr(data-label);
   position: absolute;
-  right: calc(100% + 14px);
+  right: calc(100% + 16px);
   top: 50%;
   transform: translateY(-50%);
   border: 2px solid var(--line);
   background: #fff;
-  box-shadow: 2px 2px 0 var(--ink);
-  padding: 2px 9px;
-  font-size: 0.72rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 5px 12px;
+  font-size: 0.85rem;
   font-weight: 800;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   color: var(--ink);
