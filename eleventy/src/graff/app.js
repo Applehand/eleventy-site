@@ -950,14 +950,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 let activeGraph = null;
 
 function createForceGraph(container, data, detailsById) {
-  const KIND_LAYER = { org: 0, site: 1, page: 2, content: 3, person: 4, crumb: 4 };
-  const layerCounts = new Map();
-  for (const node of data.nodes) {
-    const layer = KIND_LAYER[node.kind] ?? 3;
-    layerCounts.set(layer, (layerCounts.get(layer) || 0) + 1);
-  }
-  const densestColumn = Math.max(...layerCounts.values());
-  const WORLD = { w: 1150, h: Math.max(640, densestColumn * 96 + 160) };
+  const WORLD = { w: 1040, h: Math.max(640, data.nodes.length * 26 + 320) };
   const view = { x: 0, y: 0, w: WORLD.w, h: WORLD.h };
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${WORLD.w} ${WORLD.h}`);
@@ -970,26 +963,14 @@ function createForceGraph(container, data, detailsById) {
   const nodeLayer = document.createElementNS(SVG_NS, "g");
   svg.append(edgeLayer, nodeLayer);
 
-  // hierarchical columns, left to right: business -> site -> pages -> content -> support
-  const maxLayer = Math.max(...data.nodes.map((node) => KIND_LAYER[node.kind] ?? 3));
-  const columnX = (layer) => 110 + (layer * (WORLD.w - 220)) / Math.max(1, maxLayer);
-  const byLayer = new Map();
+  // free layout: seed on a loose ring and let the physics settle; users can
+  // drag and pin nodes into whatever arrangement they want
   data.nodes.forEach((node, index) => {
-    node.layer = KIND_LAYER[node.kind] ?? 3;
-    node.homeX = columnX(node.layer);
-    node.order = index;
-    if (!byLayer.has(node.layer)) byLayer.set(node.layer, []);
-    byLayer.get(node.layer).push(node);
+    const angle = (index / Math.max(1, data.nodes.length)) * Math.PI * 2;
+    const radius = 150 + (index % 3) * 70;
+    node.x = WORLD.w / 2 + Math.cos(angle) * radius;
+    node.y = WORLD.h / 2 + Math.sin(angle) * radius;
   });
-  for (const column of byLayer.values()) {
-    // manifest order groups entities template by template, which keeps
-    // related rows roughly aligned across columns
-    column.sort((a, b) => a.order - b.order);
-    column.forEach((node, index) => {
-      node.x = node.homeX;
-      node.y = ((index + 1) * WORLD.h) / (column.length + 1);
-    });
-  }
 
   const edgeEls = data.links.map((link, index) => {
     link.labelT = 0.32 + (index % 5) * 0.09;
@@ -1059,21 +1040,29 @@ function createForceGraph(container, data, detailsById) {
         const b = nodes[j];
         const dx = a.x - b.x;
         const dy = a.y - b.y;
-        const d2 = Math.max(220, dx * dx + dy * dy);
-        const force = 2400 / d2;
+        const d2 = Math.max(240, dx * dx + dy * dy);
+        const force = 3400 / d2;
         const d = Math.sqrt(d2);
-        // repulsion acts mostly vertically so the columns hold their shape
-        a.vx += (dx / d) * force * 0.2;
+        a.vx += (dx / d) * force;
         a.vy += (dy / d) * force;
       }
-      // spring back to the assigned column
-      a.vx += (a.homeX - a.x) * 0.055;
+      // gentle pull toward the center keeps the cluster on canvas
+      a.vx += (WORLD.w / 2 - a.x) * 0.004;
+      a.vy += (WORLD.h / 2 - a.y) * 0.004;
     }
     for (const { source, target } of data.links) {
+      const dx = target.x - source.x;
       const dy = target.y - source.y;
-      // links gently pull connected rows toward alignment across columns
-      if (!source.pinned && !source.dragging) source.vy += dy * 0.006;
-      if (!target.pinned && !target.dragging) target.vy -= dy * 0.006;
+      const d = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+      const stretch = ((d - 145) / d) * 0.04;
+      if (!source.pinned && !source.dragging) {
+        source.vx += dx * stretch;
+        source.vy += dy * stretch;
+      }
+      if (!target.pinned && !target.dragging) {
+        target.vx -= dx * stretch;
+        target.vy -= dy * stretch;
+      }
     }
     for (const node of data.nodes) {
       if (node.pinned || node.dragging) {
@@ -1085,20 +1074,30 @@ function createForceGraph(container, data, detailsById) {
       node.vy *= 0.82;
       node.x += node.vx * alpha;
       node.y += node.vy * alpha;
+      node.x = Math.min(WORLD.w - 60, Math.max(60, node.x));
       node.y = Math.min(WORLD.h - 44, Math.max(34, node.y));
     }
-    // enforce a minimum vertical gap inside each column
-    for (const column of byLayer.values()) {
-      const movable = [...column].sort((a, b) => a.y - b.y);
-      for (let i = 1; i < movable.length; i += 1) {
-        const above = movable[i - 1];
-        const here = movable[i];
-        const gap = here.y - above.y;
-        const minGap = 78;
-        if (gap < minGap) {
-          const push = (minGap - gap) / 2;
-          if (!above.pinned && !above.dragging) above.y -= push;
-          if (!here.pinned && !here.dragging) here.y += push;
+    // hard minimum separation so labels never overlap
+    for (let i = 0; i < data.nodes.length; i += 1) {
+      for (let j = i + 1; j < data.nodes.length; j += 1) {
+        const a = data.nodes[i];
+        const b = data.nodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const d = Math.max(0.01, Math.sqrt(dx * dx + dy * dy));
+        const minD = 62;
+        if (d < minD) {
+          const push = (minD - d) / 2;
+          const ux = dx / d;
+          const uy = dy / d;
+          if (!a.pinned && !a.dragging) {
+            a.x -= ux * push;
+            a.y -= uy * push;
+          }
+          if (!b.pinned && !b.dragging) {
+            b.x += ux * push;
+            b.y += uy * push;
+          }
         }
       }
     }
@@ -1167,20 +1166,35 @@ function createForceGraph(container, data, detailsById) {
   let panelTimer = null;
   let hideTimer = null;
 
+  let panelNode = null;
+
   function showPanel(node) {
     const details = detailsById?.get(node.id);
     if (!details) return;
+    panelNode = node;
     const rows = details.fields
       .map(
         ([key, value]) =>
           `<div class="node-panel-row"><span class="node-panel-key">${escapeHtml(key)}</span><span class="node-panel-value">${escapeHtml(value)}</span></div>`,
       )
       .join("");
+    const unpin = node.pinned
+      ? '<button type="button" class="node-panel-unpin" aria-label="Unpin node">unpin ×</button>'
+      : "";
     panel.innerHTML = `
-      <p class="node-panel-title">${escapeHtml(node.label)}</p>
+      <div class="node-panel-head">
+        <p class="node-panel-title">${escapeHtml(node.label)}</p>
+        ${unpin}
+      </div>
       <p class="node-panel-sub">suggested fields in this entity's snippet</p>
       ${rows || '<p class="node-panel-sub">No fields beyond identity.</p>'}
     `;
+    panel.querySelector(".node-panel-unpin")?.addEventListener("click", () => {
+      if (!panelNode) return;
+      panelNode.pinned = false;
+      reheat(0.5);
+      showPanel(panelNode);
+    });
     panel.hidden = false;
   }
 
@@ -1195,6 +1209,7 @@ function createForceGraph(container, data, detailsById) {
   panel.addEventListener("pointerleave", scheduleHide);
 
   let dragNode = null;
+  let dragMoved = 0;
   let panStart = null;
 
   svg.addEventListener("pointerover", (event) => {
@@ -1220,6 +1235,7 @@ function createForceGraph(container, data, detailsById) {
     if (nodeGroup) {
       dragNode = nodeGroup.__node;
       dragNode.dragging = true;
+      dragMoved = 0;
       reheat(0.5);
     } else {
       panStart = { x: event.clientX, y: event.clientY, vx: view.x, vy: view.y };
@@ -1229,6 +1245,7 @@ function createForceGraph(container, data, detailsById) {
   svg.addEventListener("pointermove", (event) => {
     if (dragNode) {
       const point = toWorld(event);
+      dragMoved += Math.abs(point.x - dragNode.x) + Math.abs(point.y - dragNode.y);
       dragNode.x = point.x;
       dragNode.y = point.y;
       reheat(0.35);
@@ -1244,7 +1261,9 @@ function createForceGraph(container, data, detailsById) {
   svg.addEventListener("pointerup", () => {
     if (dragNode) {
       dragNode.dragging = false;
-      dragNode.pinned = true;
+      // a plain click is not a drag; only a real move pins the node
+      if (dragMoved > 6) dragNode.pinned = true;
+      if (panelNode === dragNode) showPanel(dragNode);
       render();
       reheat(0.3);
       dragNode = null;
@@ -1301,7 +1320,7 @@ function renderGraphKey(data) {
     });
   const hasSubject = data.links.some((link) => link.property === "mainEntity");
   const edges = [
-    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (double-click frees it)</span>`,
+    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (unpin from its hover card)</span>`,
     `<span class="key-item"><span class="key-line"></span>link</span>`,
     hasSubject
       ? `<span class="key-item"><span class="key-line key-line-subject"></span>page subject (mainEntity)</span>`

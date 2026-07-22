@@ -1348,3 +1348,23 @@ details[open] > summary::before {
 #graph-stage:fullscreen #diagram svg {
   height: calc(100vh - 150px);
 }
+
+.node-panel-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.node-panel-unpin {
+  min-height: 0;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 850;
+  border: 2px solid #5b4bdb;
+  color: #5b4bdb;
+  background: #fff;
+  box-shadow: 2px 2px 0 #171717;
+  cursor: pointer;
+  flex: none;
+}
