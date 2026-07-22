@@ -9,7 +9,7 @@ permalink: /schema-architect/
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Describe your site once and get a Schema.org entity graph plus ready-to-fill JSON-LD scaffolds for every template."
+      content="Describe a site once and get a Schema.org entity graph plus ready-to-fill JSON-LD snippets for every template."
     />
     <title>Schema Architect</title>
     <link rel="stylesheet" href="/schema-architect/app.css" />
@@ -19,12 +19,12 @@ permalink: /schema-architect/
       <header>
         <h1>Schema Architect</h1>
         <p class="lede">
-          Tell us about your business and page templates. We build a connected entity graph and
-          hand you copy-paste JSON-LD scaffolds with clear placeholders for each page type.
+          Describe the site and its page templates. Schema Architect builds a connected
+          Schema.org entity graph and generates copy-paste JSON-LD snippets with clear
+          placeholders for each page type.
         </p>
         <p class="privacy">
-          Anonymous and ephemeral: your answers are used only to generate this blueprint. Nothing
-          is saved on the server. Copy or download the scaffolds before you leave.
+          Nothing is stored on the server — take what is generated before you leave!
         </p>
       </header>
 
@@ -34,8 +34,25 @@ permalink: /schema-architect/
         <span class="pill" id="quota-status">Generation quota…</span>
       </div>
 
-      <section class="panel" id="form-panel" aria-labelledby="form-heading">
-        <h2 id="form-heading">Tell us about your site</h2>
+      <nav class="view-tabs" role="tablist" aria-label="Blueprint stages">
+        <button type="button" class="view-tab" id="tab-form" role="tab" aria-selected="true" aria-controls="form-panel">
+          1 · Describe
+        </button>
+        <button type="button" class="view-tab" id="tab-generation" role="tab" aria-selected="false" aria-controls="loading-panel" disabled>
+          2 · Generation
+        </button>
+        <button type="button" class="view-tab" id="tab-blueprint" role="tab" aria-selected="false" aria-controls="results-panel" disabled>
+          3 · Blueprint
+        </button>
+      </nav>
+
+      <section class="panel" id="form-panel" role="tabpanel" aria-labelledby="form-heading">
+        <div class="form-topline">
+          <h2 id="form-heading">Describe the site</h2>
+          <select id="sample-select" class="secondary sample-select" aria-label="Try sample data">
+            <option value="" selected disabled>Try sample data…</option>
+          </select>
+        </div>
         <form id="site-form">
           <div class="grid">
             <div class="field">
@@ -89,7 +106,7 @@ permalink: /schema-architect/
           <fieldset class="template-fieldset">
             <legend>Page templates</legend>
             <p class="hint">
-              Add each reusable page type on your site. We always include a homepage automatically.
+              Add each reusable page type on the site. A homepage is always included automatically.
             </p>
             <div class="template-table" role="group" aria-label="Page templates">
               <div class="template-table-head" aria-hidden="true">
@@ -104,21 +121,18 @@ permalink: /schema-architect/
           </fieldset>
 
           <div class="field wide">
-            <label for="notes">Anything else we should know? <span class="optional">(optional)</span></label>
+            <label for="notes">Additional details <span class="optional">(optional)</span></label>
             <textarea
               id="notes"
               name="notes"
               maxlength="12000"
               rows="3"
-              placeholder="Multiple authors, several brands, physical locations…"
+              placeholder="Named authors, addresses, phone numbers, hours, prices — stated facts get extracted into the graph."
             ></textarea>
           </div>
 
           <div class="actions">
             <button class="primary" type="submit" id="generate-btn">Generate blueprint</button>
-            <select id="sample-select" class="secondary sample-select" aria-label="Try sample data">
-              <option value="" selected disabled>Try sample data…</option>
-            </select>
           </div>
         </form>
       </section>
@@ -127,10 +141,11 @@ permalink: /schema-architect/
         class="panel loading-panel"
         id="loading-panel"
         hidden
+        role="tabpanel"
         aria-labelledby="loading-heading"
         aria-busy="true"
       >
-        <h2 id="loading-heading">Building your blueprint</h2>
+        <h2 id="loading-heading">Generation</h2>
         <p id="loading-context" class="loading-context"></p>
         <ol class="loading-steps" id="loading-steps"></ol>
         <div
@@ -146,19 +161,41 @@ permalink: /schema-architect/
         <p id="loading-detail" class="loading-detail" aria-live="polite"></p>
       </section>
 
-      <section class="panel results" id="results-panel" hidden aria-labelledby="results-heading">
-        <h2 id="results-heading">Your blueprint</h2>
-        <span id="results-mode" class="pill" hidden></span>
+      <section class="panel results" id="results-panel" hidden role="tabpanel" aria-labelledby="results-heading">
+        <div class="results-headline">
+          <h2 id="results-heading">Blueprint</h2>
+          <span id="results-mode" class="pill" hidden></span>
+        </div>
         <p id="results-summary" class="results-summary"></p>
-
-        <section id="schema-findings-section" aria-labelledby="findings-heading">
-          <h3 id="findings-heading">Schema.org validation</h3>
-          <ul id="schema-findings" class="findings-list" hidden></ul>
-        </section>
 
         <section aria-labelledby="graph-heading">
           <h3 id="graph-heading">Entity graph</h3>
           <div id="diagram" aria-label="Rendered entity graph"></div>
+          <details class="graph-details">
+            <summary>About this graph</summary>
+            <div id="graph-ai-summary" class="graph-ai-summary" hidden>
+              <h4>Gemini mapping summary</h4>
+              <p id="graph-ai-summary-text"></p>
+            </div>
+            <h4>How to read it</h4>
+            <p>
+              Every node is a Schema.org entity with a stable <code>@id</code>; every edge is a
+              Schema.org property linking two entities. Labels show the entity name and its
+              primary type.
+            </p>
+            <ul class="graph-legend">
+              <li><strong>Organization</strong> — the business. Content points at it via
+                <code>publisher</code> (articles, videos) or <code>brand</code> (products).</li>
+              <li><strong>WebSite</strong> — the site container. Pages declare
+                <code>isPartOf</code> → WebSite; it declares <code>publisher</code> → Organization.</li>
+              <li><strong>WebPage</strong> nodes — one per template page. Each points at its
+                subject via <code>mainEntity</code> and at its <code>breadcrumb</code> trail.</li>
+              <li><strong>BreadcrumbList</strong> — the Home → template trail Google shows in
+                results and agents use to locate a page in the site hierarchy.</li>
+              <li>Missing edges are usually schema.org domain rules, not omissions — e.g. a
+                Product cannot declare <code>isPartOf</code> because it is not a CreativeWork.</li>
+            </ul>
+          </details>
           <details>
             <summary>Graph source</summary>
             <pre id="mermaid-source"></pre>
@@ -170,21 +207,21 @@ permalink: /schema-architect/
           <div id="rich-results" class="card-grid"></div>
         </section>
 
-        <section aria-labelledby="scaffolds-heading">
+        <section aria-labelledby="snippets-heading">
           <div class="scaffold-header">
-            <h3 id="scaffolds-heading">Implementation scaffolds</h3>
-            <button type="button" id="download-all" class="secondary">Download JSON</button>
+            <h3 id="snippets-heading">JSON-LD snippets</h3>
+            <button type="button" id="download-all" class="secondary">Download blueprint (.json)</button>
           </div>
           <p class="hint">
             Paste each block into a <code>&lt;script type="application/ld+json"&gt;</code> tag on
-            matching pages. Replace every <code>{{TOKEN}}</code> with real values before you
-            publish.
+            matching pages. Replace every <code>{% raw %}{{TOKEN}}{% endraw %}</code> with real
+            values before publishing.
           </p>
           <div id="scaffolds"></div>
         </section>
 
         <p class="hint verify-links">
-          After you deploy, verify live pages with the
+          After deploying, verify live pages with the
           <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener"
             >Google Rich Results Test</a
           >
@@ -195,7 +232,7 @@ permalink: /schema-architect/
         </p>
 
         <div class="actions">
-          <button type="button" id="start-over" class="secondary">Start over</button>
+          <button type="button" id="start-over" class="secondary">Edit inputs</button>
         </div>
       </section>
 

@@ -709,20 +709,14 @@ function createGenerationProgress(site, useAi) {
 
   function show() {
     if (context) {
-      context.textContent = `Working on ${site.business_name} — ${pageLabel} plus homepage.`;
+      context.textContent = `Generating for ${site.business_name} — ${pageLabel} plus homepage.`;
     }
-    $("#form-panel")?.setAttribute("hidden", "");
-    panel?.removeAttribute("hidden");
+    enableTab("generation");
+    activateTab("generation");
     panel?.setAttribute("aria-busy", "true");
     activeIndex = 0;
     render();
     panel?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  function hide() {
-    clearTimers();
-    panel?.setAttribute("hidden", "");
-    panel?.setAttribute("aria-busy", "false");
   }
 
   function advance() {
@@ -777,20 +771,48 @@ function createGenerationProgress(site, useAi) {
     }
     activeIndex = steps.length;
     render();
-    if (detail) detail.textContent = "Blueprint ready — loading your results…";
+    if (detail) {
+      detail.textContent =
+        "Blueprint ready. This view stays available under the Generation tab.";
+    }
+    panel?.setAttribute("aria-busy", "false");
     announce("Blueprint ready.");
     await wait(450);
-    hide();
   }
 
   function cancel() {
     finishing = true;
     clearTimers();
-    hide();
-    $("#form-panel")?.removeAttribute("hidden");
+    panel?.setAttribute("aria-busy", "false");
+    if (detail) detail.textContent = "Generation failed — adjust the inputs and retry.";
+    activateTab("form");
   }
 
   return { start, finish, cancel };
+}
+
+const TAB_PANELS = {
+  form: "#form-panel",
+  generation: "#loading-panel",
+  blueprint: "#results-panel",
+};
+
+function activateTab(name) {
+  for (const [tabName, panelSelector] of Object.entries(TAB_PANELS)) {
+    const tab = $(`#tab-${tabName}`);
+    const panel = $(panelSelector);
+    const active = tabName === name;
+    if (tab) tab.setAttribute("aria-selected", active ? "true" : "false");
+    if (panel) {
+      if (active) panel.removeAttribute("hidden");
+      else panel.setAttribute("hidden", "");
+    }
+  }
+}
+
+function enableTab(name) {
+  const tab = $(`#tab-${name}`);
+  if (tab) tab.disabled = false;
 }
 
 let mermaidReady = false;
@@ -843,9 +865,12 @@ function renderRichResults(items) {
     const policy = item.policy_url
       ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">${escapeHtml(item.feature_name)} in Search Central</a>`
       : "";
+    const missing = item.missing_required_properties || [];
     const status =
-      item.eligible === false
-        ? '<p class="hint">Not yet eligible — add the missing required properties listed below.</p>'
+      item.eligible === false && missing.length
+        ? `<p class="hint">Needs real data for: <strong>${missing.map(escapeHtml).join(", ")}</strong>. ` +
+          "These require actual content (a person, place, or media object) that placeholders " +
+          "can't stub — add them to the JSON-LD to qualify.</p>"
         : "";
     const citations = renderPropertyCitations(item);
     card.innerHTML = `
@@ -859,25 +884,6 @@ function renderRichResults(items) {
   }
 }
 
-function renderFindings(findings) {
-  const container = $("#schema-findings");
-  if (!container) return;
-  const errors = (findings || []).filter((item) => item.severity === "error");
-  if (!errors.length) {
-    container.hidden = true;
-    container.innerHTML = "";
-    return;
-  }
-  container.hidden = false;
-  const list = document.createElement("ul");
-  for (const finding of errors.slice(0, 8)) {
-    const item = document.createElement("li");
-    item.textContent = finding.message;
-    list.append(item);
-  }
-  container.replaceChildren(list);
-}
-
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -885,31 +891,32 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;");
 }
 
-function renderScaffolds(scaffolds) {
+function renderSnippets(snippets) {
   const container = $("#scaffolds");
   if (!container) return;
   container.innerHTML = "";
-  scaffolds.forEach((scaffold, index) => {
-    const block = document.createElement("article");
-    block.className = "scaffold-block";
-    const json = JSON.stringify(scaffold.jsonld, null, 2);
+  snippets.forEach((snippet, index) => {
+    const block = document.createElement("details");
+    block.className = "snippet-block";
+    if (index === 0) block.open = true;
+    const json = JSON.stringify(snippet.jsonld, null, 2);
     block.innerHTML = `
-      <div class="scaffold-block-header">
-        <div>
-          <h4>${escapeHtml(scaffold.label)}</h4>
-          <p class="hint mono">${escapeHtml(scaffold.example_url)}</p>
-        </div>
-        <button type="button" class="secondary copy-scaffold" data-index="${index}">Copy JSON-LD</button>
+      <summary>
+        <span class="snippet-label">${escapeHtml(snippet.label)}</span>
+        <span class="hint mono">${escapeHtml(snippet.example_url)}</span>
+      </summary>
+      <div class="snippet-body">
+        <button type="button" class="secondary copy-scaffold">Copy JSON-LD</button>
+        <pre class="jsonld-output">${escapeHtml(json)}</pre>
       </div>
-      <pre class="jsonld-output">${escapeHtml(json)}</pre>
     `;
     block.dataset.json = json;
     container.append(block);
   });
   container.querySelectorAll(".copy-scaffold").forEach((button) => {
     button.addEventListener("click", async () => {
-      const article = button.closest(".scaffold-block");
-      const text = article?.dataset.json || "";
+      const block = button.closest(".snippet-block");
+      const text = block?.dataset.json || "";
       await navigator.clipboard.writeText(text);
       announce("JSON-LD copied to clipboard.");
       button.textContent = "Copied!";
@@ -934,6 +941,7 @@ function downloadJson(filename, data) {
   const link = document.createElement("a");
   link.href = url;
   link.download = safeName;
+  link.type = "application/json";
   link.rel = "noopener";
   link.style.display = "none";
   document.body.appendChild(link);
@@ -941,7 +949,7 @@ function downloadJson(filename, data) {
   window.setTimeout(() => {
     URL.revokeObjectURL(url);
     link.remove();
-  }, 0);
+  }, 2000);
 }
 
 function downloadBlueprint(blueprint) {
@@ -951,12 +959,12 @@ function downloadBlueprint(blueprint) {
     graph: blueprint.graph,
     rich_results: blueprint.rich_results,
     findings: blueprint.findings,
-    scaffolds: blueprint.scaffolds.map((scaffold) => ({
-      label: scaffold.label,
-      template_name: scaffold.template_name,
-      example_url: scaffold.example_url,
-      usage_note: scaffold.usage_note,
-      jsonld: scaffold.jsonld,
+    snippets: blueprint.scaffolds.map((snippet) => ({
+      label: snippet.label,
+      template_name: snippet.template_name,
+      example_url: snippet.example_url,
+      usage_note: snippet.usage_note,
+      jsonld: snippet.jsonld,
     })),
     model_used: blueprint.model_used,
     model_degraded: blueprint.model_degraded,
@@ -993,28 +1001,40 @@ function updateModePill(blueprint) {
   }
 }
 
-function composeFallbackSummary(blueprint) {
-  const parts = [
-    `${blueprint.scaffolds.length} scaffold${blueprint.scaffolds.length === 1 ? "" : "s"} ready.`,
-  ];
-  if (blueprint.model_used) parts.push("Tailored with AI.");
-  else if (blueprint.model_degraded) parts.push("Generated from your answers without AI.");
+function composeResultsSummary(blueprint) {
+  const count = blueprint.scaffolds.length;
+  const eligible = (blueprint.rich_results || []).filter((item) => item.eligible).length;
+  const total = (blueprint.rich_results || []).length;
+  const parts = [`${count} JSON-LD snippet${count === 1 ? "" : "s"} generated.`];
+  if (total) parts.push(`${eligible}/${total} rich result opportunities already eligible.`);
   return parts.join(" ");
 }
 
+function updateGraphAiSummary(blueprint) {
+  const box = $("#graph-ai-summary");
+  const text = $("#graph-ai-summary-text");
+  if (!box || !text) return;
+  const show =
+    blueprint.model_used && !blueprint.model_degraded && blueprint.delivery_summary;
+  if (show) {
+    text.textContent = blueprint.delivery_summary;
+    box.removeAttribute("hidden");
+  } else {
+    text.textContent = "";
+    box.setAttribute("hidden", "");
+  }
+}
+
 function showResults(blueprint, remaining, quotaEnforced = true) {
-  $("#loading-panel")?.setAttribute("hidden", "");
-  $("#loading-panel")?.setAttribute("aria-busy", "false");
-  $("#form-panel")?.setAttribute("hidden", "");
-  const results = $("#results-panel");
-  results?.removeAttribute("hidden");
+  enableTab("blueprint");
+  activateTab("blueprint");
 
   const summary = $("#results-summary");
   if (summary) {
-    summary.textContent =
-      blueprint.delivery_summary || composeFallbackSummary(blueprint);
+    summary.textContent = composeResultsSummary(blueprint);
   }
   updateModePill(blueprint);
+  updateGraphAiSummary(blueprint);
 
   void renderDiagram(blueprint.mermaid).catch(() => {
     const diagram = $("#diagram");
@@ -1023,13 +1043,12 @@ function showResults(blueprint, remaining, quotaEnforced = true) {
         '<p class="hint">Could not render the graph diagram. Open “Graph source” below to view the raw definition.</p>';
     }
   });
-  renderFindings(blueprint.findings || []);
   renderRichResults(blueprint.rich_results || []);
-  renderScaffolds(blueprint.scaffolds);
+  renderSnippets(blueprint.scaffolds);
   latestBlueprint = blueprint;
   updateQuotaPill(remaining, quotaEnforced);
   announce("Blueprint generated.");
-  results?.scrollIntoView({ behavior: "smooth", block: "start" });
+  $("#results-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function updateQuotaPill(remaining, quotaEnforced = true) {
@@ -1133,7 +1152,10 @@ function bindEvents() {
     if (!latestBlueprint?.scaffolds?.length) return;
     downloadBlueprint(latestBlueprint);
   });
-  $("#start-over")?.addEventListener("click", () => window.location.reload());
+  $("#start-over")?.addEventListener("click", () => activateTab("form"));
+  for (const name of Object.keys(TAB_PANELS)) {
+    $(`#tab-${name}`)?.addEventListener("click", () => activateTab(name));
+  }
 }
 
 ensureTemplateRows();
