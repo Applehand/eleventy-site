@@ -113,24 +113,19 @@ permalink: /geo-chat/
   <summary>..what?</summary>
   <div class="content">
     <p>
-      This is a <a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">retrieval-augmented generation</a> (RAG) demo.
-      The manual's 23 chapters were re-crawled, heading-aware chunked, and embedded — both as text chunks <em>and</em> as viewport-sized page-screenshot tiles —
-      with Google's <code>gemini-embedding-2</code> into a <a href="https://www.trychroma.com/">Chroma</a> vector database:
-      <strong>348 text chunks + 455 screenshot tiles = 803 vectors</strong>. Each question is embedded,
-      the closest text/image chunks are retrieved, and <code>gemini-3.5-flash-lite</code> composes a streamed answer strictly from that
-      retrieved context (it's instructed to say so if the context doesn't support an answer).
+      A <a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">retrieval-augmented generation</a> (RAG) demo over
+      iPullRank's <a href="https://ipullrank.com/ai-search-manual" target="_blank" rel="noopener">AI Search Manual</a>.
+      The 23 chapters are split into text chunks and viewport-sized screenshot tiles, embedded with
+      <code>gemini-embedding-2</code> into a <a href="https://www.trychroma.com/">Chroma</a> index:
+      <strong>348 text chunks + 455 screenshot tiles = 803 vectors</strong>.
+      Each question retrieves the closest matches; <code>gemini-3.5-flash-lite</code> streams an answer grounded only in that context.
     </p>
     <p>
-      Compute: the vector store, embeddings, and generation all run on a self-hosted <a href="https://www.raspberrypi.com/products/raspberry-pi-5/">Raspberry&nbsp;Pi</a>
-      (<span class="mono">bigpi</span>, FastAPI + Chroma + Gemini API) on my home network. This page and a thin same-origin proxy live on a second Pi
-      (<span class="mono">smolpi</span>), which is the only thing a <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a> exposes publicly.
-      Requests flow <span class="mono">Browser → smolpi (public) → bigpi (Tailscale, private)</span> and stream tokens back over SSE.
-    </p>
-    <p>
-      Free queries are capped per-session (cookie) and per-IP, enforced server-side — the controls below are real, but always clamped to safe
-      ranges server-side regardless of what the client sends. Turn on <strong>Step-through</strong> to see retrieval happen before the model answers.
-      Retrieved page screenshots render below each answer, and if the model can't answer from the retrieved context, a
-      <strong>Why no answer?</strong> panel shows exactly what retrieval pulled and how close it got.
+      The API is self-hosted behind a <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel</a>;
+      this page is a same-origin proxy that forwards requests and streams tokens back over SSE.
+      Free queries are capped per session and per IP. Use <strong>Step-through</strong> to watch retrieval before generation.
+      Retrieved screenshot tiles appear under each answer; if the model can't answer, a <strong>Why no answer?</strong> panel
+      shows what was retrieved and how closely it matched.
     </p>
   </div>
 </details>
