@@ -1,0 +1,166 @@
+---
+title: Schema Blueprint
+permalink: /schema-architect/
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Describe your site once and get a Schema.org entity graph plus ready-to-fill JSON-LD scaffolds for every template."
+    />
+    <title>Schema Blueprint</title>
+    <link rel="stylesheet" href="/schema-architect/app.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Schema Blueprint</h1>
+        <p class="lede">
+          Tell us about your business and page templates. We build a connected entity graph and
+          hand you copy-paste JSON-LD scaffolds with clear placeholders for each page type.
+        </p>
+        <p class="privacy">
+          Anonymous and ephemeral: your answers are used only to generate this blueprint. Nothing
+          is saved on the server. Copy or download the scaffolds before you leave.
+        </p>
+      </header>
+
+      <div class="status" aria-live="polite">
+        <span class="pill" id="api-status">Checking service…</span>
+        <span class="pill" id="registry-status">Schema.org registry…</span>
+        <span class="pill" id="quota-status">Generation quota…</span>
+      </div>
+
+      <section class="panel" id="form-panel" aria-labelledby="form-heading">
+        <h2 id="form-heading">Tell us about your site</h2>
+        <form id="site-form">
+          <div class="grid">
+            <div class="field">
+              <label for="business-name">Business name</label>
+              <input id="business-name" name="businessName" required maxlength="200" />
+            </div>
+            <div class="field">
+              <label for="site-url">Site URL</label>
+              <input
+                id="site-url"
+                name="siteUrl"
+                type="url"
+                required
+                placeholder="https://example.com"
+              />
+              <span class="hint">Homepage origin only — no path, query, or fragment.</span>
+            </div>
+            <div class="field wide">
+              <label for="business-description">What does the business do?</label>
+              <textarea
+                id="business-description"
+                name="businessDescription"
+                required
+                maxlength="2000"
+                rows="3"
+                placeholder="We publish guides and product reviews for home cooks."
+              ></textarea>
+            </div>
+            <div class="field">
+              <label for="business-category">Business category</label>
+              <input
+                id="business-category"
+                name="businessCategory"
+                required
+                maxlength="200"
+                placeholder="Online publisher, local bakery, SaaS…"
+              />
+            </div>
+            <div class="field wide">
+              <label for="social-urls">Social or profile URLs <span class="optional">(optional)</span></label>
+              <textarea
+                id="social-urls"
+                name="socialUrls"
+                maxlength="4000"
+                rows="2"
+                placeholder="One URL per line: LinkedIn, YouTube, Google Business Profile…"
+              ></textarea>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>Page templates</legend>
+            <p class="hint">
+              Add each reusable page type on your site. We always include a homepage automatically.
+            </p>
+            <div id="template-rows" class="template-rows"></div>
+            <button type="button" id="add-template" class="secondary">Add template</button>
+          </fieldset>
+
+          <div class="field wide">
+            <label for="notes">Anything else we should know? <span class="optional">(optional)</span></label>
+            <textarea
+              id="notes"
+              name="notes"
+              maxlength="12000"
+              rows="3"
+              placeholder="Multiple authors, several brands, physical locations…"
+            ></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="primary" type="submit" id="generate-btn">Generate blueprint</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel results" id="results-panel" hidden aria-labelledby="results-heading">
+        <h2 id="results-heading">Your blueprint</h2>
+        <p id="results-summary" class="hint"></p>
+
+        <section aria-labelledby="graph-heading">
+          <h3 id="graph-heading">Entity graph</h3>
+          <div id="diagram" aria-label="Rendered entity graph"></div>
+          <details>
+            <summary>Graph source</summary>
+            <pre id="mermaid-source"></pre>
+          </details>
+        </section>
+
+        <section aria-labelledby="rich-results-heading">
+          <h3 id="rich-results-heading">Rich result opportunities</h3>
+          <div id="rich-results" class="card-grid"></div>
+        </section>
+
+        <section aria-labelledby="scaffolds-heading">
+          <div class="scaffold-header">
+            <h3 id="scaffolds-heading">Implementation scaffolds</h3>
+            <button type="button" id="download-all" class="secondary">Download all</button>
+          </div>
+          <p class="hint">
+            Paste each block into a <code>&lt;script type="application/ld+json"&gt;</code> tag on
+            matching pages. Replace every <code>{{TOKEN}}</code> with real values before you
+            publish.
+          </p>
+          <div id="scaffolds"></div>
+        </section>
+
+        <p class="hint verify-links">
+          After you deploy, verify live pages with the
+          <a href="https://search.google.com/test/rich-results" target="_blank" rel="noopener"
+            >Google Rich Results Test</a
+          >
+          and
+          <a href="https://validator.schema.org/" target="_blank" rel="noopener"
+            >Schema Markup Validator</a
+          >.
+        </p>
+
+        <div class="actions">
+          <button type="button" id="start-over" class="secondary">Start over</button>
+        </div>
+      </section>
+
+      <div class="sr-only" id="announcer" aria-live="polite"></div>
+    </main>
+    <script type="module" src="/schema-architect/app.js"></script>
+  </body>
+</html>

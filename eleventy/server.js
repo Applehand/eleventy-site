@@ -9,10 +9,16 @@ import { Readable } from "node:stream";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const siteDir = path.join(__dirname, "_site");
-const siteOrigin = "https://applehand.dev";
+const siteOrigin = process.env.SITE_ORIGIN || "https://applehand.dev";
 
 const app = express();
 const port = process.env.PORT || 8080;
+const trustedIngressIps = new Set(
+  (process.env.TRUSTED_INGRESS_IPS || "127.0.0.1,::1")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
 // --- GEOAssistant RAG API proxy (public host -> private backend) ---
 // Bound narrowly to the 4 known rag-geo-api routes (not a blanket /api/*
@@ -24,8 +30,18 @@ const RAG_API_BASE = process.env.RAG_API_BASE || "http://127.0.0.1:8100";
 const RAG_API_PATHS = new Set(["/api/healthz", "/api/quota", "/api/knobs", "/api/chat"]);
 // GET-only prefix for retrieved-screenshot images (/api/media/<slug>/<variant>.jpg).
 const RAG_MEDIA_PREFIX = "/api/media/";
+const SCHEMA_API_BASE = process.env.SCHEMA_API_BASE || "http://127.0.0.1:8120";
+const SCHEMA_API_PREFIX = "/api/schema/";
 
-app.use(express.json());
+app.use(express.json({ limit: "512kb" }));
+
+function clientIpForUpstream(req) {
+  const peer = req.socket.remoteAddress || "unknown";
+  if (trustedIngressIps.has(peer) && req.headers["cf-connecting-ip"]) {
+    return req.headers["cf-connecting-ip"];
+  }
+  return peer;
+}
 
 async function proxyToRagApi(req, res) {
   const targetUrl = `${RAG_API_BASE}${req.originalUrl}`;
@@ -38,8 +54,7 @@ async function proxyToRagApi(req, res) {
   // trusts. Never forward the client-supplied X-Forwarded-For: its first
   // hop is attacker-controlled and would let anyone reset the per-IP cap
   // with a forged header.
-  headers["x-real-ip"] =
-    req.headers["cf-connecting-ip"] || req.socket.remoteAddress || "unknown";
+  headers["x-real-ip"] = clientIpForUpstream(req);
 
   const init = { method: req.method, headers };
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -76,6 +91,67 @@ app.all("/api/*", (req, res, next) => {
   const isMedia = req.method === "GET" && req.path.startsWith(RAG_MEDIA_PREFIX);
   if (!RAG_API_PATHS.has(req.path) && !isMedia) return next();
   return proxyToRagApi(req, res);
+});
+
+async function proxyToSchemaApi(req, res) {
+  if (!["GET", "POST"].includes(req.method)) {
+    res.status(405).json({ error: "method not allowed" });
+    return;
+  }
+  const origin = req.headers.origin;
+  if (req.method === "POST" && origin && origin !== siteOrigin) {
+    res.status(403).json({ error: "request origin is not allowed" });
+    return;
+  }
+  const targetUrl = `${SCHEMA_API_BASE}${req.originalUrl}`;
+  const headers = {
+    "content-type": req.headers["content-type"] || "application/json",
+    "x-real-ip": clientIpForUpstream(req),
+  };
+  if (req.headers.cookie) headers.cookie = req.headers.cookie;
+  if (origin) headers.origin = origin;
+
+  const init = { method: req.method, headers };
+  if (req.method === "POST") init.body = JSON.stringify(req.body ?? {});
+
+  let upstream;
+  try {
+    upstream = await fetch(targetUrl, init);
+  } catch {
+    res.status(502).json({ error: "schema architect service is unavailable" });
+    return;
+  }
+
+  res.status(upstream.status);
+  for (const [key, value] of upstream.headers.entries()) {
+    const lower = key.toLowerCase();
+    if (["content-length", "set-cookie", "content-encoding"].includes(lower)) continue;
+    res.setHeader(key, value);
+  }
+  const cookies =
+    typeof upstream.headers.getSetCookie === "function"
+      ? upstream.headers.getSetCookie()
+      : [];
+  if (cookies.length) res.setHeader("set-cookie", cookies);
+  if (!upstream.body) {
+    res.end();
+    return;
+  }
+  Readable.fromWeb(upstream.body).pipe(res);
+}
+
+app.all("/api/schema/*", (req, res) => proxyToSchemaApi(req, res));
+
+app.use((err, req, res, next) => {
+  if (err?.type === "entity.too.large") {
+    res.status(413).json({ error: "request body is too large" });
+    return;
+  }
+  if (err instanceof SyntaxError && "body" in err) {
+    res.status(400).json({ error: "invalid JSON request body" });
+    return;
+  }
+  next(err);
 });
 
 const SKIP_EXTENSIONS = new Set([
