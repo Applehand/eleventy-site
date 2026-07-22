@@ -771,10 +771,7 @@ function createGenerationProgress(site, useAi) {
     }
     activeIndex = steps.length;
     render();
-    if (detail) {
-      detail.textContent =
-        "Blueprint ready. This view stays available under the Generation tab.";
-    }
+    if (detail) detail.textContent = "Blueprint ready.";
     panel?.setAttribute("aria-busy", "false");
     announce("Blueprint ready.");
     await wait(450);

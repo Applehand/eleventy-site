@@ -754,3 +754,33 @@ pre {
 .graph-ai-summary p {
   margin: 0;
 }
+
+.page-footer {
+  margin: 28px 0 12px;
+}
+
+.footer-details {
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 10px 0;
+  background: #fff;
+}
+
+.footer-details summary {
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.footer-details p,
+.footer-details li {
+  color: var(--ink);
+}
+
+.footer-details ul {
+  padding-left: 20px;
+}
+
+.footer-details li {
+  margin: 8px 0;
+}

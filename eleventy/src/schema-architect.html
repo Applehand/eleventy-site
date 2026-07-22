@@ -236,6 +236,72 @@ permalink: /schema-architect/
         </div>
       </section>
 
+      <footer class="page-footer">
+        <details class="footer-details">
+          <summary>Why structured data matters for AI search</summary>
+          <p>
+            Search engines and AI assistants increasingly read pages as data, not prose. JSON-LD
+            structured data gives crawlers and agents machine-readable statements about what a
+            page contains — instead of inferring it from layout and copy.
+          </p>
+          <ul>
+            <li>
+              <strong>Google rich results</strong> (product cards, recipe carousels, breadcrumbs,
+              job listings) are driven directly by this markup and its required properties.
+            </li>
+            <li>
+              <strong>AI answer engines and agents</strong> use schema markup for grounding and
+              entity resolution: a connected graph with stable <code>@id</code>s states "this
+              page is about this product, sold by this organization, on this site" so nothing
+              has to be guessed.
+            </li>
+            <li>
+              <strong>Navigation signals</strong> like <code>BreadcrumbList</code> and
+              <code>mainEntity</code> tell agents where a page sits in the site hierarchy and
+              what its primary subject is.
+            </li>
+          </ul>
+        </details>
+        <details class="footer-details">
+          <summary>How this tool works</summary>
+          <p>
+            Every blueprint starts from a deterministic skeleton: an Organization → WebSite →
+            WebPage spine with breadcrumbs and stable <code>@id</code> fragments, typed by
+            word-boundary keyword rules. AI never builds structure from scratch — it refines a
+            graph that is already valid.
+          </p>
+          <ul>
+            <li>
+              <strong>schema.org registry</strong> — the full v30 vocabulary (3,003 terms: 843
+              types, 1,529 properties, plus enumerations) compiled into a local database. Every
+              type and property in the output is validated against it: domains, ranges, and
+              subtype relations. Unknown terms are dropped, not published.
+            </li>
+            <li>
+              <strong>Gemini ops router</strong> — when AI is enabled, Gemini works through
+              function-calling operations (<code>search_schema_types</code>,
+              <code>get_allowed_properties</code>, <code>check_feature_eligibility</code>,
+              <code>propose_template_types</code>, <code>add_entity_node</code>,
+              <code>add_entity_facts</code>, <code>add_relationship</code>,
+              <code>complete_routing</code>). Each call is validated server-side, so the model
+              can only make changes the registry allows. A final enrichment turn extracts facts
+              explicitly stated in the input — addresses, phone numbers, named people, hours —
+              into the graph. Nothing is ever invented.
+            </li>
+            <li>
+              <strong>Google feature manifests</strong> — 25 rich-result rule sets sourced from
+              Search Central documentation, with a citation per property. They drive the
+              required and recommended fields in each snippet and the eligibility panel above.
+            </li>
+            <li>
+              <strong>Graceful degradation</strong> — if AI is unavailable or its output fails
+              validation, generation falls back to pure deterministic mapping. The result is
+              never below a valid, registry-checked baseline.
+            </li>
+          </ul>
+        </details>
+      </footer>
+
       <div class="sr-only" id="announcer" aria-live="polite"></div>
     </main>
     <script type="module" src="/schema-architect/app.js"></script>
