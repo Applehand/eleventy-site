@@ -963,20 +963,36 @@ function createForceGraph(container, data) {
   const nodeLayer = document.createElementNS(SVG_NS, "g");
   svg.append(edgeLayer, nodeLayer);
 
-  // seed positions in a ring so the sim untangles quickly
+  // hierarchical columns, left to right: business -> site -> pages -> content -> support
+  const KIND_LAYER = { org: 0, site: 1, page: 2, content: 3, person: 4, crumb: 4 };
+  const maxLayer = Math.max(...data.nodes.map((node) => KIND_LAYER[node.kind] ?? 3));
+  const columnX = (layer) => 110 + (layer * (WORLD.w - 220)) / Math.max(1, maxLayer);
+  const byLayer = new Map();
   data.nodes.forEach((node, index) => {
-    const angle = (index / Math.max(1, data.nodes.length)) * Math.PI * 2;
-    node.x = WORLD.w / 2 + Math.cos(angle) * 170;
-    node.y = WORLD.h / 2 + Math.sin(angle) * 150;
+    node.layer = KIND_LAYER[node.kind] ?? 3;
+    node.homeX = columnX(node.layer);
+    node.order = index;
+    if (!byLayer.has(node.layer)) byLayer.set(node.layer, []);
+    byLayer.get(node.layer).push(node);
   });
+  for (const column of byLayer.values()) {
+    // manifest order groups entities template by template, which keeps
+    // related rows roughly aligned across columns
+    column.sort((a, b) => a.order - b.order);
+    column.forEach((node, index) => {
+      node.x = node.homeX;
+      node.y = ((index + 1) * WORLD.h) / (column.length + 1);
+    });
+  }
 
   const edgeEls = data.links.map((link) => {
     const group = document.createElementNS(SVG_NS, "g");
     group.setAttribute("class", "g-edge");
     const line = document.createElementNS(SVG_NS, "line");
-    line.setAttribute("stroke", GRAPH_PALETTE.ink);
-    line.setAttribute("stroke-width", "1.3");
-    line.setAttribute("opacity", "0.5");
+    const isSubject = link.property === "mainEntity";
+    line.setAttribute("stroke", isSubject ? GRAPH_PALETTE.accent : GRAPH_PALETTE.ink);
+    line.setAttribute("stroke-width", isSubject ? "2.2" : "1.3");
+    line.setAttribute("opacity", isSubject ? "0.85" : "0.4");
     const label = document.createElementNS(SVG_NS, "text");
     label.setAttribute("class", "g-edge-label");
     label.setAttribute("text-anchor", "middle");
@@ -1026,31 +1042,24 @@ function createForceGraph(container, data) {
       for (let j = 0; j < nodes.length; j += 1) {
         if (i === j) continue;
         const b = nodes[j];
-        let dx = a.x - b.x;
-        let dy = a.y - b.y;
-        const d2 = Math.max(180, dx * dx + dy * dy);
-        const force = 2600 / d2;
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const d2 = Math.max(220, dx * dx + dy * dy);
+        const force = 1500 / d2;
         const d = Math.sqrt(d2);
-        a.vx += (dx / d) * force;
+        // repulsion acts mostly vertically so the columns hold their shape
+        a.vx += (dx / d) * force * 0.25;
         a.vy += (dy / d) * force;
       }
-      // gentle pull to center
-      a.vx += (WORLD.w / 2 - a.x) * 0.0035;
-      a.vy += (WORLD.h / 2 - a.y) * 0.0035;
+      // spring back to the assigned column
+      a.vx += (a.homeX - a.x) * 0.055;
+      a.vy += (WORLD.h / 2 - a.y) * 0.002;
     }
     for (const { source, target } of data.links) {
-      const dx = target.x - source.x;
       const dy = target.y - source.y;
-      const d = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-      const stretch = ((d - 110) / d) * 0.045;
-      if (!source.pinned && !source.dragging) {
-        source.vx += dx * stretch;
-        source.vy += dy * stretch;
-      }
-      if (!target.pinned && !target.dragging) {
-        target.vx -= dx * stretch;
-        target.vy -= dy * stretch;
-      }
+      // links pull connected rows into vertical alignment across columns
+      if (!source.pinned && !source.dragging) source.vy += dy * 0.02;
+      if (!target.pinned && !target.dragging) target.vy -= dy * 0.02;
     }
     for (const node of data.nodes) {
       if (node.pinned || node.dragging) {
@@ -1183,13 +1192,45 @@ function createForceGraph(container, data) {
   };
 }
 
+const KIND_META = {
+  org: { label: "Business", fill: GRAPH_PALETTE.accent },
+  site: { label: "Website", fill: GRAPH_PALETTE.ink },
+  page: { label: "Page", fill: "#fff" },
+  content: { label: "Content", fill: "#ffe8a3" },
+  person: { label: "Person", fill: GRAPH_PALETTE.accentSoft },
+  crumb: { label: "Breadcrumb trail", fill: GRAPH_PALETTE.paper },
+};
+
+function renderGraphKey(data) {
+  const container = $("#graph-key");
+  if (!container) return;
+  const present = [...new Set(data.nodes.map((node) => node.kind))];
+  const order = ["org", "site", "page", "content", "person", "crumb"];
+  const chips = order
+    .filter((kind) => present.includes(kind))
+    .map((kind) => {
+      const meta = KIND_META[kind];
+      return `<span class="key-item"><span class="key-swatch" style="background:${meta.fill}"></span>${meta.label}</span>`;
+    });
+  const hasSubject = data.links.some((link) => link.property === "mainEntity");
+  const edges = [
+    `<span class="key-item"><span class="key-line"></span>link</span>`,
+    hasSubject
+      ? `<span class="key-item"><span class="key-line key-line-subject"></span>page subject (mainEntity)</span>`
+      : "",
+  ];
+  container.innerHTML = chips.join("") + edges.join("");
+}
+
 function renderDiagram(blueprint) {
   const sourceNode = $("#mermaid-source");
   if (sourceNode) sourceNode.textContent = blueprint.mermaid;
   const container = $("#diagram");
   if (!container) return;
   if (activeGraph) activeGraph.destroy();
-  activeGraph = createForceGraph(container, buildGraphData(blueprint.graph));
+  const data = buildGraphData(blueprint.graph);
+  renderGraphKey(data);
+  activeGraph = createForceGraph(container, data);
 }
 
 function renderPropertyCitations(item) {
