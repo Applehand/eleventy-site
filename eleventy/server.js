@@ -21,7 +21,13 @@ const port = process.env.PORT || 8080;
 // The real backend URL is deployment config, not code: set RAG_API_BASE
 // in the environment (e.g. in the systemd unit / .env on the proxy host).
 const RAG_API_BASE = process.env.RAG_API_BASE || "http://127.0.0.1:8100";
-const RAG_API_PATHS = new Set(["/api/healthz", "/api/quota", "/api/knobs", "/api/chat"]);
+const RAG_API_PATHS = new Set([
+  "/api/healthz",
+  "/api/quota",
+  "/api/controls",
+  "/api/knobs", // legacy alias for cached pages
+  "/api/chat",
+]);
 // GET-only prefix for retrieved-screenshot images (/api/media/<slug>/<variant>.jpg).
 const RAG_MEDIA_PREFIX = "/api/media/";
 

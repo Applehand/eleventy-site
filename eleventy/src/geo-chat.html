@@ -54,14 +54,14 @@ permalink: /geo-chat/
 	.mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace }
 	.muted{ color:var(--muted) }
 
-	/* Knobs panel */
-	.knobs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
-	.knob{ display:flex; flex-direction:column; gap:4px }
-	.knob .row{ display:flex; align-items:center; gap:8px }
-	.knob input[type="range"]{ flex:1 }
-	.knob input[type="checkbox"]{ width:18px; height:18px }
-	.knob select{ padding:6px 8px; border:2px solid var(--ink); border-radius:8px; font:inherit; font-weight:700 }
-	.knob .val{ font-weight:800; font-variant-numeric:tabular-nums; min-width:1.6em; text-align:right }
+	/* Controls panel */
+	.controls{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+	.control{ display:flex; flex-direction:column; gap:4px }
+	.control .row{ display:flex; align-items:center; gap:8px }
+	.control input[type="range"]{ flex:1 }
+	.control input[type="checkbox"]{ width:18px; height:18px }
+	.control select{ padding:6px 8px; border:2px solid var(--ink); border-radius:8px; font:inherit; font-weight:700 }
+	.control .val{ font-weight:800; font-variant-numeric:tabular-nums; min-width:1.6em; text-align:right }
 
 	/* Step-through timeline */
 	#timeline{ display:none; flex-direction:column; gap:10px; margin:14px 0 }
@@ -126,7 +126,7 @@ permalink: /geo-chat/
       Requests flow <span class="mono">Browser → smolpi (public) → bigpi (Tailscale, private)</span> and stream tokens back over SSE.
     </p>
     <p>
-      Free queries are capped per-session (cookie) and per-IP, enforced server-side — the knobs below are real, but always clamped to safe
+      Free queries are capped per-session (cookie) and per-IP, enforced server-side — the controls below are real, but always clamped to safe
       ranges server-side regardless of what the client sends. Turn on <strong>Step-through</strong> to see retrieval happen before the model answers.
       Retrieved page screenshots render below each answer, and if the model can't answer from the retrieved context, a
       <strong>Why no answer?</strong> panel shows exactly what retrieval pulled and how close it got.
@@ -138,13 +138,13 @@ permalink: /geo-chat/
 	<div id="apiPill" class="pill"><span class="dot"></span><span id="apiText">Checking API…</span> <small id="latency" class="muted mono"></small></div>
 	<div id="quotaPill" class="pill"><span class="dot"></span><span id="quotaText">Quota…</span></div>
 	<div class="grow"></div>
-	<button type="button" id="knobsToggle" class="btn">Knobs ⚙</button>
+	<button type="button" id="controlsToggle" class="btn">Controls ⚙</button>
 </div>
 
-<details class="disclosure" id="knobsPanel">
-  <summary>Educational knobs</summary>
+<details class="disclosure" id="controlsPanel">
+  <summary>Retrieval controls</summary>
   <div class="content">
-    <div id="knobs" class="knobs"><span class="muted">Loading knob schema…</span></div>
+    <div id="controls" class="controls"><span class="muted">Loading controls schema…</span></div>
   </div>
 </details>
 
@@ -191,6 +191,9 @@ permalink: /geo-chat/
 <script>
 /* Config: same-origin /api; override with window.GEOCHAT_API for a subdomain */
 const API_BASE = (window.GEOCHAT_API || "/api").replace(/\/$/, "");
+/* Calibrated from app/evaluate.py: on-topic questions score well above
+   this, off-topic ones well below. */
+const WEAK_SIM_THRESHOLD = 0.6;
 
 const $ = (s)=>document.querySelector(s);
 const bodyEl = document.body;
@@ -206,7 +209,7 @@ const shotsEl = $("#shots"), shotGridEl = $("#shotGrid");
 const diagnosisEl = $("#diagnosis"), diagBodyEl = $("#diagBody");
 let controller = null;
 let mode = "answer";
-let knobSchema = null;
+let controlSchema = null;
 
 function setBusy(b){
 	bodyEl.classList.toggle("busy", b);
@@ -225,7 +228,7 @@ function setModePill(m){
 }
 modeAnswerBtn.addEventListener("click", ()=>setModePill("answer"));
 modeStepBtn.addEventListener("click", ()=>setModePill("step"));
-$("#knobsToggle").addEventListener("click", ()=>{ $("#knobsPanel").open = !$("#knobsPanel").open; });
+$("#controlsToggle").addEventListener("click", ()=>{ $("#controlsPanel").open = !$("#controlsPanel").open; });
 
 async function healthCheck(){
 	try{
@@ -256,42 +259,42 @@ async function refreshQuota(){
 	}
 }
 
-function renderKnobs(schema){
-	knobSchema = schema;
-	const wrap = $("#knobs");
+function renderControls(schema){
+	controlSchema = schema;
+	const wrap = $("#controls");
 	wrap.innerHTML = "";
 	for(const [key, spec] of Object.entries(schema)){
-		const knob = document.createElement("div"); knob.className = "knob";
+		const control = document.createElement("div"); control.className = "control";
 		const lab = document.createElement("label"); lab.textContent = key.replace(/_/g," "); lab.style.margin = "0 0 2px"; lab.style.fontSize="13px";
-		knob.appendChild(lab);
+		control.appendChild(lab);
 		const row = document.createElement("div"); row.className = "row";
 		if(spec.type === "int"){
 			const input = document.createElement("input");
-			input.type = "range"; input.min = spec.min; input.max = spec.max; input.value = spec.default; input.dataset.knob = key;
+			input.type = "range"; input.min = spec.min; input.max = spec.max; input.value = spec.default; input.dataset.control = key;
 			const val = document.createElement("span"); val.className = "val"; val.textContent = spec.default;
 			input.addEventListener("input", ()=>{ val.textContent = input.value; });
 			row.append(input, val);
 		} else if(spec.type === "bool"){
-			const input = document.createElement("input"); input.type = "checkbox"; input.checked = !!spec.default; input.dataset.knob = key;
+			const input = document.createElement("input"); input.type = "checkbox"; input.checked = !!spec.default; input.dataset.control = key;
 			row.appendChild(input);
 		} else if(spec.type === "enum"){
-			const select = document.createElement("select"); select.dataset.knob = key;
+			const select = document.createElement("select"); select.dataset.control = key;
 			for(const opt of spec.options){
 				const o = document.createElement("option"); o.value = opt; o.textContent = opt; if(opt===spec.default) o.selected = true;
 				select.appendChild(o);
 			}
 			row.appendChild(select);
 		}
-		knob.appendChild(row);
-		wrap.appendChild(knob);
+		control.appendChild(row);
+		wrap.appendChild(control);
 	}
 }
 
-function collectKnobs(){
-	if(!knobSchema) return {};
+function collectControls(){
+	if(!controlSchema) return {};
 	const out = {};
-	for(const key of Object.keys(knobSchema)){
-		const el = document.querySelector(`[data-knob="${key}"]`);
+	for(const key of Object.keys(controlSchema)){
+		const el = document.querySelector(`[data-control="${key}"]`);
 		if(!el) continue;
 		if(el.type === "checkbox") out[key] = el.checked;
 		else if(el.tagName === "SELECT") out[key] = el.value;
@@ -300,17 +303,17 @@ function collectKnobs(){
 	return out;
 }
 
-async function loadKnobs(){
+async function loadControls(){
 	try{
-		const r = await fetch(`${API_BASE}/knobs`, { cache:"no-store" });
+		const r = await fetch(`${API_BASE}/controls`, { cache:"no-store" });
 		if(!r.ok) throw new Error();
-		renderKnobs(await r.json());
+		renderControls(await r.json());
 	}catch(e){
-		$("#knobs").innerHTML = '<span class="muted">Could not load knob schema.</span>';
+		$("#controls").innerHTML = '<span class="muted">Could not load controls schema.</span>';
 	}
 }
 
-healthCheck(); refreshQuota(); loadKnobs();
+healthCheck(); refreshQuota(); loadControls();
 setInterval(healthCheck, 15000);
 
 /* Keyboard: Enter to submit, Shift+Enter newline, Esc to cancel */
@@ -380,11 +383,11 @@ function renderShots(citations){
 function renderDiagnosis(d){
 	const rows = (d.retrieved || []).map(c=>{
 		const label = [c.chapter, c.heading].filter(Boolean).join(" — ") || c.source_url || "";
-		const score = (c.score!=null) ? `<span class="score">dist ${Number(c.score).toFixed(3)}</span>` : "";
+		const score = (c.score!=null) ? `<span class="score">sim ${Number(c.score).toFixed(3)}</span>` : "";
 		return `<div class="chunk-row">${modTag(c.modality)} <span>${label}</span> ${score}</div>`;
 	}).join("");
 	const best = (d.best_score!=null) ? Number(d.best_score).toFixed(3) : "n/a";
-	const weak = d.best_score!=null && d.best_score > 0.55;
+	const weak = d.best_score!=null && d.best_score < WEAK_SIM_THRESHOLD;
 	const intro = d.reason === "no_answer_text"
 		? "The model returned an empty answer. Here's what retrieval found:"
 		: "The model reported the retrieved context couldn't support an answer. Here's what retrieval actually pulled:";
@@ -392,9 +395,9 @@ function renderDiagnosis(d){
 		<div style="font-size:13px">${intro}</div>
 		<div style="margin-top:6px">${rows || '<span class="muted">nothing was retrieved</span>'}</div>
 		<div class="hint">
-			Closest match distance: <strong>${best}</strong> (cosine distance — lower is closer; above ~0.55 usually means the manual
-			doesn't discuss your topic in these terms).
-			${weak || !rows ? "Try rephrasing with the manual's own vocabulary (e.g. \u201Cquery fan-out\u201D, \u201Crelevance engineering\u201D, \u201Ccitations\u201D), or raise <em>top k text</em> in the knobs." :
+			Closest match similarity: <strong>${best}</strong> (cosine similarity — higher is closer; below ~${WEAK_SIM_THRESHOLD} usually means
+			the manual doesn't discuss your topic).
+			${weak || !rows ? "Try rephrasing with the manual's own vocabulary (e.g. \u201Cquery fan-out\u201D, \u201Crelevance engineering\u201D, \u201Ccitations\u201D), or raise <em>top k text</em> in the controls." :
 			"Retrieval looks reasonable — the chunks may mention your terms without actually answering the question. Try a more specific question about one of the chapters listed above."}
 		</div>`;
 	diagnosisEl.classList.add("show");
@@ -433,7 +436,7 @@ $("#f").addEventListener("submit", async (e)=>{
 		const res = await fetch(`${API_BASE}/chat`, {
 			method:"POST", headers:{ "Content-Type":"application/json" },
 			credentials: "same-origin",
-			body: JSON.stringify({ question: qEl.value, mode, knobs: collectKnobs() }),
+			body: JSON.stringify({ question: qEl.value, mode, controls: collectControls() }),
 			signal: controller.signal
 		});
 		if(!res.ok || !res.body) throw new Error(await res.text());
@@ -446,7 +449,7 @@ $("#f").addEventListener("submit", async (e)=>{
 				if(data.chunks){
 					const rows = data.chunks.map(c=>{
 						const label = [c.chapter, c.heading].filter(Boolean).join(" — ");
-						const score = (c.score!=null) ? `<span class="score">${Number(c.score).toFixed(3)}</span>` : "";
+						const score = (c.score!=null) ? `<span class="score">sim ${Number(c.score).toFixed(3)}</span>` : "";
 						return `<div class="chunk-row">${modTag(c.modality)} <span>${label||c.source_url||""}</span> ${score}</div>`;
 					}).join("");
 					markStep("retrieve", rows || '<span class="muted">no chunks retrieved</span>');
@@ -454,7 +457,7 @@ $("#f").addEventListener("submit", async (e)=>{
 					markStep("retrieve", `${data.chunk_count} chunk(s) retrieved`);
 				}
 			} else if(event === "pack"){
-				markStep("pack", `char budget used: <strong>${data.char_budget_used}</strong> · modalities: ${data.knobs?.modalities ?? ""}`);
+				markStep("pack", `char budget used: <strong>${data.char_budget_used}</strong> · modalities: ${data.controls?.modalities ?? ""}`);
 			} else if(event === "generate"){
 				markStep("generate", "streaming…");
 				out.textContent += data.delta; autoScroll();
