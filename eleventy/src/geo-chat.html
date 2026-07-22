@@ -348,6 +348,16 @@ function markStep(key, bodyHtml){
 
 function modTag(m){ return `<span class="modtag ${m}">${m}</span>`; }
 
+function imageCaption(c){
+	const h = c.heading || "";
+	const m = h.match(/\(section (\d+)\/(\d+)\)/i);
+	if (m) {
+		const chapter = (c.chapter || "page").replace(/-/g, " ");
+		return `Section ${m[1]}/${m[2]} · ${chapter}`;
+	}
+	return c.heading || c.chapter || "page";
+}
+
 function renderCitations(citations){
 	citationsListEl.innerHTML = "";
 	if(!citations || !citations.length){ citationsEl.classList.remove("show"); return; }
@@ -366,12 +376,16 @@ function renderShots(citations){
 	shotGridEl.innerHTML = "";
 	const withMedia = (citations || []).filter(c => c.media && c.media.thumb);
 	if(!withMedia.length){ shotsEl.classList.remove("show"); return; }
+	const seen = new Set();
 	for(const c of withMedia){
+		const thumbUrl = c.media.thumb;
+		if (seen.has(thumbUrl)) continue;
+		seen.add(thumbUrl);
 		const a = document.createElement("a");
 		a.className = "shot";
 		a.href = `${API_BASE}${c.media.full.replace(/^\/api/, "")}`;
 		a.target = "_blank"; a.rel = "noopener";
-		const caption = c.heading || c.chapter || "page";
+		const caption = imageCaption(c);
 		a.innerHTML = `<img loading="lazy" alt="Page screenshot: ${caption}"><div class="cap">${caption}</div>`;
 		a.querySelector("img").src = `${API_BASE}${c.media.thumb.replace(/^\/api/, "")}`;
 		shotGridEl.appendChild(a);
