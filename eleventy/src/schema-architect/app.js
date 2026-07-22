@@ -1286,6 +1286,26 @@ async function handleSubmit(event) {
   }
 }
 
+function syncThemeToggle() {
+  const toggle = $("#theme-toggle");
+  if (!toggle) return;
+  const dark = document.documentElement.dataset.theme === "dark";
+  toggle.textContent = dark ? "☀" : "☾";
+  toggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+}
+
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem("schema-architect-theme", next);
+  } catch (error) {
+    /* private browsing: theme just won't persist */
+  }
+  syncThemeToggle();
+  announce(`Switched to ${next} mode.`);
+}
+
 function bindEvents() {
   $("#site-form")?.addEventListener("submit", handleSubmit);
   $("#add-template")?.addEventListener("click", () => {
@@ -1310,6 +1330,8 @@ function bindEvents() {
     });
   });
   $("#start-over")?.addEventListener("click", () => activateTab("form"));
+  $("#theme-toggle")?.addEventListener("click", toggleTheme);
+  syncThemeToggle();
   for (const name of Object.keys(TAB_PANELS)) {
     $(`#tab-${name}`)?.addEventListener("click", () => activateTab(name));
   }
