@@ -106,7 +106,7 @@ permalink: /geo-chat/
 <p class="tagline">
   A multimodal RAG chatbot that answers strictly from the
   <a href="https://ipullrank.com/ai-search-manual" target="_blank" rel="noopener">AI Search Manual</a> —
-  text &amp; page-screenshot retrieval, streamed and grounded in citations.
+  text &amp; screenshot-tile retrieval, streamed and grounded in citations.
 </p>
 
 <details class="disclosure">
@@ -114,7 +114,7 @@ permalink: /geo-chat/
   <div class="content">
     <p>
       This is a <a href="https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/">retrieval-augmented generation</a> (RAG) demo.
-      The manual's 23 chapters were re-crawled, heading-aware chunked, and embedded — both as text chunks <em>and</em> as full-page screenshots —
+      The manual's 23 chapters were re-crawled, heading-aware chunked, and embedded — both as text chunks <em>and</em> as viewport-sized page-screenshot tiles —
       with Google's <code>gemini-embedding-2</code> into a <a href="https://www.trychroma.com/">Chroma</a> vector database. Each question is embedded,
       the closest text/image chunks are retrieved, and <code>gemini-3.5-flash-lite</code> composes a streamed answer strictly from that
       retrieved context (it's instructed to say so if the context doesn't support an answer).
@@ -177,8 +177,8 @@ permalink: /geo-chat/
 	</div>
 
 	<div id="shots">
-		<strong>Retrieved page screenshots</strong>
-		<span class="muted" style="font-size:13px"> — what the model actually looked at</span>
+		<strong>Retrieved page sections</strong>
+		<span class="muted" style="font-size:13px"> — the exact screenshot tiles the model looked at</span>
 		<div class="shot-grid" id="shotGrid"></div>
 	</div>
 
