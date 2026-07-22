@@ -1117,3 +1117,10 @@ details[open] > summary::before {
   opacity: 1;
   visibility: visible;
 }
+
+.usage-pill {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  cursor: help;
+}

@@ -1239,9 +1239,21 @@ function updateQuotaPill(remaining, quotaEnforced = true) {
   }
 }
 
+function updateUsagePill(stats) {
+  const pill = $("#usage-stats");
+  if (!pill || !stats) return;
+  const visitors = stats.unique_visitors ?? 0;
+  const snippets = stats.snippets_generated ?? 0;
+  pill.textContent = `⚡ ${visitors} visitor${visitors === 1 ? "" : "s"} advised · ${snippets} snippet${snippets === 1 ? "" : "s"} generated`;
+  pill.hidden = false;
+}
+
 async function initStatus() {
   try {
     const [health, quota] = await Promise.all([fetchJson("/health"), fetchJson("/quota")]);
+    fetchJson("/stats")
+      .then(updateUsagePill)
+      .catch(() => {});
     setPill(
       "#api-status",
       health.ok ? "Service ready" : "Service degraded",
@@ -1304,6 +1316,7 @@ async function handleSubmit(event) {
       payload.model_operations_remaining,
       payload.quota_enforced,
     );
+    updateUsagePill(payload.stats);
   } catch (error) {
     progress.cancel();
     const message =
