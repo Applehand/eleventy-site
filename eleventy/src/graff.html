@@ -378,13 +378,17 @@ permalink: /graff/
             <li>
               <strong>Gemini ops router</strong>: when AI is enabled, Gemini works through
               function-calling operations (<code>search_schema_types</code>,
-              <code>get_allowed_properties</code>, <code>check_feature_eligibility</code>,
-              <code>propose_template_types</code>, <code>add_entity_node</code>,
-              <code>add_entity_facts</code>, <code>add_relationship</code>,
-              <code>complete_routing</code>). Each call is validated server-side, so the model
-              can only make changes the registry allows. A final enrichment turn extracts facts
+              <code>list_subtypes</code>, <code>get_allowed_properties</code>,
+              <code>check_feature_eligibility</code>, <code>propose_template_types</code>,
+              <code>add_entity_node</code>, <code>add_entity_facts</code>,
+              <code>add_relationship</code>, <code>complete_routing</code>). Each call is
+              validated server-side, so the model can only make changes the registry allows. It
+              browses the type hierarchy with <code>list_subtypes</code> to pick the most
+              specific type the input supports (a bookstore becomes <code>BookStore</code>, not
+              just <code>Organization</code>), and a final enrichment turn extracts facts
               explicitly stated in the input (addresses, phone numbers, named people, hours)
-              into the graph.
+              into the graph. Entities it creates must be linked into the graph or they are
+              dropped, so the result is always fully connected.
             </li>
             <li>
               <strong>Google feature manifests</strong>: 25 rich-result rule sets sourced from
