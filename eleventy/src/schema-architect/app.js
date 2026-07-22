@@ -4,12 +4,52 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 }
 
 const GENERATION_TIMEOUT_MS = 120_000;
-const GENERATION_LOADING_MESSAGES = [
-  "Mapping your templates to Schema.org types…",
-  "Checking Google rich-result rules…",
-  "Building JSON-LD scaffolds…",
-  "Almost there — AI routing can take up to a minute…",
+
+const GENERATION_STEPS = [
+  {
+    id: "intake",
+    label: "Reading your site description",
+    detail: "Parsing business details and page templates from your form.",
+  },
+  {
+    id: "core",
+    label: "Building core entities",
+    detail: "Creating Organization, WebSite, and homepage nodes with stable IDs.",
+  },
+  {
+    id: "types",
+    label: "Mapping templates to Schema.org types",
+    detail: "Matching each page template to registry-valid Schema.org types.",
+  },
+  {
+    id: "ai",
+    label: "AI-assisted graph routing",
+    detail: "Refining types, properties, and relationships with Gemini.",
+    aiOnly: true,
+  },
+  {
+    id: "validate",
+    label: "Validating the entity graph",
+    detail: "Checking every property against the Schema.org registry.",
+  },
+  {
+    id: "rich",
+    label: "Checking rich result opportunities",
+    detail: "Comparing your graph to Google Search structured-data rules.",
+  },
+  {
+    id: "scaffolds",
+    label: "Building JSON-LD scaffolds",
+    detail: "Generating copy-paste blocks with placeholders for each template.",
+  },
+  {
+    id: "summary",
+    label: "Preparing your blueprint summary",
+    detail: "Writing a plain-language overview of what we built.",
+  },
 ];
+
+let quotaState = { enforced: true, remaining: null };
 
 let apiBase = API_CANDIDATES[0];
 
@@ -340,6 +380,163 @@ function collectSiteDescription(form) {
   };
 }
 
+function generationStepsForRequest(useAi) {
+  return GENERATION_STEPS.filter((step) => !step.aiOnly || useAi);
+}
+
+function stepMarker(state, index) {
+  if (state === "complete") return "✓";
+  return String(index + 1);
+}
+
+function createGenerationProgress(site, useAi) {
+  const panel = $("#loading-panel");
+  const stepsList = $("#loading-steps");
+  const context = $("#loading-context");
+  const detail = $("#loading-detail");
+  const progress = $("#loading-progress");
+  const progressBar = $("#loading-progress-bar");
+  const steps = generationStepsForRequest(useAi);
+  let activeIndex = 0;
+  let timers = [];
+  let finishing = false;
+
+  const templateCount = site.templates.length;
+  const pageLabel =
+    templateCount === 1 ? "1 page template" : `${templateCount} page templates`;
+
+  function clearTimers() {
+    for (const timer of timers) window.clearTimeout(timer);
+    timers = [];
+  }
+
+  function progressPercent() {
+    if (steps.length === 0) return 0;
+    if (activeIndex >= steps.length) return 100;
+    return Math.round(((activeIndex + 0.35) / steps.length) * 100);
+  }
+
+  function render() {
+    if (!stepsList) return;
+    stepsList.replaceChildren();
+    for (const [index, step] of steps.entries()) {
+      let state = "pending";
+      if (index < activeIndex) state = "complete";
+      else if (index === activeIndex && activeIndex < steps.length) state = "active";
+
+      const item = document.createElement("li");
+      item.className = "loading-step";
+      item.dataset.state = state;
+      item.innerHTML = `
+        <span class="loading-step-marker" aria-hidden="true">${stepMarker(state, index)}</span>
+        <div class="loading-step-body">
+          <p class="loading-step-label">${escapeHtml(step.label)}</p>
+          <p class="loading-step-detail">${escapeHtml(step.detail)}</p>
+        </div>
+      `;
+      stepsList.append(item);
+    }
+
+    const current = steps[Math.min(activeIndex, steps.length - 1)];
+    if (detail && current) {
+      detail.textContent = current.detail;
+    }
+    if (progress && progressBar) {
+      const percent = progressPercent();
+      progressBar.style.width = `${percent}%`;
+      progress.setAttribute("aria-valuenow", String(percent));
+    }
+    if (current && activeIndex < steps.length) {
+      announce(current.label);
+    }
+  }
+
+  function show() {
+    if (context) {
+      context.textContent = `Working on ${site.business_name} — ${pageLabel} plus homepage.`;
+    }
+    $("#form-panel")?.setAttribute("hidden", "");
+    panel?.removeAttribute("hidden");
+    panel?.setAttribute("aria-busy", "true");
+    activeIndex = 0;
+    render();
+    panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function hide() {
+    clearTimers();
+    panel?.setAttribute("hidden", "");
+    panel?.setAttribute("aria-busy", "false");
+  }
+
+  function advance() {
+    if (activeIndex < steps.length - 1) {
+      activeIndex += 1;
+      render();
+    }
+  }
+
+  function start() {
+    show();
+    const aiIndex = steps.findIndex((step) => step.id === "ai");
+    const stopBefore = aiIndex >= 0 ? aiIndex : steps.length - 1;
+    let scheduled = 0;
+
+    const schedule = () => {
+      if (scheduled >= stopBefore || finishing) return;
+      timers.push(
+        window.setTimeout(() => {
+          advance();
+          scheduled += 1;
+          schedule();
+        }, 1100),
+      );
+    };
+    schedule();
+
+    if (aiIndex >= 0) {
+      timers.push(
+        window.setTimeout(() => {
+          if (!finishing && activeIndex === aiIndex && detail) {
+            detail.textContent =
+              "Gemini is still routing your templates — complex sites can take up to a minute.";
+          }
+        }, 18_000),
+      );
+    }
+  }
+
+  function wait(ms) {
+    return new Promise((resolve) => {
+      timers.push(window.setTimeout(resolve, ms));
+    });
+  }
+
+  async function finish() {
+    finishing = true;
+    clearTimers();
+    while (activeIndex < steps.length - 1) {
+      advance();
+      await wait(320);
+    }
+    activeIndex = steps.length;
+    render();
+    if (detail) detail.textContent = "Blueprint ready — loading your results…";
+    announce("Blueprint ready.");
+    await wait(450);
+    hide();
+  }
+
+  function cancel() {
+    finishing = true;
+    clearTimers();
+    hide();
+    $("#form-panel")?.removeAttribute("hidden");
+  }
+
+  return { start, finish, cancel };
+}
+
 let mermaidReady = false;
 
 async function ensureMermaid() {
@@ -506,6 +703,8 @@ function composeFallbackSummary(blueprint) {
 }
 
 function showResults(blueprint, remaining, quotaEnforced = true) {
+  $("#loading-panel")?.setAttribute("hidden", "");
+  $("#loading-panel")?.setAttribute("aria-busy", "false");
   $("#form-panel")?.setAttribute("hidden", "");
   const results = $("#results-panel");
   results?.removeAttribute("hidden");
@@ -556,6 +755,10 @@ async function initStatus() {
       ? `Schema.org v${health.registry.schema_version}`
       : "Schema.org registry unavailable";
     setPill("#registry-status", version, health.registry ? "ok" : "warn");
+    quotaState = {
+      enforced: quota.quota_enforced !== false,
+      remaining: quota.model_operations_remaining,
+    };
     updateQuotaPill(quota.model_operations_remaining, quota.quota_enforced);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Service unavailable";
@@ -579,14 +782,12 @@ async function handleSubmit(event) {
   }
 
   button.disabled = true;
-  let loadingTimer = null;
-  let loadingIndex = 0;
-  const setLoadingMessage = () => {
-    button.textContent = GENERATION_LOADING_MESSAGES[loadingIndex];
-    loadingIndex = (loadingIndex + 1) % GENERATION_LOADING_MESSAGES.length;
-  };
-  setLoadingMessage();
-  loadingTimer = window.setInterval(setLoadingMessage, 4000);
+  const useAi =
+    !quotaState.enforced ||
+    quotaState.remaining === null ||
+    quotaState.remaining > 0;
+  const progress = createGenerationProgress(site, useAi);
+  progress.start();
 
   try {
     const payload = await fetchJson(
@@ -597,20 +798,24 @@ async function handleSubmit(event) {
       },
       { timeoutMs: GENERATION_TIMEOUT_MS, retryOnTransient: true },
     );
+    await progress.finish();
+    quotaState = {
+      enforced: payload.quota_enforced !== false,
+      remaining: payload.model_operations_remaining,
+    };
     showResults(
       payload.blueprint,
       payload.model_operations_remaining,
       payload.quota_enforced,
     );
   } catch (error) {
+    progress.cancel();
     const message =
       error instanceof Error ? error.message : "Blueprint generation failed.";
     announce(message);
     alert(message);
   } finally {
-    if (loadingTimer) window.clearInterval(loadingTimer);
     button.disabled = false;
-    button.textContent = "Generate blueprint";
   }
 }
 

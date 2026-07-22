@@ -121,6 +121,29 @@ permalink: /schema-architect/
         </form>
       </section>
 
+      <section
+        class="panel loading-panel"
+        id="loading-panel"
+        hidden
+        aria-labelledby="loading-heading"
+        aria-busy="true"
+      >
+        <h2 id="loading-heading">Building your blueprint</h2>
+        <p id="loading-context" class="loading-context"></p>
+        <ol class="loading-steps" id="loading-steps"></ol>
+        <div
+          class="loading-progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="loading-progress"
+        >
+          <div class="loading-progress-bar" id="loading-progress-bar"></div>
+        </div>
+        <p id="loading-detail" class="loading-detail" aria-live="polite"></p>
+      </section>
+
       <section class="panel results" id="results-panel" hidden aria-labelledby="results-heading">
         <h2 id="results-heading">Your blueprint</h2>
         <p id="results-summary" class="results-summary"></p>
