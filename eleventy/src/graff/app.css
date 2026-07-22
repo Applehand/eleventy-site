@@ -1443,3 +1443,18 @@ details[open] > summary::before {
   font-weight: 850;
   box-shadow: 2px 2px 0 var(--ink);
 }
+
+.card-docs {
+  margin: 8px 0 2px;
+}
+
+.card-docs summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.card-docs .prop-cites {
+  margin-top: 6px;
+}

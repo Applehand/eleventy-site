@@ -1415,29 +1415,21 @@ function opportunityState(item) {
 }
 
 const STATE_META = {
-  ready: { badge: "Ready", order: 0 },
-  tokens: { badge: "Fill the tokens", order: 1 },
-  blocked: { badge: "Needs real content", order: 2 },
+  ready: { badge: "Qualifies now", order: 0 },
+  tokens: { badge: "Fill tokens", order: 1 },
+  blocked: { badge: "Missing data", order: 2 },
 };
 
 function opportunityStatusLine(item, state) {
   if (state === "blocked") {
     const missing = (item.missing_required_properties || []).map(escapeHtml).join(", ");
-    return `<p class="opportunity-line">Requires real data for <strong>${missing}</strong>: content a placeholder cannot stand in for. Add it to the JSON-LD to qualify.</p>`;
+    return `<p class="opportunity-line">Google requires <strong>${missing}</strong>, and a placeholder does not count. Add the real thing to the snippet to qualify.</p>`;
   }
   if (state === "tokens") {
     const stubs = (item.stubbed_properties || []).map(escapeHtml).join(", ");
-    return `<p class="opportunity-line">Eligible once you fill the tokens for <strong>${stubs}</strong> in the snippet below.</p>`;
+    return `<p class="opportunity-line">The snippet meets Google's requirements once the tokens for <strong>${stubs}</strong> are replaced with real values.</p>`;
   }
-  const satisfied = (item.satisfied_properties || []).map(escapeHtml).join(", ");
-  return `<p class="opportunity-line">Eligible now${satisfied ? ` — required data in place: <strong>${satisfied}</strong>` : ""}.</p>`;
-}
-
-function scrollToSnippet(templateName) {
-  const block = document.querySelector(`.snippet-block[data-template="${CSS.escape(templateName)}"]`);
-  if (!block) return;
-  block.open = true;
-  block.scrollIntoView({ behavior: "smooth", block: "start" });
+  return `<p class="opportunity-line">The generated markup already meets Google's requirements for this result.</p>`;
 }
 
 function renderRichResults(items) {
@@ -1470,9 +1462,9 @@ function renderRichResults(items) {
   const counts = { ready: 0, tokens: 0, blocked: 0 };
   for (const item of cards) counts[opportunityState(item)] += 1;
   const summaryParts = [];
-  if (counts.ready) summaryParts.push(`${counts.ready} ready`);
+  if (counts.ready) summaryParts.push(`${counts.ready} qualify now`);
   if (counts.tokens) summaryParts.push(`${counts.tokens} need tokens filled`);
-  if (counts.blocked) summaryParts.push(`${counts.blocked} need real content`);
+  if (counts.blocked) summaryParts.push(`${counts.blocked} missing data`);
   const summary = document.createElement("p");
   summary.className = "opportunity-summary mono";
   summary.textContent = summaryParts.join(" · ");
@@ -1491,10 +1483,7 @@ function renderRichResults(items) {
       ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">Search Central docs</a>`
       : "";
     const benefit = FEATURE_BENEFITS[item.feature_id];
-    const snippetLink =
-      item.template_name && !item.template_name.startsWith("all ")
-        ? `<button type="button" class="snippet-jump" data-template="${escapeAttr(item.template_name)}">view snippet ↓</button>`
-        : "";
+    const citations = renderPropertyCitations(item);
     card.innerHTML = `
       <div class="result-card-head">
         <h4>${escapeHtml(item.feature_name)}${item.template_name ? ` · ${escapeHtml(item.template_name)}` : ""}</h4>
@@ -1502,14 +1491,11 @@ function renderRichResults(items) {
       </div>
       ${benefit ? `<p class="opportunity-benefit">${escapeHtml(benefit)}</p>` : ""}
       ${opportunityStatusLine(item, state)}
-      ${renderPropertyCitations(item)}
-      <div class="result-card-links">${snippetLink}${policy}</div>
+      ${citations ? `<details class="card-docs"><summary>property documentation</summary>${citations}</details>` : ""}
+      ${policy ? `<div class="result-card-links">${policy}</div>` : ""}
     `;
     grid.append(card);
   }
-  container.querySelectorAll(".snippet-jump").forEach((button) => {
-    button.addEventListener("click", () => scrollToSnippet(button.dataset.template));
-  });
 }
 
 function escapeHtml(value) {
