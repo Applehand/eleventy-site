@@ -1,4 +1,9 @@
-const API = "/api/schema";
+const API_CANDIDATES = ["/api/schema"];
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+  API_CANDIDATES.push("http://127.0.0.1:8120/api/schema");
+}
+
+let apiBase = API_CANDIDATES[0];
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -14,19 +19,37 @@ function setPill(id, text, state) {
   pill.dataset.state = state;
 }
 
+function errorMessage(payload, fallback) {
+  if (typeof payload?.detail === "string") return payload.detail;
+  if (typeof payload?.error === "string") return payload.error;
+  if (typeof payload?.error?.message === "string") return payload.error.message;
+  return fallback;
+}
+
 async function fetchJson(path, options = {}) {
-  const response = await fetch(`${API}${path}`, {
-    credentials: "same-origin",
-    cache: "no-store",
-    headers: { "content-type": "application/json", ...(options.headers || {}) },
-    ...options,
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const detail = payload?.detail || payload?.error?.message || response.statusText;
-    throw new Error(typeof detail === "string" ? detail : "Request failed.");
+  let lastError = new Error("Request failed.");
+  const bases = [apiBase, ...API_CANDIDATES.filter((base) => base !== apiBase)];
+
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}${path}`, {
+        credentials: base.startsWith("http") ? "omit" : "same-origin",
+        cache: "no-store",
+        headers: { "content-type": "application/json", ...(options.headers || {}) },
+        ...options,
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(errorMessage(payload, response.statusText));
+      }
+      apiBase = base;
+      return payload;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Request failed.");
+    }
   }
-  return payload;
+
+  throw lastError;
 }
 
 function normalizeOrigin(value) {
@@ -45,28 +68,43 @@ function parseSocialUrls(raw) {
     .filter(Boolean);
 }
 
+function updateTemplateLabels() {
+  document.querySelectorAll(".template-row").forEach((row, index) => {
+    const label = row.querySelector(".template-row-index");
+    if (label) label.textContent = `Template ${index + 1}`;
+    const removeButton = row.querySelector(".remove-template");
+    if (removeButton) {
+      removeButton.disabled = document.querySelectorAll(".template-row").length <= 1;
+    }
+  });
+}
+
 function templateRow(index, data = {}) {
   const row = document.createElement("div");
   row.className = "template-row";
   row.dataset.index = String(index);
   row.innerHTML = `
-    <div class="field">
-      <label>Template name</label>
+    <span class="template-row-index" aria-hidden="true">Template ${index + 1}</span>
+    <div class="field template-field">
+      <label class="sr-only">Template name</label>
       <input name="templateName" required maxlength="100" placeholder="blog post" value="${escapeAttr(data.name || "")}" />
     </div>
-    <div class="field">
-      <label>Example path</label>
+    <div class="field template-field">
+      <label class="sr-only">Example path</label>
       <input name="templatePath" required maxlength="500" placeholder="/blog/my-post" value="${escapeAttr(data.example_path || "")}" />
-    </motion.div>
-    <div class="field wide">
-      <label>What does this page show?</label>
+    </div>
+    <div class="field template-field template-description">
+      <label class="sr-only">What does this page show?</label>
       <input name="templateDescription" required maxlength="2000" placeholder="Long-form articles with author bylines." value="${escapeAttr(data.description || "")}" />
-    </motion.div>
+    </div>
     <button type="button" class="icon-button remove-template" aria-label="Remove template" title="Remove template">×</button>
   `;
   row.querySelector(".remove-template")?.addEventListener("click", () => {
     const rows = $("#template-rows");
-    if (rows && rows.children.length > 1) row.remove();
+    if (rows && rows.children.length > 1) {
+      row.remove();
+      updateTemplateLabels();
+    }
   });
   return row;
 }
@@ -82,8 +120,15 @@ function ensureTemplateRows() {
   const container = $("#template-rows");
   if (!container) return;
   if (!container.children.length) {
-    container.append(templateRow(0, { name: "blog post", example_path: "/blog/example", description: "Articles and essays." }));
+    container.append(
+      templateRow(0, {
+        name: "blog post",
+        example_path: "/blog/example",
+        description: "Articles and essays.",
+      }),
+    );
   }
+  updateTemplateLabels();
 }
 
 function collectSiteDescription(form) {
@@ -131,7 +176,8 @@ function renderRichResults(items) {
   if (!container) return;
   container.innerHTML = "";
   if (!items.length) {
-    container.innerHTML = '<p class="hint">No specific rich result types were detected for your templates.</p>';
+    container.innerHTML =
+      '<p class="hint">No specific rich result types were detected for your templates.</p>';
     return;
   }
   for (const item of items) {
@@ -205,7 +251,7 @@ function downloadAll(scaffolds) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "schema-blueprint.json";
+  link.download = "schema-architect-blueprint.json";
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -217,7 +263,9 @@ function showResults(blueprint, remaining) {
 
   const summary = $("#results-summary");
   if (summary) {
-    const parts = [`${blueprint.scaffolds.length} scaffold${blueprint.scaffolds.length === 1 ? "" : "s"} ready.`];
+    const parts = [
+      `${blueprint.scaffolds.length} scaffold${blueprint.scaffolds.length === 1 ? "" : "s"} ready.`,
+    ];
     if (blueprint.model_used) parts.push("Tailored with AI.");
     else if (blueprint.model_degraded) parts.push("Generated from your answers without AI.");
     summary.textContent = parts.join(" ");
@@ -234,7 +282,8 @@ function showResults(blueprint, remaining) {
 
 function updateQuotaPill(remaining) {
   if (typeof remaining === "number") {
-    const label = remaining === 1 ? "1 generation left today" : `${remaining} generations left today`;
+    const label =
+      remaining === 1 ? "1 generation left today" : `${remaining} generations left today`;
     setPill("#quota-status", label, remaining > 0 ? "ok" : "warn");
   }
 }
@@ -242,12 +291,19 @@ function updateQuotaPill(remaining) {
 async function initStatus() {
   try {
     const [health, quota] = await Promise.all([fetchJson("/health"), fetchJson("/quota")]);
-    setPill("#api-status", health.ok ? "Service ready" : "Service degraded", health.ok ? "ok" : "warn");
-    const version = health.registry?.version ? `Schema.org ${health.registry.version}` : "Schema.org registry unavailable";
+    setPill(
+      "#api-status",
+      health.ok ? "Service ready" : "Service degraded",
+      health.ok ? "ok" : "warn",
+    );
+    const version = health.registry?.schema_version
+      ? `Schema.org v${health.registry.schema_version}`
+      : "Schema.org registry unavailable";
     setPill("#registry-status", version, health.registry ? "ok" : "warn");
     updateQuotaPill(quota.model_operations_remaining);
-  } catch {
-    setPill("#api-status", "Service unavailable", "error");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Service unavailable";
+    setPill("#api-status", message, "error");
     setPill("#registry-status", "Registry unknown", "error");
     setPill("#quota-status", "Quota unknown", "error");
   }
@@ -288,6 +344,7 @@ function bindEvents() {
   $("#add-template")?.addEventListener("click", () => {
     const container = $("#template-rows");
     container?.append(templateRow(container.children.length));
+    updateTemplateLabels();
   });
   $("#download-all")?.addEventListener("click", () => {
     if (!latestScaffolds.length) return;

@@ -1,5 +1,5 @@
 ---
-title: Schema Blueprint
+title: Schema Architect
 permalink: /schema-architect/
 ---
 <!doctype html>
@@ -11,13 +11,13 @@ permalink: /schema-architect/
       name="description"
       content="Describe your site once and get a Schema.org entity graph plus ready-to-fill JSON-LD scaffolds for every template."
     />
-    <title>Schema Blueprint</title>
+    <title>Schema Architect</title>
     <link rel="stylesheet" href="/schema-architect/app.css" />
   </head>
   <body>
     <main>
       <header>
-        <h1>Schema Blueprint</h1>
+        <h1>Schema Architect</h1>
         <p class="lede">
           Tell us about your business and page templates. We build a connected entity graph and
           hand you copy-paste JSON-LD scaffolds with clear placeholders for each page type.
@@ -86,12 +86,20 @@ permalink: /schema-architect/
             </div>
           </div>
 
-          <fieldset>
+          <fieldset class="template-fieldset">
             <legend>Page templates</legend>
             <p class="hint">
               Add each reusable page type on your site. We always include a homepage automatically.
             </p>
-            <div id="template-rows" class="template-rows"></div>
+            <div class="template-table" role="group" aria-label="Page templates">
+              <div class="template-table-head" aria-hidden="true">
+                <span>Template name</span>
+                <span>Example path</span>
+                <span>What this page shows</span>
+                <span></span>
+              </div>
+              <div id="template-rows" class="template-rows"></div>
+            </div>
             <button type="button" id="add-template" class="secondary">Add template</button>
           </fieldset>
 

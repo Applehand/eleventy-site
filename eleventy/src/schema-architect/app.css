@@ -190,33 +190,84 @@ button.secondary {
   font-weight: 600;
 }
 
+.template-fieldset {
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 18px 0 0;
+}
+
+.template-table {
+  margin: 12px 0;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.template-table-head,
+.template-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.6fr) 42px;
+  gap: 10px;
+  align-items: center;
+}
+
+.template-table-head {
+  padding: 10px 12px;
+  background: #f3f1eb;
+  border-bottom: 2px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .template-rows {
   display: grid;
-  gap: 12px;
-  margin: 12px 0;
 }
 
 .template-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-  gap: 12px;
-  align-items: end;
   padding: 12px;
-  border: 1.5px dashed var(--line);
-  border-radius: 8px;
+  border-bottom: 1px solid #ddd8cf;
   background: #faf9f6;
 }
 
-.template-row .wide {
-  grid-column: 1 / -1;
+.template-row:last-child {
+  border-bottom: 0;
+}
+
+.template-row-index {
+  display: none;
+}
+
+.template-field {
+  margin: 0;
+}
+
+.template-description input {
+  min-width: 0;
+}
+
+.template-fieldset > .secondary {
+  margin-top: 12px;
 }
 
 .icon-button {
   min-height: 42px;
   min-width: 42px;
   padding: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   line-height: 1;
+  align-self: center;
+}
+
+.icon-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .results section + section {
@@ -362,12 +413,40 @@ pre {
   }
 
   .grid,
+  .template-table-head,
   .template-row {
     grid-template-columns: 1fr;
   }
 
-  .field.wide,
-  .template-row .wide {
+  .template-table-head {
+    display: none;
+  }
+
+  .template-row {
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .template-row-index {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .template-field label.sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    margin-bottom: 4px;
+    font-size: 0.82rem;
+  }
+
+  .field.wide {
     grid-column: auto;
   }
 
