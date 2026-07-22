@@ -59,6 +59,22 @@ permalink: /graff/
         ></span>
       </div>
 
+      <details class="footer-details ledger-details" id="type-ledger" hidden>
+        <summary>Lifetime type ledger</summary>
+        <p class="hint">
+          Every Schema.org type GRAFF has placed in a generated entity graph, and how many
+          times. Counts update with each blueprint.
+        </p>
+        <div class="ledger-wrap">
+          <table class="ledger-table">
+            <thead>
+              <tr><th>Type</th><th>Uses</th></tr>
+            </thead>
+            <tbody id="type-ledger-body"></tbody>
+          </table>
+        </div>
+      </details>
+
       <nav class="view-tabs" role="tablist" aria-label="Blueprint stages">
         <button type="button" class="view-tab" id="tab-form" role="tab" aria-selected="true" aria-controls="form-panel">
           1 · Describe
@@ -199,12 +215,17 @@ permalink: /graff/
 
         <section aria-labelledby="graph-heading" id="section-graph">
           <h3 id="graph-heading">Entity graph</h3>
-          <div class="graph-controls">
-            <span class="hint">scroll to zoom · drag background to pan · drag a node to pin it in place · double-click a pinned node to free it · hover a node for its fields</span>
-            <button type="button" id="graph-reset" class="secondary">Reset layout</button>
+          <div id="graph-stage">
+            <div class="graph-controls">
+              <span class="hint">scroll to zoom · drag background to pan · drag a node to pin it in place · double-click a pinned node to free it · hover a node for its fields</span>
+              <span class="graph-buttons">
+                <button type="button" id="graph-reset" class="secondary">Reset layout</button>
+                <button type="button" id="graph-fullscreen" class="secondary">Full screen</button>
+              </span>
+            </div>
+            <div id="diagram" aria-label="Rendered entity graph"></div>
+            <div id="graph-key" class="graph-key" aria-label="Graph color key"></div>
           </div>
-          <div id="diagram" aria-label="Rendered entity graph"></div>
-          <div id="graph-key" class="graph-key" aria-label="Graph color key"></div>
           <details class="graph-details">
             <summary>About this graph</summary>
             <div id="graph-ai-summary" class="graph-ai-summary" hidden>

@@ -1670,9 +1670,28 @@ function updateUsagePill(stats) {
   const pill = $("#usage-stats");
   if (!pill || !stats) return;
   const visitors = stats.unique_visitors ?? 0;
-  const snippets = stats.snippets_generated ?? 0;
-  pill.textContent = `⚡ ${visitors} visitor${visitors === 1 ? "" : "s"} advised · ${snippets} snippet${snippets === 1 ? "" : "s"} generated`;
+  const typeCount = (stats.types || []).length;
+  pill.textContent = `⚡ ${visitors} visitor${visitors === 1 ? "" : "s"} advised · ${typeCount} schema.org type${typeCount === 1 ? "" : "s"} recorded`;
   pill.hidden = false;
+  renderTypeLedger(stats);
+}
+
+function renderTypeLedger(stats) {
+  const ledger = $("#type-ledger");
+  const body = $("#type-ledger-body");
+  if (!ledger || !body) return;
+  const types = stats.types || [];
+  if (!types.length) {
+    ledger.hidden = true;
+    return;
+  }
+  body.innerHTML = types
+    .map(
+      (entry) =>
+        `<tr><td><a href="https://schema.org/${encodeURIComponent(entry.name)}" target="_blank" rel="noopener">${escapeHtml(entry.name)}</a></td><td>${entry.count}</td></tr>`,
+    )
+    .join("");
+  ledger.hidden = false;
 }
 
 async function initStatus() {
@@ -1800,6 +1819,19 @@ function bindEvents() {
   $("#start-over")?.addEventListener("click", () => activateTab("form"));
   $("#theme-toggle")?.addEventListener("click", toggleTheme);
   $("#graph-reset")?.addEventListener("click", () => activeGraph?.reset());
+  const stage = $("#graph-stage");
+  const fullscreenButton = $("#graph-fullscreen");
+  fullscreenButton?.addEventListener("click", () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else stage?.requestFullscreen?.();
+  });
+  document.addEventListener("fullscreenchange", () => {
+    if (fullscreenButton) {
+      fullscreenButton.textContent = document.fullscreenElement
+        ? "Exit full screen"
+        : "Full screen";
+    }
+  });
   syncThemeToggle();
   for (const name of Object.keys(TAB_PANELS)) {
     $(`#tab-${name}`)?.addEventListener("click", () => activateTab(name));
