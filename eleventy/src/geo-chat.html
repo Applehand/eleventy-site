@@ -32,7 +32,7 @@ permalink: /geo-chat/
 
 	label{ font-weight:800; display:block; margin:8px 0 8px }
 	textarea{ width:100%; padding:12px; border:2px solid var(--ink); border-radius:10px; background:var(--paper); box-shadow:4px 4px 0 var(--ink); font:inherit; resize:vertical; min-height:96px }
-	.controls{ display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 6px; align-items:center }
+	.btn-row{ display:flex; gap:10px; flex-wrap:nowrap; margin:12px 0 6px; align-items:center }
 	.btn{ border:2px solid var(--ink); background:var(--paper); padding:10px 14px; border-radius:10px; box-shadow:4px 4px 0 var(--ink); font-weight:800; cursor:pointer; user-select:none }
 	.btn:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink) }
 	.btn:active{ transform:translate(0,0); box-shadow:2px 2px 0 var(--ink) }
@@ -150,13 +150,10 @@ permalink: /geo-chat/
 	<label for="q">Question</label>
 	<textarea id="q" placeholder="Ask…">What does the AI Search Manual say about query fan-out?</textarea>
 
-	<div class="controls">
+	<div class="btn-row">
 		<button id="ask" class="btn">Ask</button>
-		<button type="button" id="cancel" class="btn" disabled>Cancel</button>
 		<button type="button" id="modeAnswer" class="btn mode active">Answer</button>
 		<button type="button" id="modeStep" class="btn mode">Step-through</button>
-		<div class="grow"></div>
-		<button type="button" id="copy" class="btn">Copy</button>
 		<button type="button" id="clear" class="btn">Clear</button>
 	</div>
 
@@ -197,7 +194,7 @@ const apiPill = $("#apiPill"), apiText = $("#apiText"), latencyEl = $("#latency"
 const quotaPill = $("#quotaPill"), quotaText = $("#quotaText");
 const out = $("#out"), caret = $("#caret");
 const qEl = $("#q");
-const askBtn = $("#ask"), cancelBtn = $("#cancel"), copyBtn = $("#copy"), clearBtn = $("#clear");
+const askBtn = $("#ask"), clearBtn = $("#clear");
 const modeAnswerBtn = $("#modeAnswer"), modeStepBtn = $("#modeStep");
 const timelineEl = $("#timeline");
 const citationsEl = $("#citations"), citationsListEl = $("#citationsList");
@@ -209,7 +206,7 @@ let controlSchema = null;
 
 function setBusy(b){
 	bodyEl.classList.toggle("busy", b);
-	askBtn.disabled = b; cancelBtn.disabled = !b;
+	askBtn.disabled = b;
 	qEl.disabled = b; if(b){ qEl.blur(); }
 	out.parentElement.classList.toggle("streaming", b);
 	caret.style.display = b ? "inline-block" : "none";
@@ -315,10 +312,9 @@ async function loadControls(){
 healthCheck(); refreshQuota(); loadControls();
 setInterval(healthCheck, 15000);
 
-/* Keyboard: Enter to submit, Shift+Enter newline, Esc to cancel */
+/* Keyboard: Enter to submit, Shift+Enter newline */
 qEl.addEventListener("keydown",(e)=>{
 	if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); askBtn.click(); }
-	if(e.key==="Escape" && cancelBtn.disabled===false){ cancelBtn.click(); }
 });
 
 function renderError(msg){ out.textContent += `\n[error] ${msg}`; }
@@ -497,9 +493,5 @@ $("#f").addEventListener("submit", async (e)=>{
 	}
 });
 
-cancelBtn.addEventListener("click", ()=>{ if(controller) controller.abort(); });
-copyBtn.addEventListener("click", async ()=>{
-	try{ await navigator.clipboard.writeText(out.textContent); copyBtn.textContent="Copied!"; setTimeout(()=>copyBtn.textContent="Copy",900); }catch{}
-});
 clearBtn.addEventListener("click", ()=>{ out.textContent=""; citationsEl.classList.remove("show"); shotsEl.classList.remove("show"); diagnosisEl.classList.remove("show"); resetTimeline(); qEl.focus(); });
 </script>
