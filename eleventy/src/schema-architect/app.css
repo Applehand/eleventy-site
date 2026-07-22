@@ -333,6 +333,21 @@ button.secondary {
   background: #fff;
 }
 
+.sample-select {
+  min-height: 42px;
+  max-width: 100%;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 13px;
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--ink);
+  color: var(--ink);
+  font-weight: 850;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .optional {
   color: var(--muted);
   font-weight: 600;

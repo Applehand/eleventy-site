@@ -208,7 +208,7 @@ function ensureTemplateRows() {
 
 const SAMPLE_PROFILES = [
   {
-    label: "Northwind Bakery",
+    label: "Northwind Bakery — local business + menu",
     business_name: "Northwind Bakery",
     site_url: "https://northwindbakery.example",
     business_description:
@@ -229,11 +229,23 @@ const SAMPLE_PROFILES = [
         example_path: "/locations/downtown",
         description: "Store hours, address, and directions for each bakery location.",
       },
+      {
+        name: "baking recipe",
+        example_path: "/recipes/overnight-sourdough",
+        description:
+          "Step-by-step home baking recipes with ingredients, prep time, and yield.",
+      },
+      {
+        name: "catering faq",
+        example_path: "/catering/faq",
+        description: "Common questions about catering orders, lead times, and delivery radius.",
+      },
     ],
-    notes: "We publish seasonal menus and accept online orders for pickup.",
+    notes:
+      "Downtown location: 412 Harbor Street, open 7am-3pm daily, phone (555) 014-2200. We publish seasonal menus and accept online orders for pickup. Founded in 2012.",
   },
   {
-    label: "Summit Analytics",
+    label: "Summit Analytics — SaaS + careers",
     business_name: "Summit Analytics",
     site_url: "https://summitanalytics.example",
     business_description:
@@ -247,23 +259,31 @@ const SAMPLE_PROFILES = [
       {
         name: "product feature",
         example_path: "/platform/inventory-alerts",
-        description: "Marketing pages for individual product capabilities and integrations.",
+        description:
+          "Marketing pages for individual software capabilities and integrations of the Summit web application.",
       },
       {
         name: "case study",
         example_path: "/customers/acme-logistics",
-        description: "Customer success stories with measurable outcomes.",
+        description: "Customer success stories with measurable outcomes, written by our content team.",
       },
       {
         name: "pricing",
         example_path: "/pricing",
-        description: "Plan tiers, feature comparison, and FAQ.",
+        description: "Plan tiers, feature comparison, and frequently asked billing questions.",
+      },
+      {
+        name: "job opening",
+        example_path: "/careers/senior-backend-engineer",
+        description:
+          "Open roles with responsibilities, salary range, location, and application deadline.",
       },
     ],
-    notes: "Multiple product lines under one brand; docs live on a separate subdomain.",
+    notes:
+      "Multiple product lines under one brand; docs live on a separate subdomain. Hiring is remote-first across the US. The platform is a browser-based web application with a free trial tier.",
   },
   {
-    label: "Horizon Travel Guides",
+    label: "Horizon Travel Guides — publisher + video",
     business_name: "Horizon Travel Guides",
     site_url: "https://horizontravel.example",
     business_description:
@@ -284,11 +304,23 @@ const SAMPLE_PROFILES = [
         example_path: "/hotels/riverfront-inn",
         description: "Property reviews with ratings, amenities, and booking links.",
       },
+      {
+        name: "video itinerary",
+        example_path: "/videos/48-hours-in-seattle",
+        description:
+          "Short travel videos with an upload date, duration, and narrated walkthrough of an itinerary.",
+      },
+      {
+        name: "contributor profile",
+        example_path: "/contributors/maya-chen",
+        description: "Bio pages for each travel writer with their beats and published guides.",
+      },
     ],
-    notes: "Affiliate links on hotel pages; several freelance contributors.",
+    notes:
+      "Affiliate links on hotel pages; twelve freelance contributors, each with a byline and profile page. Hotel reviews use a 1-5 star scale from staff visits.",
   },
   {
-    label: "Oak & Page Books",
+    label: "Oak & Page Books — events + reviews",
     business_name: "Oak & Page Books",
     site_url: "https://oakandpage.example",
     business_description:
@@ -304,13 +336,19 @@ const SAMPLE_PROFILES = [
       {
         name: "staff pick",
         example_path: "/picks/march-fiction",
-        description: "Curated book recommendations with short reviews.",
+        description: "Curated book recommendations with short staff reviews.",
+      },
+      {
+        name: "signed edition",
+        example_path: "/shop/signed-first-edition-tidelands",
+        description: "Shop listings for signed books with price, condition, and availability.",
       },
     ],
-    notes: null,
+    notes:
+      "Store address: 88 Alder Lane, open Tuesday-Sunday. Events are usually free with RSVP; some ticketed signings around $15.",
   },
   {
-    label: "Driftwood Outdoor Co.",
+    label: "Driftwood Outdoor Co. — e-commerce + guides",
     business_name: "Driftwood Outdoor Co.",
     site_url: "https://driftwoodoutdoor.example",
     business_description:
@@ -324,15 +362,181 @@ const SAMPLE_PROFILES = [
       {
         name: "product",
         example_path: "/gear/ultralight-tent",
-        description: "Product detail pages with specs, reviews, and availability.",
+        description: "Product detail pages with specs, verified buyer reviews, and availability.",
       },
       {
         name: "how-to guide",
         example_path: "/guides/backpack-fit",
         description: "Instructional articles with gear recommendations.",
       },
+      {
+        name: "video walkthrough",
+        example_path: "/videos/tent-setup",
+        description: "Gear setup videos with duration, upload date, and a transcript.",
+      },
     ],
-    notes: "Ships from two US warehouses; some pages include video walkthroughs.",
+    notes:
+      "Ships from two US warehouses; prices in USD. Product pages show in-stock status and collect verified buyer reviews with star ratings.",
+  },
+  {
+    label: "Golden Ladle — recipes + cooking videos",
+    business_name: "Golden Ladle Kitchen",
+    site_url: "https://goldenladle.example",
+    business_description:
+      "Food blog publishing tested weeknight recipes, technique videos, and seasonal menu plans from a two-person test kitchen.",
+    business_category: "Food publisher",
+    social_urls: [
+      "https://www.youtube.com/@goldenladlekitchen",
+      "https://www.instagram.com/goldenladle",
+    ],
+    templates: [
+      {
+        name: "recipe",
+        example_path: "/recipes/miso-butter-noodles",
+        description:
+          "Tested recipes with ingredient lists, step-by-step instructions, prep and cook times, and servings.",
+      },
+      {
+        name: "technique video",
+        example_path: "/videos/knife-skills-basics",
+        description: "Cooking technique videos with duration, upload date, and chapters.",
+      },
+      {
+        name: "chef profile",
+        example_path: "/about/nora-alvarez",
+        description: "Profile pages for the two chefs with bios and their published recipes.",
+      },
+      {
+        name: "kitchen faq",
+        example_path: "/faq/substitutions",
+        description: "Common questions about ingredient substitutions and equipment.",
+      },
+    ],
+    notes:
+      "Every recipe is tested three times before publishing. Recipes list prep time, cook time, and servings. Chefs: Nora Alvarez and Sam Whitfield.",
+  },
+  {
+    label: "Brightpath Learning — courses + webinars",
+    business_name: "Brightpath Learning",
+    site_url: "https://brightpathlearning.example",
+    business_description:
+      "Online course provider teaching data skills to career changers, with cohort-based classes, live webinars, and a student question board.",
+    business_category: "Online education provider",
+    social_urls: ["https://www.linkedin.com/company/brightpath-learning"],
+    templates: [
+      {
+        name: "course",
+        example_path: "/courses/sql-fundamentals",
+        description:
+          "Course pages with syllabus, instructor, duration in weeks, tuition price, and enrollment dates.",
+      },
+      {
+        name: "webinar",
+        example_path: "/webinars/portfolio-review-night",
+        description: "Free live online events with a start time, host, and registration link.",
+      },
+      {
+        name: "instructor profile",
+        example_path: "/instructors/devon-park",
+        description: "Instructor bios with credentials and the courses they teach.",
+      },
+      {
+        name: "student question",
+        example_path: "/community/questions/window-functions-vs-group-by",
+        description:
+          "Community Q&A threads where students post a question and instructors post accepted answers.",
+      },
+    ],
+    notes:
+      "Six-week cohorts, tuition listed in USD with scholarships. Webinars are free and recorded. The question board shows an accepted answer with upvotes.",
+  },
+  {
+    label: "Cascade Talent Group — job board",
+    business_name: "Cascade Talent Group",
+    site_url: "https://cascadetalent.example",
+    business_description:
+      "Regional staffing agency posting engineering and manufacturing roles across the Pacific Northwest, with salary guides and hiring resources.",
+    business_category: "Staffing agency",
+    social_urls: ["https://www.linkedin.com/company/cascade-talent-group"],
+    templates: [
+      {
+        name: "job listing",
+        example_path: "/jobs/cnc-machinist-tacoma",
+        description:
+          "Job postings with title, employer, salary range, employment type, location, and application deadline.",
+      },
+      {
+        name: "salary guide",
+        example_path: "/resources/2026-manufacturing-salary-guide",
+        description: "Annual salary report articles with regional pay data by role.",
+      },
+      {
+        name: "employer page",
+        example_path: "/employers/pacific-fabrication",
+        description: "Profiles of hiring companies with industry, size, and open roles.",
+      },
+    ],
+    notes:
+      "Roles include full-time, contract, and contract-to-hire. Every listing shows a posted date, valid-through date, and a salary range in USD.",
+  },
+  {
+    label: "Lumen Film Society — screenings + reviews",
+    business_name: "Lumen Film Society",
+    site_url: "https://lumenfilm.example",
+    business_description:
+      "Member-supported cinema screening restored classics and international films, with critic essays and a member discussion forum.",
+    business_category: "Independent cinema",
+    social_urls: ["https://www.instagram.com/lumenfilmsociety"],
+    templates: [
+      {
+        name: "screening",
+        example_path: "/screenings/seven-samurai-4k",
+        description:
+          "Screening events with film title, director, showtimes, venue, and ticket prices.",
+      },
+      {
+        name: "film essay",
+        example_path: "/essays/kurosawa-composition",
+        description: "Critic essays and film analysis articles with author bylines.",
+      },
+      {
+        name: "forum thread",
+        example_path: "/forum/best-restorations-2026",
+        description:
+          "Member discussion threads with an original post and threaded replies.",
+      },
+    ],
+    notes:
+      "Theater address: 200 Meridian Avenue. Tickets $8 members / $14 general. Films are shown with title, director, and release year on each screening page.",
+  },
+  {
+    label: "Open Climate Data Lab — research datasets",
+    business_name: "Open Climate Data Lab",
+    site_url: "https://openclimatedata.example",
+    business_description:
+      "University-affiliated research lab publishing open climate datasets, methodology articles, and reproducible analysis notebooks.",
+    business_category: "Research organization",
+    social_urls: ["https://github.com/open-climate-data-lab"],
+    templates: [
+      {
+        name: "dataset",
+        example_path: "/datasets/pnw-snowpack-1950-2025",
+        description:
+          "Dataset landing pages with description, variables measured, license, temporal coverage, and download formats.",
+      },
+      {
+        name: "methodology article",
+        example_path: "/methods/station-homogenization",
+        description: "Peer-reviewed methodology write-ups with authors and publication dates.",
+      },
+      {
+        name: "researcher profile",
+        example_path: "/people/dr-ida-mansour",
+        description: "Researcher bios with affiliations, ORCID links, and published datasets.",
+      },
+    ],
+    notes:
+      "All datasets are CC-BY 4.0 with versioned releases and citations. Data available as CSV and NetCDF. Lab is affiliated with Cascadia State University.",
   },
 ];
 
@@ -356,9 +560,21 @@ function fillFormFromSample(sample) {
   announce(`Filled form with sample: ${sample.label}.`);
 }
 
-function fillRandomSample() {
-  const sample = SAMPLE_PROFILES[Math.floor(Math.random() * SAMPLE_PROFILES.length)];
-  fillFormFromSample(sample);
+function populateSampleSelect() {
+  const select = $("#sample-select");
+  if (!select) return;
+  SAMPLE_PROFILES.forEach((sample, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = sample.label;
+    select.append(option);
+  });
+}
+
+function fillSelectedSample(event) {
+  const index = Number.parseInt(event.target.value, 10);
+  const sample = SAMPLE_PROFILES[index];
+  if (sample) fillFormFromSample(sample);
 }
 
 function collectSiteDescription(form) {
@@ -855,7 +1071,8 @@ function bindEvents() {
     container?.append(templateRow(container.children.length));
     updateTemplateLabels();
   });
-  $("#fill-sample")?.addEventListener("click", fillRandomSample);
+  populateSampleSelect();
+  $("#sample-select")?.addEventListener("change", fillSelectedSample);
   $("#download-all")?.addEventListener("click", () => {
     if (!latestBlueprint?.scaffolds?.length) return;
     downloadBlueprint(latestBlueprint);
