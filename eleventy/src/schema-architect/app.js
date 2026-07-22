@@ -1055,7 +1055,9 @@ function updateQuotaPill(remaining, quotaEnforced = true) {
   }
   if (typeof remaining === "number") {
     const label =
-      remaining === 1 ? "1 generation left today" : `${remaining} generations left today`;
+      remaining === 0
+        ? "AI limit reached — deterministic mode until next week"
+        : `${remaining} AI generation${remaining === 1 ? "" : "s"} left this week`;
     setPill("#quota-status", label, remaining > 0 ? "ok" : "warn");
   }
 }
