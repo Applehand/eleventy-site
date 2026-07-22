@@ -29,9 +29,15 @@ async function proxyToRagApi(req, res) {
   const targetUrl = `${RAG_API_BASE}${req.originalUrl}`;
   const headers = { "content-type": req.headers["content-type"] || "application/json" };
   if (req.headers.cookie) headers.cookie = req.headers.cookie;
-  // Forward the real client IP so bigpi's per-IP soft quota cap applies to
-  // actual visitors, not to smolpi's own address.
-  headers["x-forwarded-for"] = req.headers["x-forwarded-for"] || req.ip || "";
+  // Forward the real client IP so the backend's per-IP soft quota cap
+  // applies to actual visitors, not to this proxy's own address. Use the
+  // Cloudflare-Tunnel-provided CF-Connecting-IP (set by cloudflared, not
+  // spoofable by clients) and send it as X-Real-IP, which the backend
+  // trusts. Never forward the client-supplied X-Forwarded-For: its first
+  // hop is attacker-controlled and would let anyone reset the per-IP cap
+  // with a forged header.
+  headers["x-real-ip"] =
+    req.headers["cf-connecting-ip"] || req.socket.remoteAddress || "unknown";
 
   const init = { method: req.method, headers };
   if (req.method !== "GET" && req.method !== "HEAD") {
