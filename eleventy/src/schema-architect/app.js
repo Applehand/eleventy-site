@@ -242,7 +242,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Downtown location: 412 Harbor Street, open 7am-3pm daily, phone (555) 014-2200. We publish seasonal menus and accept online orders for pickup. Founded in 2012.",
+      "Founded in 2012 by head baker Priya Nandakumar. Downtown location: 412 Harbor Street, open 7am-3pm daily, phone (555) 014-2200. Harborview location: 77 Dock Street, open 7am-1pm weekends only. Email orders@northwindbakery.example. Price range $. Seasonal menus published monthly; online orders for pickup.",
   },
   {
     label: "Summit Analytics: SaaS + careers",
@@ -280,7 +280,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Multiple product lines under one brand; docs live on a separate subdomain. Hiring is remote-first across the US. The platform is a browser-based web application with a free trial tier.",
+      "Founded in 2019 by CEO Dana Okafor; headquartered in Denver, Colorado. Browser-based web application with a free trial tier; Pro plan is $49 per user per month. Hiring is remote-first across the US. Support email support@summitanalytics.example. Docs live on a separate subdomain.",
   },
   {
     label: "Horizon Travel Guides: publisher + video",
@@ -317,7 +317,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Affiliate links on hotel pages; twelve freelance contributors, each with a byline and profile page. Hotel reviews use a 1-5 star scale from staff visits.",
+      "Founded in 2016; editor-in-chief is Maya Chen. Twelve freelance contributors, each with a byline and profile page. Hotel reviews use a 1-5 star scale from staff visits. Affiliate links on hotel pages. Editorial contact editors@horizontravel.example.",
   },
   {
     label: "Oak & Page Books: events + reviews",
@@ -326,7 +326,10 @@ const SAMPLE_PROFILES = [
     business_description:
       "Independent bookstore hosting author events, book clubs, and a small online shop for signed editions.",
     business_category: "Independent bookstore",
-    social_urls: ["https://www.instagram.com/oakandpagebooks"],
+    social_urls: [
+      "https://www.instagram.com/oakandpagebooks",
+      "https://www.facebook.com/oakandpagebooks",
+    ],
     templates: [
       {
         name: "event",
@@ -345,7 +348,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Store address: 88 Alder Lane, open Tuesday-Sunday. Events are usually free with RSVP; some ticketed signings around $15.",
+      "Owned by Theo Marsh since 2015. Store address: 88 Alder Lane, open Tuesday-Sunday 10am-7pm, phone (555) 023-4471, email hello@oakandpage.example. Events are usually free with RSVP; ticketed signings around $15. Signed editions ship within the US.",
   },
   {
     label: "Driftwood Outdoor Co.: e-commerce + guides",
@@ -376,7 +379,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Ships from two US warehouses; prices in USD. Product pages show in-stock status and collect verified buyer reviews with star ratings.",
+      "Founded in 2017 by Sam Driftwood. Ships from two US warehouses; prices in USD with free shipping over $75. Product pages show in-stock status and collect verified buyer reviews with star ratings. Support email gear@driftwoodoutdoor.example, phone (555) 067-3300.",
   },
   {
     label: "Golden Ladle: recipes + cooking videos",
@@ -418,7 +421,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Every recipe is tested three times before publishing. Recipes list prep time, cook time, and servings. Chefs: Nora Alvarez and Sam Whitfield.",
+      "Founded in 2020 by chefs Nora Alvarez and Sam Whitfield. Every recipe is tested three times before publishing and lists prep time, cook time, and servings. Contact kitchen@goldenladle.example. New recipes publish every Tuesday.",
   },
   {
     label: "Brightpath Learning: courses + webinars",
@@ -427,7 +430,10 @@ const SAMPLE_PROFILES = [
     business_description:
       "Online course provider teaching data skills to career changers, with cohort-based classes, live webinars, and a student question board.",
     business_category: "Online education provider",
-    social_urls: ["https://www.linkedin.com/company/brightpath-learning"],
+    social_urls: [
+      "https://www.linkedin.com/company/brightpath-learning",
+      "https://www.youtube.com/@brightpathlearning",
+    ],
     templates: [
       {
         name: "course",
@@ -453,7 +459,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Six-week cohorts, tuition listed in USD with scholarships. Webinars are free and recorded. The question board shows an accepted answer with upvotes.",
+      "Founded in 2021. Six-week cohorts; tuition is $1,800 with scholarships available. Lead instructor Devon Park teaches SQL Fundamentals. Webinars are free and recorded. The question board shows an accepted answer with upvotes. Admissions email admissions@brightpathlearning.example, phone (555) 088-2040.",
   },
   {
     label: "Cascade Talent Group: job board",
@@ -462,7 +468,10 @@ const SAMPLE_PROFILES = [
     business_description:
       "Regional staffing agency posting engineering and manufacturing roles across the Pacific Northwest, with salary guides and hiring resources.",
     business_category: "Staffing agency",
-    social_urls: ["https://www.linkedin.com/company/cascade-talent-group"],
+    social_urls: [
+      "https://www.linkedin.com/company/cascade-talent-group",
+      "https://www.facebook.com/cascadetalentgroup",
+    ],
     templates: [
       {
         name: "job listing",
@@ -482,7 +491,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Roles include full-time, contract, and contract-to-hire. Every listing shows a posted date, valid-through date, and a salary range in USD.",
+      "Founded in 2011; office at 340 Rainier Way, Tacoma, Washington, phone (555) 051-6600. Roles include full-time, contract, and contract-to-hire. Every listing shows a posted date, valid-through date, and a salary range in USD. Recruiting director is Anh Tran.",
   },
   {
     label: "Lumen Film Society: screenings + reviews",
@@ -491,7 +500,10 @@ const SAMPLE_PROFILES = [
     business_description:
       "Member-supported cinema screening restored classics and international films, with critic essays and a member discussion forum.",
     business_category: "Independent cinema",
-    social_urls: ["https://www.instagram.com/lumenfilmsociety"],
+    social_urls: [
+      "https://www.instagram.com/lumenfilmsociety",
+      "https://letterboxd.com/lumenfilmsociety",
+    ],
     templates: [
       {
         name: "screening",
@@ -518,7 +530,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Theater address: 200 Meridian Avenue. Tickets $8 members / $14 general. Films are shown with title, director, and release year on each screening page.",
+      "Founded in 1978; program director is Iris Kellerman. Theater address: 200 Meridian Avenue, box office phone (555) 019-7800, email tickets@lumenfilm.example. Tickets $8 members / $14 general; screenings Thursday-Sunday. Films are shown with title, director, and release year on each screening page.",
   },
   {
     label: "Tidewater Stays: vacation rentals",
@@ -527,7 +539,10 @@ const SAMPLE_PROFILES = [
     business_description:
       "Family-run vacation rental company managing twelve coastal cottages and cabins with direct online booking.",
     business_category: "Vacation rental management",
-    social_urls: ["https://www.instagram.com/tidewaterstays"],
+    social_urls: [
+      "https://www.instagram.com/tidewaterstays",
+      "https://www.facebook.com/tidewaterstays",
+    ],
     templates: [
       {
         name: "rental listing",
@@ -547,7 +562,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "Each rental lists a street address, capacity, number of bedrooms and bathrooms, a nightly rate in USD, and verified guest ratings. Office phone (555) 032-7700.",
+      "Family-run by Ruth and Calvin Osei since 2014. Office at 15 Marina Row, Oceanside, phone (555) 032-7700, email stay@tidewaterstays.example. Each rental lists a street address, capacity, bedrooms and bathrooms, a nightly rate in USD, and verified guest ratings. Check-in 4pm, checkout 10am.",
   },
   {
     label: "Cedarline Dermatology: medical practice",
@@ -591,7 +606,10 @@ const SAMPLE_PROFILES = [
     business_description:
       "University-affiliated research lab publishing open climate datasets, methodology articles, and reproducible analysis notebooks.",
     business_category: "Research organization",
-    social_urls: ["https://github.com/open-climate-data-lab"],
+    social_urls: [
+      "https://github.com/open-climate-data-lab",
+      "https://www.linkedin.com/company/open-climate-data-lab",
+    ],
     templates: [
       {
         name: "dataset",
@@ -611,7 +629,7 @@ const SAMPLE_PROFILES = [
       },
     ],
     notes:
-      "All datasets are CC-BY 4.0 with versioned releases and citations. Data available as CSV and NetCDF. Lab is affiliated with Cascadia State University.",
+      "Directed by Dr. Ida Mansour; affiliated with Cascadia State University since 2018. All datasets are CC-BY 4.0 with versioned releases and citations; data available as CSV and NetCDF. Contact data@openclimatedata.example.",
   },
 ];
 
