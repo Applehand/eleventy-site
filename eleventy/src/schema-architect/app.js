@@ -184,7 +184,7 @@ function renderRichResults(items) {
     const card = document.createElement("article");
     card.className = "result-card";
     const policy = item.policy_url
-      ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">Google guidance</a>`
+      ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">${escapeHtml(item.feature_name)} in Search Central</a>`
       : "";
     card.innerHTML = `
       <h4>${escapeHtml(item.feature_name)}${item.template_name ? ` · ${escapeHtml(item.template_name)}` : ""}</h4>
@@ -237,23 +237,48 @@ function renderScaffolds(scaffolds) {
   });
 }
 
-let latestScaffolds = [];
+let latestBlueprint = null;
 
-function downloadAll(scaffolds) {
-  const bundle = scaffolds.map((scaffold) => ({
-    label: scaffold.label,
-    template_name: scaffold.template_name,
-    example_url: scaffold.example_url,
-    usage_note: scaffold.usage_note,
-    jsonld: scaffold.jsonld,
-  }));
-  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+function downloadJson(filename, data) {
+  const safeName = filename.toLowerCase().endsWith(".json") ? filename : `${filename}.json`;
+  const body = `${JSON.stringify(data, null, 2)}\n`;
+  const type = "application/json;charset=utf-8";
+  const blob =
+    typeof File === "function"
+      ? new File([body], safeName, { type })
+      : new Blob([body], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "schema-architect-blueprint.json";
+  link.download = safeName;
+  link.rel = "noopener";
+  link.style.display = "none";
+  document.body.appendChild(link);
   link.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+    link.remove();
+  }, 0);
+}
+
+function downloadBlueprint(blueprint) {
+  if (!blueprint?.scaffolds?.length) return;
+  const bundle = {
+    generated_at: new Date().toISOString(),
+    graph: blueprint.graph,
+    rich_results: blueprint.rich_results,
+    scaffolds: blueprint.scaffolds.map((scaffold) => ({
+      label: scaffold.label,
+      template_name: scaffold.template_name,
+      example_url: scaffold.example_url,
+      usage_note: scaffold.usage_note,
+      jsonld: scaffold.jsonld,
+    })),
+    model_used: blueprint.model_used,
+    model_degraded: blueprint.model_degraded,
+  };
+  downloadJson("schema-architect-blueprint.json", bundle);
+  announce("Blueprint downloaded as JSON.");
 }
 
 function showResults(blueprint, remaining) {
@@ -280,7 +305,7 @@ function showResults(blueprint, remaining) {
   });
   renderRichResults(blueprint.rich_results || []);
   renderScaffolds(blueprint.scaffolds);
-  latestScaffolds = blueprint.scaffolds;
+  latestBlueprint = blueprint;
   updateQuotaPill(remaining);
   announce("Blueprint generated.");
   results?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -353,8 +378,8 @@ function bindEvents() {
     updateTemplateLabels();
   });
   $("#download-all")?.addEventListener("click", () => {
-    if (!latestScaffolds.length) return;
-    downloadAll(latestScaffolds);
+    if (!latestBlueprint?.scaffolds?.length) return;
+    downloadBlueprint(latestBlueprint);
   });
   $("#start-over")?.addEventListener("click", () => window.location.reload());
 }
