@@ -957,21 +957,29 @@ details[open] > summary::before {
   transform: translateY(-50%);
   border: 2px solid var(--line);
   background: #fff;
-  box-shadow: 3px 3px 0 var(--ink);
-  padding: 5px 12px;
-  font-size: 0.85rem;
+  padding: 2px 9px;
+  font-size: 0.72rem;
   font-weight: 800;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   color: var(--ink);
   white-space: nowrap;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms ease;
+  transition:
+    font-size 130ms ease,
+    box-shadow 130ms ease,
+    border-color 130ms ease;
 }
 
-.section-rail a:hover::after,
+.section-rail a:hover::after {
+  font-size: 0.85rem;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
 .section-rail a[data-active]::after {
-  opacity: 1;
+  font-size: 0.95rem;
+  border-color: var(--accent);
+  box-shadow: 3px 3px 0 var(--accent);
+  padding: 5px 12px;
 }
 
 #section-graph,
