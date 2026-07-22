@@ -550,6 +550,41 @@ const SAMPLE_PROFILES = [
       "Each rental lists a street address, capacity, number of bedrooms and bathrooms, a nightly rate in USD, and verified guest ratings. Office phone (555) 032-7700.",
   },
   {
+    label: "Cedarline Dermatology: medical practice",
+    business_name: "Cedarline Dermatology",
+    site_url: "https://cedarlinederm.example",
+    business_description:
+      "Board-certified dermatology practice offering medical, surgical, and cosmetic skin care across two clinic locations.",
+    business_category: "Dermatology clinic",
+    social_urls: ["https://www.linkedin.com/company/cedarline-dermatology"],
+    templates: [
+      {
+        name: "provider profile",
+        example_path: "/providers/dr-elena-ruiz",
+        description:
+          "Physician bios with credentials, board certifications, specialties, and accepted insurance.",
+      },
+      {
+        name: "condition guide",
+        example_path: "/conditions/eczema",
+        description:
+          "Patient education articles covering symptoms, causes, and treatment options, reviewed by our physicians.",
+      },
+      {
+        name: "location",
+        example_path: "/locations/eastside",
+        description: "Clinic hours, address, phone, parking, and directions for each office.",
+      },
+      {
+        name: "patient faq",
+        example_path: "/faq/first-visit",
+        description: "Common questions about appointments, insurance, billing, and telehealth.",
+      },
+    ],
+    notes:
+      "Eastside clinic: 900 Cedar Avenue, Suite 210, phone (555) 044-8100, open Monday-Friday 8am-5pm. Physicians: Dr. Elena Ruiz and Dr. Marcus Webb. Accepts most major insurance plans.",
+  },
+  {
     label: "Open Climate Data Lab: research datasets",
     business_name: "Open Climate Data Lab",
     site_url: "https://openclimatedata.example",
