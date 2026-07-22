@@ -1360,9 +1360,15 @@ function renderDiagram(blueprint) {
 }
 
 function renderPropertyCitations(item) {
-  const citations = item.property_citations || [];
-  if (!citations.length) return "";
+  const all = item.property_citations || [];
+  if (!all.length) return "";
   const missing = new Set(item.missing_required_properties || []);
+  // required first, then recommended, capped so org-style manifests with two
+  // dozen identifier properties don't wall the card
+  const citations = [...all]
+    .sort((a, b) => (a.level === b.level ? 0 : a.level === "required" ? -1 : 1))
+    .slice(0, 12);
+  const overflow = all.length - citations.length;
   const links = citations.map((citation) => {
     const classes = ["prop-cite"];
     if (citation.level === "required") classes.push("prop-cite-required");
@@ -1370,7 +1376,68 @@ function renderPropertyCitations(item) {
     const title = `${citation.level}. Documented under "${citation.heading}" in Google Search Central.`;
     return `<a class="${classes.join(" ")}" href="${escapeAttr(citation.url)}" target="_blank" rel="noopener" title="${escapeAttr(title)}">${escapeHtml(citation.property)}</a>`;
   });
-  return `<p class="prop-cites"><span class="prop-cites-label">Documented properties:</span> ${links.join(" ")}</p>`;
+  const more = overflow > 0 ? ` <span class="hint">+${overflow} more in the docs</span>` : "";
+  return `<p class="prop-cites"><span class="prop-cites-label">Documented properties:</span> ${links.join(" ")}${more}</p>`;
+}
+
+const FEATURE_BENEFITS = {
+  article: "headline and image treatment in Top Stories and Discover",
+  breadcrumb: "your site hierarchy replaces the raw URL in results",
+  carousel: "items can appear in a swipeable carousel",
+  "course-list": "courses listed with provider and summary",
+  dataset: "indexed and searchable in Google Dataset Search",
+  "discussion-forum": "threads surfaced in Discussions and Forums",
+  "education-qa": "flashcard-style Q&A in education results",
+  "employer-rating": "star ratings shown on job listings",
+  event: "date, venue, and ticket info in event experiences",
+  "image-metadata": "creator and license details on image results",
+  "job-posting": "listed in Google's jobs experience",
+  "local-business": "hours, phone, and directions in the knowledge panel and Maps",
+  "math-solver": "step-by-step solver surfaced for math queries",
+  movie: "poster and details in movie carousels",
+  organization: "logo and company details in the knowledge panel",
+  "paywalled-content": "paywalled pages indexed without cloaking penalties",
+  product: "price, availability, and ratings directly in the result",
+  "profile-page": "creator name, avatar, and stats in profile results",
+  "qa-page": "the question and top answer shown in results",
+  recipe: "cook time, rating, and image in recipe cards",
+  "review-snippet": "star ratings under the result",
+  "software-app": "app rating and install info in results",
+  speakable: "sections read aloud by Google Assistant",
+  "vacation-rental": "rental details in travel results",
+  video: "thumbnail, duration, and key moments on results",
+};
+
+function opportunityState(item) {
+  if (!item.eligible) return "blocked";
+  if ((item.stubbed_properties || []).length) return "tokens";
+  return "ready";
+}
+
+const STATE_META = {
+  ready: { badge: "Ready", order: 0 },
+  tokens: { badge: "Fill the tokens", order: 1 },
+  blocked: { badge: "Needs real content", order: 2 },
+};
+
+function opportunityStatusLine(item, state) {
+  if (state === "blocked") {
+    const missing = (item.missing_required_properties || []).map(escapeHtml).join(", ");
+    return `<p class="opportunity-line">Requires real data for <strong>${missing}</strong>: content a placeholder cannot stand in for. Add it to the JSON-LD to qualify.</p>`;
+  }
+  if (state === "tokens") {
+    const stubs = (item.stubbed_properties || []).map(escapeHtml).join(", ");
+    return `<p class="opportunity-line">Eligible once you fill the tokens for <strong>${stubs}</strong> in the snippet below.</p>`;
+  }
+  const satisfied = (item.satisfied_properties || []).map(escapeHtml).join(", ");
+  return `<p class="opportunity-line">Eligible now${satisfied ? ` — required data in place: <strong>${satisfied}</strong>` : ""}.</p>`;
+}
+
+function scrollToSnippet(templateName) {
+  const block = document.querySelector(`.snippet-block[data-template="${CSS.escape(templateName)}"]`);
+  if (!block) return;
+  block.open = true;
+  block.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderRichResults(items) {
@@ -1382,29 +1449,67 @@ function renderRichResults(items) {
       '<p class="hint">No specific rich result types were detected for your templates.</p>';
     return;
   }
-  for (const item of items) {
+
+  // one breadcrumb story, not one card per page
+  const breadcrumbs = items.filter((item) => item.feature_id === "breadcrumb");
+  const rest = items.filter((item) => item.feature_id !== "breadcrumb");
+  const cards = [...rest];
+  if (breadcrumbs.length) {
+    const allEligible = breadcrumbs.every((item) => item.eligible);
+    cards.push({
+      ...breadcrumbs[0],
+      template_name:
+        breadcrumbs.length === 1
+          ? breadcrumbs[0].template_name
+          : `all ${breadcrumbs.length} template pages`,
+      eligible: allEligible,
+    });
+  }
+  cards.sort((a, b) => STATE_META[opportunityState(a)].order - STATE_META[opportunityState(b)].order);
+
+  const counts = { ready: 0, tokens: 0, blocked: 0 };
+  for (const item of cards) counts[opportunityState(item)] += 1;
+  const summaryParts = [];
+  if (counts.ready) summaryParts.push(`${counts.ready} ready`);
+  if (counts.tokens) summaryParts.push(`${counts.tokens} need tokens filled`);
+  if (counts.blocked) summaryParts.push(`${counts.blocked} need real content`);
+  const summary = document.createElement("p");
+  summary.className = "opportunity-summary mono";
+  summary.textContent = summaryParts.join(" · ");
+  container.append(summary);
+
+  const grid = document.createElement("div");
+  grid.className = "card-grid";
+  container.append(grid);
+
+  for (const item of cards) {
+    const state = opportunityState(item);
     const card = document.createElement("article");
     card.className = "result-card";
+    card.dataset.state = state;
     const policy = item.policy_url
-      ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">${escapeHtml(item.feature_name)} in Search Central</a>`
+      ? `<a href="${escapeAttr(item.policy_url)}" target="_blank" rel="noopener">Search Central docs</a>`
       : "";
-    const missing = item.missing_required_properties || [];
-    const status =
-      item.eligible === false && missing.length
-        ? `<p class="hint">Requires real data for: <strong>${missing.map(escapeHtml).join(", ")}</strong>. ` +
-          "These properties need actual content (a person, place, or media object) rather " +
-          "than a placeholder. Add them to the JSON-LD to qualify.</p>"
+    const benefit = FEATURE_BENEFITS[item.feature_id];
+    const snippetLink =
+      item.template_name && !item.template_name.startsWith("all ")
+        ? `<button type="button" class="snippet-jump" data-template="${escapeAttr(item.template_name)}">view snippet ↓</button>`
         : "";
-    const citations = renderPropertyCitations(item);
     card.innerHTML = `
-      <h4>${escapeHtml(item.feature_name)}${item.template_name ? ` · ${escapeHtml(item.template_name)}` : ""}</h4>
-      ${status}
-      <p>${escapeHtml(item.message)}</p>
-      ${citations}
-      ${policy}
+      <div class="result-card-head">
+        <h4>${escapeHtml(item.feature_name)}${item.template_name ? ` · ${escapeHtml(item.template_name)}` : ""}</h4>
+        <span class="state-badge" data-state="${state}">${STATE_META[state].badge}</span>
+      </div>
+      ${benefit ? `<p class="opportunity-benefit">${escapeHtml(benefit)}</p>` : ""}
+      ${opportunityStatusLine(item, state)}
+      ${renderPropertyCitations(item)}
+      <div class="result-card-links">${snippetLink}${policy}</div>
     `;
-    container.append(card);
+    grid.append(card);
   }
+  container.querySelectorAll(".snippet-jump").forEach((button) => {
+    button.addEventListener("click", () => scrollToSnippet(button.dataset.template));
+  });
 }
 
 function escapeHtml(value) {
@@ -1421,6 +1526,7 @@ function renderSnippets(snippets) {
   snippets.forEach((snippet, index) => {
     const block = document.createElement("details");
     block.className = "snippet-block";
+    block.dataset.template = snippet.template_name;
     if (index === 0) block.open = true;
     const json = JSON.stringify(snippet.jsonld, null, 2);
     block.innerHTML = `

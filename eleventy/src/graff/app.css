@@ -1368,3 +1368,78 @@ details[open] > summary::before {
   cursor: pointer;
   flex: none;
 }
+
+.opportunity-summary {
+  margin: 0 0 12px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.result-card[data-state="ready"] {
+  border-left: 8px solid var(--ok);
+}
+
+.result-card[data-state="tokens"] {
+  border-left: 8px solid var(--accent);
+}
+
+.result-card[data-state="blocked"] {
+  border-left: 8px solid var(--line-soft);
+}
+
+.result-card-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.state-badge {
+  flex: none;
+  border: 2px solid var(--line);
+  padding: 1px 8px;
+  font-size: 0.7rem;
+  font-weight: 850;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: nowrap;
+}
+
+.state-badge[data-state="ready"] {
+  background: var(--ok-soft);
+}
+
+.state-badge[data-state="tokens"] {
+  background: var(--accent-soft);
+}
+
+.state-badge[data-state="blocked"] {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.opportunity-benefit {
+  margin: 6px 0 2px;
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.86rem;
+}
+
+.opportunity-line {
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+
+.result-card-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.snippet-jump {
+  min-height: 0;
+  padding: 2px 9px;
+  font-size: 0.76rem;
+  font-weight: 850;
+  box-shadow: 2px 2px 0 var(--ink);
+}
