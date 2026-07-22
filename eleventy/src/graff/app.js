@@ -950,7 +950,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 let activeGraph = null;
 
 function createForceGraph(container, data) {
-  const WORLD = { w: 960, h: 540 };
+  const WORLD = { w: 980, h: 660 };
   const view = { x: 0, y: 0, w: WORLD.w, h: WORLD.h };
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${WORLD.w} ${WORLD.h}`);
@@ -1045,15 +1045,14 @@ function createForceGraph(container, data) {
         const dx = a.x - b.x;
         const dy = a.y - b.y;
         const d2 = Math.max(220, dx * dx + dy * dy);
-        const force = 1500 / d2;
+        const force = 2400 / d2;
         const d = Math.sqrt(d2);
         // repulsion acts mostly vertically so the columns hold their shape
-        a.vx += (dx / d) * force * 0.25;
+        a.vx += (dx / d) * force * 0.2;
         a.vy += (dy / d) * force;
       }
       // spring back to the assigned column
       a.vx += (a.homeX - a.x) * 0.055;
-      a.vy += (WORLD.h / 2 - a.y) * 0.002;
     }
     for (const { source, target } of data.links) {
       const dy = target.y - source.y;
@@ -1071,6 +1070,22 @@ function createForceGraph(container, data) {
       node.vy *= 0.82;
       node.x += node.vx * alpha;
       node.y += node.vy * alpha;
+      node.y = Math.min(WORLD.h - 36, Math.max(28, node.y));
+    }
+    // enforce a minimum vertical gap inside each column
+    for (const column of byLayer.values()) {
+      const movable = [...column].sort((a, b) => a.y - b.y);
+      for (let i = 1; i < movable.length; i += 1) {
+        const above = movable[i - 1];
+        const here = movable[i];
+        const gap = here.y - above.y;
+        const minGap = 52;
+        if (gap < minGap) {
+          const push = (minGap - gap) / 2;
+          if (!above.pinned && !above.dragging) above.y -= push;
+          if (!here.pinned && !here.dragging) here.y += push;
+        }
+      }
     }
     render();
     alpha *= 0.994;

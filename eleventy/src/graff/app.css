@@ -1146,7 +1146,7 @@ details[open] > summary::before {
 #diagram svg {
   display: block;
   width: 100%;
-  height: 480px;
+  height: 540px;
   touch-action: none;
   cursor: grab;
 }
@@ -1172,9 +1172,9 @@ details[open] > summary::before {
 
 .g-edge-label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9.5px;
-  fill: #5b4bdb;
-  opacity: 0;
+  font-size: 9px;
+  fill: #68635c;
+  opacity: 0.85;
   pointer-events: none;
   transition: opacity 100ms ease;
   paint-order: stroke;
@@ -1182,9 +1182,10 @@ details[open] > summary::before {
   stroke-width: 3px;
 }
 
-.g-edge:hover .g-edge-label,
-.g-edge:hover + .g-edge-label {
+.g-edge:hover .g-edge-label {
   opacity: 1;
+  fill: #5b4bdb;
+  font-size: 10.5px;
 }
 
 .g-edge:hover line {
