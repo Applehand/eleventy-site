@@ -261,7 +261,10 @@ function renderControls(schema){
 	wrap.innerHTML = "";
 	for(const [key, spec] of Object.entries(schema)){
 		const control = document.createElement("div"); control.className = "control";
-		const lab = document.createElement("label"); lab.textContent = key.replace(/_/g," "); lab.style.margin = "0 0 2px"; lab.style.fontSize="13px";
+		const lab = document.createElement("label");
+		lab.textContent = spec.label || key.replace(/_/g, " ");
+		if (spec.help) lab.title = spec.help;
+		lab.style.margin = "0 0 2px"; lab.style.fontSize = "13px";
 		control.appendChild(lab);
 		const row = document.createElement("div"); row.className = "row";
 		if(spec.type === "int"){
@@ -453,7 +456,9 @@ $("#f").addEventListener("submit", async (e)=>{
 					markStep("retrieve", `${data.chunk_count} chunk(s) retrieved`);
 				}
 			} else if(event === "pack"){
-				markStep("pack", `char budget used: <strong>${data.char_budget_used}</strong> · modalities: ${data.controls?.modalities ?? ""}`);
+				const tp = data.text_passages ?? "?";
+				const it = data.image_tiles ?? "?";
+				markStep("pack", `char budget used: <strong>${data.char_budget_used}</strong> · ${tp} text passage(s), ${it} screenshot tile(s)`);
 			} else if(event === "generate"){
 				markStep("generate", "streaming…");
 				out.textContent += data.delta; autoScroll();
