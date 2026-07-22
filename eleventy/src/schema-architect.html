@@ -217,6 +217,44 @@ permalink: /schema-architect/
             matching pages. Replace every <code>{% raw %}{{TOKEN}}{% endraw %}</code> with real
             values before publishing.
           </p>
+          <details class="graph-details">
+            <summary>About these snippets</summary>
+            <p>
+              Each template gets one self-contained snippet: a <code>@graph</code> holding the
+              page's primary entity (Product, Article, Recipe…), a WebPage node, its
+              BreadcrumbList, and the shared Organization and WebSite. One block serves every
+              page built from that template — fill the per-page tokens
+              (<code>{% raw %}{{PAGE_URL}}{% endraw %}</code>,
+              <code>{% raw %}{{PAGE_TITLE}}{% endraw %}</code>) from the page itself and the
+              site-wide tokens (<code>{% raw %}{{ORGANIZATION_LOGO_URL}}{% endraw %}</code>)
+              once.
+            </p>
+            <ul class="graph-legend">
+              <li>
+                <strong><code>@id</code> fragments</strong> — entities are named by URL plus
+                fragment: site-wide ones on the origin
+                (<code>/#organization</code>, <code>/#website</code>), page-scoped ones on the
+                page URL (<code>#webpage</code>, <code>#breadcrumb</code>). Keep them exactly as
+                generated: crawlers merge nodes with the same <code>@id</code> across pages, and
+                that stitching is what turns per-page markup into one connected site graph.
+              </li>
+              <li>
+                <strong>Repetition is intentional</strong> — the Organization and WebSite blocks
+                appear in every snippet so each page stands alone; search engines de-duplicate
+                them by <code>@id</code>.
+              </li>
+              <li>
+                <strong>Nested objects</strong> — Offer, PostalAddress, Person, and ListItem
+                shapes match what Google's documentation expects for each feature, so filling
+                the tokens is all that's left.
+              </li>
+              <li>
+                <strong>References</strong> — values like
+                <code>{"@id": "…/#organization"}</code> are pointers to another node in the
+                graph, not text. Leave them untouched.
+              </li>
+            </ul>
+          </details>
           <div id="scaffolds"></div>
         </section>
 
