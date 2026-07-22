@@ -1002,26 +1002,54 @@ function downloadJson(filename, data) {
   }, 2000);
 }
 
-function downloadBlueprint(blueprint) {
-  if (!blueprint?.scaffolds?.length) return;
+const EXPORT_PART_KEYS = ["graph", "mermaid", "rich_results", "snippets", "references"];
+
+function buildExportBundle(blueprint, parts) {
   const bundle = {
     generated_at: new Date().toISOString(),
-    graph: blueprint.graph,
-    rich_results: blueprint.rich_results,
-    findings: blueprint.findings,
-    snippets: blueprint.scaffolds.map((snippet) => ({
+    tool: "Schema Architect",
+    model_used: blueprint.model_used,
+    model_degraded: blueprint.model_degraded,
+    degradation_reason: blueprint.degradation_reason ?? null,
+    delivery_summary: blueprint.delivery_summary,
+  };
+  if (parts.has("graph")) bundle.graph = blueprint.graph;
+  if (parts.has("mermaid")) bundle.mermaid = blueprint.mermaid;
+  if (parts.has("rich_results")) bundle.rich_results = blueprint.rich_results;
+  if (parts.has("snippets")) {
+    bundle.snippets = blueprint.scaffolds.map((snippet) => ({
       label: snippet.label,
       template_name: snippet.template_name,
       example_url: snippet.example_url,
       usage_note: snippet.usage_note,
       jsonld: snippet.jsonld,
-    })),
-    model_used: blueprint.model_used,
-    model_degraded: blueprint.model_degraded,
-    degradation_reason: blueprint.degradation_reason ?? null,
-  };
-  downloadJson("schema-architect-blueprint.json", bundle);
-  announce("Blueprint downloaded as JSON.");
+    }));
+  }
+  if (parts.has("references")) {
+    const { types, properties } = collectSchemaTerms(blueprint);
+    const link = (name) => ({ name, url: `https://schema.org/${name}` });
+    bundle.references = { types: types.map(link), properties: properties.map(link) };
+  }
+  return bundle;
+}
+
+function selectedExportParts() {
+  const checked = [...document.querySelectorAll("#export-options input:checked")].map(
+    (input) => input.dataset.export,
+  );
+  return new Set(checked);
+}
+
+function exportBlueprint(parts) {
+  if (!latestBlueprint?.scaffolds?.length) return;
+  if (!parts.size) {
+    announce("Select at least one section to export.");
+    return;
+  }
+  const full = parts.size === EXPORT_PART_KEYS.length;
+  const name = full ? "schema-architect-blueprint.json" : "schema-architect-export.json";
+  downloadJson(name, buildExportBundle(latestBlueprint, parts));
+  announce(full ? "Full blueprint exported." : `Exported ${parts.size} section(s).`);
 }
 
 const DEGRADATION_LABELS = {
@@ -1112,6 +1140,34 @@ function updateGraphAiSummary(blueprint) {
   }
 }
 
+let railObserver = null;
+
+function initSectionRail() {
+  if (railObserver) return;
+  const links = [...document.querySelectorAll(".section-rail a")];
+  if (!links.length) return;
+  const byTarget = new Map(
+    links.map((link) => [link.getAttribute("href").slice(1), link]),
+  );
+  railObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const link = byTarget.get(entry.target.id);
+        if (!link) continue;
+        if (entry.isIntersecting) {
+          links.forEach((item) => delete item.dataset.active);
+          link.dataset.active = "true";
+        }
+      }
+    },
+    { rootMargin: "-25% 0px -65% 0px" },
+  );
+  for (const id of byTarget.keys()) {
+    const target = document.getElementById(id);
+    if (target) railObserver.observe(target);
+  }
+}
+
 function showResults(blueprint, remaining, quotaEnforced = true) {
   enableTab("blueprint");
   activateTab("blueprint");
@@ -1133,6 +1189,7 @@ function showResults(blueprint, remaining, quotaEnforced = true) {
   renderRichResults(blueprint.rich_results || []);
   renderSnippets(blueprint.scaffolds);
   renderSchemaResources(blueprint);
+  initSectionRail();
   latestBlueprint = blueprint;
   updateQuotaPill(remaining, quotaEnforced);
   announce("Blueprint generated.");
@@ -1238,9 +1295,19 @@ function bindEvents() {
   });
   populateSampleSelect();
   $("#sample-select")?.addEventListener("change", fillSelectedSample);
-  $("#download-all")?.addEventListener("click", () => {
-    if (!latestBlueprint?.scaffolds?.length) return;
-    downloadBlueprint(latestBlueprint);
+  $("#export-full")?.addEventListener("click", () => {
+    exportBlueprint(new Set(EXPORT_PART_KEYS));
+  });
+  $("#export-selected")?.addEventListener("click", () => {
+    exportBlueprint(selectedExportParts());
+  });
+  document.querySelectorAll(".section-rail a").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      document
+        .querySelector(link.getAttribute("href"))
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   });
   $("#start-over")?.addEventListener("click", () => activateTab("form"));
   for (const name of Object.keys(TAB_PANELS)) {

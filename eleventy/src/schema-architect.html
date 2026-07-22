@@ -169,7 +169,7 @@ permalink: /schema-architect/
         </div>
         <p id="results-summary" class="results-summary"></p>
 
-        <section aria-labelledby="graph-heading">
+        <section aria-labelledby="graph-heading" id="section-graph">
           <h3 id="graph-heading">Entity graph</h3>
           <div id="diagram" aria-label="Rendered entity graph"></div>
           <details class="graph-details">
@@ -203,16 +203,13 @@ permalink: /schema-architect/
           </details>
         </section>
 
-        <section aria-labelledby="rich-results-heading">
+        <section aria-labelledby="rich-results-heading" id="section-rich">
           <h3 id="rich-results-heading">Rich result opportunities</h3>
           <div id="rich-results" class="card-grid"></div>
         </section>
 
-        <section aria-labelledby="snippets-heading">
-          <div class="scaffold-header">
-            <h3 id="snippets-heading">JSON-LD snippets</h3>
-            <button type="button" id="download-all" class="secondary">Download blueprint (.json)</button>
-          </div>
+        <section aria-labelledby="snippets-heading" id="section-snippets">
+          <h3 id="snippets-heading">JSON-LD snippets</h3>
           <p class="hint">
             Paste each block into a <code>&lt;script type="application/ld+json"&gt;</code> tag on
             matching pages. Replace every <code>{% raw %}{{TOKEN}}{% endraw %}</code> with real
@@ -258,7 +255,7 @@ permalink: /schema-architect/
           <div id="scaffolds"></div>
         </section>
 
-        <details class="resources-details">
+        <details class="resources-details" id="section-references">
           <summary>Schema.org references</summary>
           <p class="hint">
             Documentation for every type and property used in this blueprint. Each link opens
@@ -266,6 +263,43 @@ permalink: /schema-architect/
           </p>
           <div id="schema-resources"></div>
         </details>
+
+        <section aria-labelledby="export-heading" id="section-export">
+          <h3 id="export-heading">Export</h3>
+          <p class="hint">
+            Download the blueprint as a single JSON file: everything, or any mix of sections.
+          </p>
+          <div class="export-options" id="export-options">
+            <label class="export-option">
+              <input type="checkbox" data-export="graph" checked /> Entity graph
+            </label>
+            <label class="export-option">
+              <input type="checkbox" data-export="mermaid" checked /> Diagram (Mermaid source)
+            </label>
+            <label class="export-option">
+              <input type="checkbox" data-export="rich_results" checked /> Rich result opportunities
+            </label>
+            <label class="export-option">
+              <input type="checkbox" data-export="snippets" checked /> JSON-LD snippets
+            </label>
+            <label class="export-option">
+              <input type="checkbox" data-export="references" checked /> Schema.org reference links
+            </label>
+          </div>
+          <div class="actions">
+            <button type="button" id="export-full" class="primary">Full export (.json)</button>
+            <button type="button" id="export-selected" class="secondary">Export selection (.json)</button>
+          </div>
+        </section>
+
+        <nav class="section-rail" aria-label="Blueprint sections">
+          <a href="#results-heading" data-label="Summary"></a>
+          <a href="#section-graph" data-label="Entity graph"></a>
+          <a href="#section-rich" data-label="Rich results"></a>
+          <a href="#section-snippets" data-label="JSON-LD snippets"></a>
+          <a href="#section-references" data-label="References"></a>
+          <a href="#section-export" data-label="Export"></a>
+        </nav>
 
         <p class="hint verify-links">
           After deploying, verify live pages with the
