@@ -2,11 +2,12 @@
 title: Self-Hosting Life Organization Apps on a Raspberry Pi
 date: 2026-06-27T12:00:00.000-05:00
 image: /img/uploads/rasp-pi.webp
-image_alt: A close view of a Raspberry Pi computer, a small board with various inputs and outputs.
+image_alt: A close view of a Raspberry Pi computer, a small board with various
+  inputs and outputs.
 category: Technical
 tags:
   - writings
-status: Published
+status: Draft
 visibility: false
 description: Calendar, budget, recipes, tasks, notes, and media on a home Pi,
   with one dashboard and private access from anywhere.
