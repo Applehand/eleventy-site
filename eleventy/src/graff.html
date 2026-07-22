@@ -1,6 +1,6 @@
 ---
-title: Schema Architect
-permalink: /schema-architect/
+title: GRAFF
+permalink: /graff/
 ---
 <!doctype html>
 <html lang="en">
@@ -11,13 +11,13 @@ permalink: /schema-architect/
       name="description"
       content="Describe a site once and get a Schema.org entity graph plus ready-to-fill JSON-LD snippets for every template."
     />
-    <title>Schema Architect</title>
-    <link rel="stylesheet" href="/schema-architect/app.css" />
+    <title>GRAFF: Graph Registry Attribute &amp; Field Framework</title>
+    <link rel="stylesheet" href="/graff/app.css" />
     <script>
       (function () {
         var stored = null;
         try {
-          stored = localStorage.getItem("schema-architect-theme");
+          stored = localStorage.getItem("graff-theme");
         } catch (error) {}
         var theme =
           stored ||
@@ -35,11 +35,12 @@ permalink: /schema-architect/
             ☾
           </button>
         </div>
-        <h1>Schema Architect</h1>
+        <h1>GRAFF</h1>
+        <p class="tagline mono">Graph Registry Attribute &amp; Field Framework</p>
         <p class="lede">
-          Describe the site and its page templates. Schema Architect builds a connected
-          Schema.org entity graph and generates copy-paste JSON-LD snippets with clear
-          placeholders for each page type.
+          Describe the site and its page templates. GRAFF builds a connected Schema.org
+          entity graph and generates copy-paste JSON-LD snippets with clear placeholders for
+          each page type.
         </p>
         <p class="privacy">
           Nothing is stored on the server. Take what is generated before you leave.
@@ -401,6 +402,6 @@ permalink: /schema-architect/
 
       <div class="sr-only" id="announcer" aria-live="polite"></div>
     </main>
-    <script type="module" src="/schema-architect/app.js"></script>
+    <script type="module" src="/graff/app.js"></script>
   </body>
 </html>

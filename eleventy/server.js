@@ -129,7 +129,7 @@ async function proxyToSchemaApi(req, res) {
   try {
     upstream = await fetch(targetUrl, init);
   } catch {
-    res.status(502).json({ error: "schema architect service is unavailable" });
+    res.status(502).json({ error: "GRAFF service is unavailable" });
     return;
   }
 

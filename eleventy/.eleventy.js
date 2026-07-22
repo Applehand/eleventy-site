@@ -14,11 +14,11 @@ export default function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/robots.txt");
   eleventyConfig.addPassthroughCopy("src/bill");
   eleventyConfig.addPassthroughCopy("src/btb");
-  eleventyConfig.addPassthroughCopy("src/schema-architect");
+  eleventyConfig.addPassthroughCopy("src/graff");
   eleventyConfig.addPassthroughCopy({
     "node_modules/mermaid/dist/mermaid.esm.min.mjs":
-      "schema-architect/vendor/mermaid.esm.min.mjs",
-    "node_modules/mermaid/dist/chunks": "schema-architect/vendor/chunks",
+      "graff/vendor/mermaid.esm.min.mjs",
+    "node_modules/mermaid/dist/chunks": "graff/vendor/chunks",
   });
 
   eleventyConfig.addPassthroughCopy({

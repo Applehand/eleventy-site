@@ -869,7 +869,7 @@ let mermaidReady = false;
 
 async function ensureMermaid() {
   if (mermaidReady) return;
-  const mermaid = (await import("/schema-architect/vendor/mermaid.esm.min.mjs")).default;
+  const mermaid = (await import("/graff/vendor/mermaid.esm.min.mjs")).default;
   mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "neutral" });
   window.__schemaMermaid = mermaid;
   mermaidReady = true;
@@ -1007,7 +1007,7 @@ const EXPORT_PART_KEYS = ["graph", "mermaid", "rich_results", "snippets", "refer
 function buildExportBundle(blueprint, parts) {
   const bundle = {
     generated_at: new Date().toISOString(),
-    tool: "Schema Architect",
+    tool: "GRAFF (Graph Registry Attribute & Field Framework)",
     model_used: blueprint.model_used,
     model_degraded: blueprint.model_degraded,
     degradation_reason: blueprint.degradation_reason ?? null,
@@ -1047,7 +1047,7 @@ function exportBlueprint(parts) {
     return;
   }
   const full = parts.size === EXPORT_PART_KEYS.length;
-  const name = full ? "schema-architect-blueprint.json" : "schema-architect-export.json";
+  const name = full ? "graff-blueprint.json" : "graff-export.json";
   downloadJson(name, buildExportBundle(latestBlueprint, parts));
   announce(full ? "Full blueprint exported." : `Exported ${parts.size} section(s).`);
 }
@@ -1298,7 +1298,7 @@ function toggleTheme() {
   const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = next;
   try {
-    localStorage.setItem("schema-architect-theme", next);
+    localStorage.setItem("graff-theme", next);
   } catch (error) {
     /* private browsing: theme just won't persist */
   }
