@@ -688,9 +688,37 @@ function downloadBlueprint(blueprint) {
     })),
     model_used: blueprint.model_used,
     model_degraded: blueprint.model_degraded,
+    degradation_reason: blueprint.degradation_reason ?? null,
   };
   downloadJson("schema-architect-blueprint.json", bundle);
   announce("Blueprint downloaded as JSON.");
+}
+
+const DEGRADATION_LABELS = {
+  quota: "AI quota reached — deterministic mapping used",
+  gemini_api: "AI service error — deterministic mapping used",
+  gemini_invalid_response: "AI returned an invalid response — deterministic mapping used",
+  incomplete_routing: "AI routing incomplete — deterministic structure used",
+  validation_fallback: "AI output failed validation — deterministic mapping used",
+  not_configured: "AI not configured — deterministic mapping used",
+};
+
+function updateModePill(blueprint) {
+  const pill = $("#results-mode");
+  if (!pill) return;
+  pill.removeAttribute("hidden");
+  if (blueprint.model_degraded) {
+    pill.textContent =
+      DEGRADATION_LABELS[blueprint.degradation_reason] ||
+      "AI routing unavailable — deterministic mapping used";
+    pill.dataset.state = "warn";
+  } else if (blueprint.model_used) {
+    pill.textContent = "Tailored with AI";
+    pill.dataset.state = "ok";
+  } else {
+    pill.textContent = "Deterministic mapping (AI off)";
+    pill.dataset.state = "ok";
+  }
 }
 
 function composeFallbackSummary(blueprint) {
@@ -714,6 +742,7 @@ function showResults(blueprint, remaining, quotaEnforced = true) {
     summary.textContent =
       blueprint.delivery_summary || composeFallbackSummary(blueprint);
   }
+  updateModePill(blueprint);
 
   void renderDiagram(blueprint.mermaid).catch(() => {
     const diagram = $("#diagram");
