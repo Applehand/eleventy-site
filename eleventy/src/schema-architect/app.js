@@ -131,6 +131,161 @@ function ensureTemplateRows() {
   updateTemplateLabels();
 }
 
+const SAMPLE_PROFILES = [
+  {
+    label: "Northwind Bakery",
+    business_name: "Northwind Bakery",
+    site_url: "https://northwindbakery.example",
+    business_description:
+      "Neighborhood bakery selling sourdough, pastries, and coffee with two dine-in locations and weekend catering.",
+    business_category: "Local bakery",
+    social_urls: [
+      "https://www.instagram.com/northwindbakery",
+      "https://www.facebook.com/northwindbakery",
+    ],
+    templates: [
+      {
+        name: "menu item",
+        example_path: "/menu/sourdough-loaf",
+        description: "Individual products with ingredients, allergens, and pricing.",
+      },
+      {
+        name: "location",
+        example_path: "/locations/downtown",
+        description: "Store hours, address, and directions for each bakery location.",
+      },
+    ],
+    notes: "We publish seasonal menus and accept online orders for pickup.",
+  },
+  {
+    label: "Summit Analytics",
+    business_name: "Summit Analytics",
+    site_url: "https://summitanalytics.example",
+    business_description:
+      "B2B SaaS platform that helps operations teams monitor warehouse KPIs and automate inventory alerts.",
+    business_category: "B2B SaaS",
+    social_urls: [
+      "https://www.linkedin.com/company/summit-analytics",
+      "https://github.com/summit-analytics",
+    ],
+    templates: [
+      {
+        name: "product feature",
+        example_path: "/platform/inventory-alerts",
+        description: "Marketing pages for individual product capabilities and integrations.",
+      },
+      {
+        name: "case study",
+        example_path: "/customers/acme-logistics",
+        description: "Customer success stories with measurable outcomes.",
+      },
+      {
+        name: "pricing",
+        example_path: "/pricing",
+        description: "Plan tiers, feature comparison, and FAQ.",
+      },
+    ],
+    notes: "Multiple product lines under one brand; docs live on a separate subdomain.",
+  },
+  {
+    label: "Horizon Travel Guides",
+    business_name: "Horizon Travel Guides",
+    site_url: "https://horizontravel.example",
+    business_description:
+      "Independent travel publisher covering city guides, hotel reviews, and itinerary planning for North America.",
+    business_category: "Online publisher",
+    social_urls: [
+      "https://www.youtube.com/@horizontravel",
+      "https://www.pinterest.com/horizontravel",
+    ],
+    templates: [
+      {
+        name: "city guide",
+        example_path: "/guides/portland",
+        description: "Long-form destination guides with maps and neighborhood tips.",
+      },
+      {
+        name: "hotel review",
+        example_path: "/hotels/riverfront-inn",
+        description: "Property reviews with ratings, amenities, and booking links.",
+      },
+    ],
+    notes: "Affiliate links on hotel pages; several freelance contributors.",
+  },
+  {
+    label: "Oak & Page Books",
+    business_name: "Oak & Page Books",
+    site_url: "https://oakandpage.example",
+    business_description:
+      "Independent bookstore hosting author events, book clubs, and a small online shop for signed editions.",
+    business_category: "Independent bookstore",
+    social_urls: ["https://www.instagram.com/oakandpagebooks"],
+    templates: [
+      {
+        name: "event",
+        example_path: "/events/spring-poetry-night",
+        description: "Upcoming readings and signings with date, venue, and ticket info.",
+      },
+      {
+        name: "staff pick",
+        example_path: "/picks/march-fiction",
+        description: "Curated book recommendations with short reviews.",
+      },
+    ],
+    notes: null,
+  },
+  {
+    label: "Driftwood Outdoor Co.",
+    business_name: "Driftwood Outdoor Co.",
+    site_url: "https://driftwoodoutdoor.example",
+    business_description:
+      "E-commerce retailer for camping gear, trail maps, and how-to guides for weekend hikers.",
+    business_category: "E-commerce retailer",
+    social_urls: [
+      "https://www.tiktok.com/@driftwoodoutdoor",
+      "https://www.reddit.com/r/driftwoodoutdoor",
+    ],
+    templates: [
+      {
+        name: "product",
+        example_path: "/gear/ultralight-tent",
+        description: "Product detail pages with specs, reviews, and availability.",
+      },
+      {
+        name: "how-to guide",
+        example_path: "/guides/backpack-fit",
+        description: "Instructional articles with gear recommendations.",
+      },
+    ],
+    notes: "Ships from two US warehouses; some pages include video walkthroughs.",
+  },
+];
+
+function fillFormFromSample(sample) {
+  const form = $("#site-form");
+  const container = $("#template-rows");
+  if (!form || !container) return;
+
+  form.businessName.value = sample.business_name;
+  form.siteUrl.value = sample.site_url;
+  form.businessDescription.value = sample.business_description;
+  form.businessCategory.value = sample.business_category;
+  form.socialUrls.value = (sample.social_urls || []).join("\n");
+  form.notes.value = sample.notes || "";
+
+  container.replaceChildren();
+  sample.templates.forEach((template, index) => {
+    container.append(templateRow(index, template));
+  });
+  updateTemplateLabels();
+  announce(`Filled form with sample: ${sample.label}.`);
+}
+
+function fillRandomSample() {
+  const sample = SAMPLE_PROFILES[Math.floor(Math.random() * SAMPLE_PROFILES.length)];
+  fillFormFromSample(sample);
+}
+
 function collectSiteDescription(form) {
   const socialRaw = form.socialUrls.value.trim();
   const templates = [...form.querySelectorAll(".template-row")].map((row) => ({
@@ -377,6 +532,7 @@ function bindEvents() {
     container?.append(templateRow(container.children.length));
     updateTemplateLabels();
   });
+  $("#fill-sample")?.addEventListener("click", fillRandomSample);
   $("#download-all")?.addEventListener("click", () => {
     if (!latestBlueprint?.scaffolds?.length) return;
     downloadBlueprint(latestBlueprint);
