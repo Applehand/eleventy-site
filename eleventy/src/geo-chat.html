@@ -191,9 +191,9 @@ permalink: /geo-chat/
 <script>
 /* Config: same-origin /api; override with window.GEOCHAT_API for a subdomain */
 const API_BASE = (window.GEOCHAT_API || "/api").replace(/\/$/, "");
-/* Calibrated from app/evaluate.py: on-topic questions score well above
-   this, off-topic ones well below. */
-const WEAK_SIM_THRESHOLD = 0.6;
+/* Calibrated from app/evaluate.py (22 on-topic + 4 off-topic probes):
+   worst on-topic best-sim was 0.692, best off-topic was 0.591. */
+const WEAK_SIM_THRESHOLD = 0.64;
 
 const $ = (s)=>document.querySelector(s);
 const bodyEl = document.body;
