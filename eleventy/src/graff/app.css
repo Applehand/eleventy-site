@@ -1128,3 +1128,70 @@ details[open] > summary::before {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   cursor: help;
 }
+
+.graph-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.graph-controls .secondary {
+  min-height: 34px;
+  padding: 4px 12px;
+}
+
+#diagram svg {
+  display: block;
+  width: 100%;
+  height: 480px;
+  touch-action: none;
+  cursor: grab;
+}
+
+#diagram svg:active {
+  cursor: grabbing;
+}
+
+.g-node {
+  cursor: grab;
+}
+
+.g-node-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  fill: #171717;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #fffdf7;
+  stroke-width: 3px;
+}
+
+.g-edge-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9.5px;
+  fill: #5b4bdb;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease;
+  paint-order: stroke;
+  stroke: #fffdf7;
+  stroke-width: 3px;
+}
+
+.g-edge:hover .g-edge-label,
+.g-edge:hover + .g-edge-label {
+  opacity: 1;
+}
+
+.g-edge:hover line {
+  opacity: 1 !important;
+  stroke: #5b4bdb;
+}
+
+.g-edge line {
+  cursor: pointer;
+}

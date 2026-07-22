@@ -894,25 +894,302 @@ function enableTab(name) {
   if (tab) tab.disabled = false;
 }
 
-let mermaidReady = false;
+const GRAPH_PALETTE = {
+  paper: "#fffdf7",
+  ink: "#171717",
+  muted: "#68635c",
+  accent: "#5b4bdb",
+  accentSoft: "#eeeaff",
+};
 
-async function ensureMermaid() {
-  if (mermaidReady) return;
-  const mermaid = (await import("/graff/vendor/mermaid.esm.min.mjs")).default;
-  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "neutral" });
-  window.__schemaMermaid = mermaid;
-  mermaidReady = true;
+function entityKind(types) {
+  if (types.includes("Organization") || types.some((t) => t.endsWith("Business"))) return "org";
+  if (types.includes("WebSite")) return "site";
+  if (types.includes("BreadcrumbList")) return "crumb";
+  if (types.includes("Person")) return "person";
+  if (types.includes("WebPage") || types.some((t) => t.endsWith("Page"))) return "page";
+  return "content";
 }
 
-async function renderDiagram(source) {
-  await ensureMermaid();
-  const diagram = $("#diagram");
+function buildGraphData(manifest) {
+  const nodes = new Map();
+  for (const entity of manifest.entities) {
+    const name = entity.properties.find(
+      (prop) => prop.property === "name" && typeof prop.value === "string",
+    )?.value;
+    const primaryType = entity.types[0] || "Thing";
+    const label = name && name !== primaryType ? `${name} (${primaryType})` : primaryType;
+    nodes.set(entity.id, {
+      id: entity.id,
+      label: label.length > 34 ? `${label.slice(0, 33)}…` : label,
+      kind: entityKind(entity.types),
+      degree: 0,
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      pinned: false,
+    });
+  }
+  const links = [];
+  for (const entity of manifest.entities) {
+    for (const prop of entity.properties) {
+      if (prop.kind !== "reference" || typeof prop.value !== "string") continue;
+      const source = nodes.get(entity.id);
+      const target = nodes.get(prop.value);
+      if (!source || !target) continue;
+      links.push({ source, target, property: prop.property });
+      source.degree += 1;
+      target.degree += 1;
+    }
+  }
+  return { nodes: [...nodes.values()], links };
+}
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+let activeGraph = null;
+
+function createForceGraph(container, data) {
+  const WORLD = { w: 960, h: 540 };
+  const view = { x: 0, y: 0, w: WORLD.w, h: WORLD.h };
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${WORLD.w} ${WORLD.h}`);
+  svg.setAttribute("aria-label", "Interactive entity graph");
+  svg.style.background = GRAPH_PALETTE.paper;
+  container.innerHTML = "";
+  container.append(svg);
+
+  const edgeLayer = document.createElementNS(SVG_NS, "g");
+  const nodeLayer = document.createElementNS(SVG_NS, "g");
+  svg.append(edgeLayer, nodeLayer);
+
+  // seed positions in a ring so the sim untangles quickly
+  data.nodes.forEach((node, index) => {
+    const angle = (index / Math.max(1, data.nodes.length)) * Math.PI * 2;
+    node.x = WORLD.w / 2 + Math.cos(angle) * 170;
+    node.y = WORLD.h / 2 + Math.sin(angle) * 150;
+  });
+
+  const edgeEls = data.links.map((link) => {
+    const group = document.createElementNS(SVG_NS, "g");
+    group.setAttribute("class", "g-edge");
+    const line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("stroke", GRAPH_PALETTE.ink);
+    line.setAttribute("stroke-width", "1.3");
+    line.setAttribute("opacity", "0.5");
+    const label = document.createElementNS(SVG_NS, "text");
+    label.setAttribute("class", "g-edge-label");
+    label.setAttribute("text-anchor", "middle");
+    label.textContent = link.property;
+    group.append(line, label);
+    edgeLayer.append(group);
+    return { link, line, label };
+  });
+
+  const nodeEls = data.nodes.map((node) => {
+    const group = document.createElementNS(SVG_NS, "g");
+    group.setAttribute("class", "g-node");
+    const size = Math.min(30, 13 + node.degree * 2.2);
+    node.size = size;
+    const rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("width", size);
+    rect.setAttribute("height", size);
+    const fills = {
+      org: GRAPH_PALETTE.accent,
+      site: GRAPH_PALETTE.ink,
+      person: GRAPH_PALETTE.accentSoft,
+      crumb: GRAPH_PALETTE.paper,
+      page: "#fff",
+      content: "#ffe8a3",
+    };
+    rect.setAttribute("fill", fills[node.kind] || "#fff");
+    rect.setAttribute("stroke", GRAPH_PALETTE.ink);
+    rect.setAttribute("stroke-width", "2");
+    const label = document.createElementNS(SVG_NS, "text");
+    label.setAttribute("class", "g-node-label");
+    label.setAttribute("text-anchor", "middle");
+    label.textContent = node.label;
+    group.append(rect, label);
+    nodeLayer.append(group);
+    group.__node = node;
+    return { node, group, rect, label };
+  });
+
+  let alpha = 1;
+  let frame = null;
+
+  function step() {
+    const nodes = data.nodes;
+    for (let i = 0; i < nodes.length; i += 1) {
+      const a = nodes[i];
+      if (a.pinned || a.dragging) continue;
+      for (let j = 0; j < nodes.length; j += 1) {
+        if (i === j) continue;
+        const b = nodes[j];
+        let dx = a.x - b.x;
+        let dy = a.y - b.y;
+        const d2 = Math.max(180, dx * dx + dy * dy);
+        const force = 2600 / d2;
+        const d = Math.sqrt(d2);
+        a.vx += (dx / d) * force;
+        a.vy += (dy / d) * force;
+      }
+      // gentle pull to center
+      a.vx += (WORLD.w / 2 - a.x) * 0.0035;
+      a.vy += (WORLD.h / 2 - a.y) * 0.0035;
+    }
+    for (const { source, target } of data.links) {
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const d = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+      const stretch = ((d - 110) / d) * 0.045;
+      if (!source.pinned && !source.dragging) {
+        source.vx += dx * stretch;
+        source.vy += dy * stretch;
+      }
+      if (!target.pinned && !target.dragging) {
+        target.vx -= dx * stretch;
+        target.vy -= dy * stretch;
+      }
+    }
+    for (const node of data.nodes) {
+      if (node.pinned || node.dragging) {
+        node.vx = 0;
+        node.vy = 0;
+        continue;
+      }
+      node.vx *= 0.82;
+      node.vy *= 0.82;
+      node.x += node.vx * alpha;
+      node.y += node.vy * alpha;
+    }
+    render();
+    alpha *= 0.994;
+    frame = alpha > 0.03 ? requestAnimationFrame(step) : null;
+  }
+
+  function render() {
+    for (const { node, group, rect, label } of nodeEls) {
+      rect.setAttribute("x", node.x - node.size / 2);
+      rect.setAttribute("y", node.y - node.size / 2);
+      rect.setAttribute("stroke", node.pinned ? GRAPH_PALETTE.accent : GRAPH_PALETTE.ink);
+      rect.setAttribute("stroke-width", node.pinned ? "3" : "2");
+      label.setAttribute("x", node.x);
+      label.setAttribute("y", node.y + node.size / 2 + 13);
+      group.classList.toggle("is-pinned", node.pinned);
+    }
+    for (const { link, line, label } of edgeEls) {
+      line.setAttribute("x1", link.source.x);
+      line.setAttribute("y1", link.source.y);
+      line.setAttribute("x2", link.target.x);
+      line.setAttribute("y2", link.target.y);
+      label.setAttribute("x", (link.source.x + link.target.x) / 2);
+      label.setAttribute("y", (link.source.y + link.target.y) / 2 - 5);
+    }
+  }
+
+  function reheat(energy = 0.6) {
+    alpha = Math.max(alpha, energy);
+    if (!frame) frame = requestAnimationFrame(step);
+  }
+
+  function applyView() {
+    svg.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+  }
+
+  function toWorld(event) {
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: view.x + ((event.clientX - rect.left) / rect.width) * view.w,
+      y: view.y + ((event.clientY - rect.top) / rect.height) * view.h,
+    };
+  }
+
+  svg.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    const factor = event.deltaY > 0 ? 1.13 : 1 / 1.13;
+    const anchor = toWorld(event);
+    view.w = Math.min(WORLD.w * 3, Math.max(160, view.w * factor));
+    view.h = view.w * (WORLD.h / WORLD.w);
+    view.x = anchor.x - ((event.clientX - svg.getBoundingClientRect().left) / svg.getBoundingClientRect().width) * view.w;
+    view.y = anchor.y - ((event.clientY - svg.getBoundingClientRect().top) / svg.getBoundingClientRect().height) * view.h;
+    applyView();
+  }, { passive: false });
+
+  let dragNode = null;
+  let panStart = null;
+
+  svg.addEventListener("pointerdown", (event) => {
+    const nodeGroup = event.target.closest(".g-node");
+    svg.setPointerCapture(event.pointerId);
+    if (nodeGroup) {
+      dragNode = nodeGroup.__node;
+      dragNode.dragging = true;
+      reheat(0.5);
+    } else {
+      panStart = { x: event.clientX, y: event.clientY, vx: view.x, vy: view.y };
+    }
+  });
+
+  svg.addEventListener("pointermove", (event) => {
+    if (dragNode) {
+      const point = toWorld(event);
+      dragNode.x = point.x;
+      dragNode.y = point.y;
+      reheat(0.35);
+      render();
+    } else if (panStart) {
+      const rect = svg.getBoundingClientRect();
+      view.x = panStart.vx - ((event.clientX - panStart.x) / rect.width) * view.w;
+      view.y = panStart.vy - ((event.clientY - panStart.y) / rect.height) * view.h;
+      applyView();
+    }
+  });
+
+  svg.addEventListener("pointerup", () => {
+    if (dragNode) {
+      dragNode.dragging = false;
+      dragNode.pinned = true;
+      render();
+      reheat(0.3);
+      dragNode = null;
+    }
+    panStart = null;
+  });
+
+  svg.addEventListener("dblclick", (event) => {
+    const nodeGroup = event.target.closest(".g-node");
+    if (!nodeGroup) return;
+    nodeGroup.__node.pinned = false;
+    reheat(0.5);
+  });
+
+  reheat(1);
+
+  return {
+    reset() {
+      for (const node of data.nodes) node.pinned = false;
+      view.x = 0;
+      view.y = 0;
+      view.w = WORLD.w;
+      view.h = WORLD.h;
+      applyView();
+      reheat(1);
+    },
+    destroy() {
+      if (frame) cancelAnimationFrame(frame);
+      svg.remove();
+    },
+  };
+}
+
+function renderDiagram(blueprint) {
   const sourceNode = $("#mermaid-source");
-  if (!diagram || !sourceNode) return;
-  sourceNode.textContent = source;
-  diagram.innerHTML = "";
-  const { svg } = await window.__schemaMermaid.render(`schema-graph-${Date.now()}`, source);
-  diagram.innerHTML = svg;
+  if (sourceNode) sourceNode.textContent = blueprint.mermaid;
+  const container = $("#diagram");
+  if (!container) return;
+  if (activeGraph) activeGraph.destroy();
+  activeGraph = createForceGraph(container, buildGraphData(blueprint.graph));
 }
 
 function renderPropertyCitations(item) {
@@ -1208,13 +1485,15 @@ function showResults(blueprint, remaining, quotaEnforced = true) {
   updateModePill(blueprint);
   updateGraphAiSummary(blueprint);
 
-  void renderDiagram(blueprint.mermaid).catch(() => {
+  try {
+    renderDiagram(blueprint);
+  } catch (error) {
     const diagram = $("#diagram");
     if (diagram) {
       diagram.innerHTML =
-        '<p class="hint">Could not render the graph diagram. Open “Graph source” below to view the raw definition.</p>';
+        '<p class="hint">Could not render the graph. Open “Graph source” below to view the raw definition.</p>';
     }
-  });
+  }
   renderRichResults(blueprint.rich_results || []);
   renderSnippets(blueprint.scaffolds);
   renderSchemaResources(blueprint);
@@ -1372,6 +1651,7 @@ function bindEvents() {
   });
   $("#start-over")?.addEventListener("click", () => activateTab("form"));
   $("#theme-toggle")?.addEventListener("click", toggleTheme);
+  $("#graph-reset")?.addEventListener("click", () => activeGraph?.reset());
   syncThemeToggle();
   for (const name of Object.keys(TAB_PANELS)) {
     $(`#tab-${name}`)?.addEventListener("click", () => activateTab(name));
