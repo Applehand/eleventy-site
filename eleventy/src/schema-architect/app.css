@@ -618,3 +618,36 @@ pre {
     box-shadow: 3px 3px 0 var(--ink);
   }
 }
+
+.prop-cites {
+  margin: 8px 0 4px;
+  line-height: 2;
+}
+
+.prop-cites-label {
+  color: var(--muted);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.prop-cite {
+  display: inline-block;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 7px;
+  margin: 0 3px 3px 0;
+  font-size: 0.85em;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fff;
+}
+
+.prop-cite-required {
+  border-color: var(--ink);
+}
+
+.prop-cite-missing {
+  border-style: dashed;
+  color: var(--muted);
+}

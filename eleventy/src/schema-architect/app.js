@@ -411,6 +411,11 @@ const SAMPLE_PROFILES = [
         example_path: "/faq/substitutions",
         description: "Common questions about ingredient substitutions and equipment.",
       },
+      {
+        name: "seasonal collection",
+        example_path: "/collections/weeknight-pasta",
+        description: "Curated ranked collections linking out to our published recipes.",
+      },
     ],
     notes:
       "Every recipe is tested three times before publishing. Recipes list prep time, cook time, and servings. Chefs: Nora Alvarez and Sam Whitfield.",
@@ -505,9 +510,44 @@ const SAMPLE_PROFILES = [
         description:
           "Member discussion threads with an original post and threaded replies.",
       },
+      {
+        name: "film page",
+        example_path: "/films/seven-samurai",
+        description:
+          "Film detail pages with director, cast, release year, runtime, and poster image.",
+      },
     ],
     notes:
       "Theater address: 200 Meridian Avenue. Tickets $8 members / $14 general. Films are shown with title, director, and release year on each screening page.",
+  },
+  {
+    label: "Tidewater Stays — vacation rentals",
+    business_name: "Tidewater Stays",
+    site_url: "https://tidewaterstays.example",
+    business_description:
+      "Family-run vacation rental company managing twelve coastal cottages and cabins with direct online booking.",
+    business_category: "Vacation rental management",
+    social_urls: ["https://www.instagram.com/tidewaterstays"],
+    templates: [
+      {
+        name: "rental listing",
+        example_path: "/rentals/heron-cottage",
+        description:
+          "Vacation rental pages with occupancy, bedrooms, nightly rate, amenities, and photo gallery.",
+      },
+      {
+        name: "area guide",
+        example_path: "/guides/things-to-do-oceanside",
+        description: "Local area guides covering beaches, restaurants, and seasonal activities.",
+      },
+      {
+        name: "guest faq",
+        example_path: "/faq/check-in",
+        description: "Common questions about check-in, pets, parking, and cancellation policies.",
+      },
+    ],
+    notes:
+      "Each rental lists a street address, capacity, number of bedrooms and bathrooms, a nightly rate in USD, and verified guest ratings. Office phone (555) 032-7700.",
   },
   {
     label: "Open Climate Data Lab — research datasets",
@@ -774,6 +814,20 @@ async function renderDiagram(source) {
   diagram.innerHTML = svg;
 }
 
+function renderPropertyCitations(item) {
+  const citations = item.property_citations || [];
+  if (!citations.length) return "";
+  const missing = new Set(item.missing_required_properties || []);
+  const links = citations.map((citation) => {
+    const classes = ["prop-cite"];
+    if (citation.level === "required") classes.push("prop-cite-required");
+    if (missing.has(citation.property)) classes.push("prop-cite-missing");
+    const title = `${citation.level} — documented under "${citation.heading}" in Google Search Central`;
+    return `<a class="${classes.join(" ")}" href="${escapeAttr(citation.url)}" target="_blank" rel="noopener" title="${escapeAttr(title)}">${escapeHtml(citation.property)}</a>`;
+  });
+  return `<p class="prop-cites"><span class="prop-cites-label">Documented properties:</span> ${links.join(" ")}</p>`;
+}
+
 function renderRichResults(items) {
   const container = $("#rich-results");
   if (!container) return;
@@ -793,10 +847,12 @@ function renderRichResults(items) {
       item.eligible === false
         ? '<p class="hint">Not yet eligible — add the missing required properties listed below.</p>'
         : "";
+    const citations = renderPropertyCitations(item);
     card.innerHTML = `
       <h4>${escapeHtml(item.feature_name)}${item.template_name ? ` · ${escapeHtml(item.template_name)}` : ""}</h4>
       ${status}
       <p>${escapeHtml(item.message)}</p>
+      ${citations}
       ${policy}
     `;
     container.append(card);
