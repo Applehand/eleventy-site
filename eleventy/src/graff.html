@@ -75,11 +75,11 @@ permalink: /graff/
         <form id="site-form">
           <div class="grid">
             <div class="field">
-              <label for="business-name">Business name</label>
+              <span class="label-row"><label for="business-name">Business name</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes the Organization entity's name, shown in every snippet and used for the site-wide WebSite name.">?</button></span>
               <input id="business-name" name="businessName" required maxlength="200" />
             </div>
             <div class="field">
-              <label for="site-url">Site URL</label>
+              <span class="label-row"><label for="site-url">Site URL</label><button type="button" class="tip" aria-label="How this is used" data-tip="Anchors every stable @id (/#organization, /#website) and all page URLs. Only the origin is used.">?</button></span>
               <input
                 id="site-url"
                 name="siteUrl"
@@ -90,7 +90,7 @@ permalink: /graff/
               <span class="hint">Homepage origin only: no path, query, or fragment.</span>
             </div>
             <div class="field wide">
-              <label for="business-description">What does the business do?</label>
+              <span class="label-row"><label for="business-description">What does the business do?</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes the Organization's description property and gives the AI router context for choosing Schema.org types.">?</button></span>
               <textarea
                 id="business-description"
                 name="businessDescription"
@@ -101,7 +101,7 @@ permalink: /graff/
               ></textarea>
             </div>
             <div class="field">
-              <label for="business-category">Business category</label>
+              <span class="label-row"><label for="business-category">Business category</label><button type="button" class="tip" aria-label="How this is used" data-tip="Drives typing: a bakery becomes Bakery + LocalBusiness, an e-commerce retailer becomes OnlineStore, a publisher biases pages toward Article.">?</button></span>
               <input
                 id="business-category"
                 name="businessCategory"
@@ -111,7 +111,7 @@ permalink: /graff/
               />
             </div>
             <div class="field wide">
-              <label for="social-urls">Social or profile URLs <span class="optional">(optional)</span></label>
+              <span class="label-row"><label for="social-urls">Social or profile URLs <span class="optional">(optional)</span></label><button type="button" class="tip" aria-label="How this is used" data-tip="Become sameAs links on the Organization, which helps search engines and AI systems connect the site to its profiles.">?</button></span>
               <textarea
                 id="social-urls"
                 name="socialUrls"
@@ -123,7 +123,11 @@ permalink: /graff/
           </div>
 
           <fieldset class="template-fieldset">
-            <legend>Page templates</legend>
+            <legend>
+              <span class="label-row">Page templates
+                <button type="button" class="tip" aria-label="How this is used" data-tip="Each template becomes a typed entity (Product, Article, Recipe...) plus a WebPage node and breadcrumb trail. The name and description pick the Schema.org type; the example path builds the URLs and breadcrumb levels.">?</button>
+              </span>
+            </legend>
             <p class="hint">
               Add each reusable page type on the site. A homepage is always included automatically.
             </p>
@@ -140,7 +144,7 @@ permalink: /graff/
           </fieldset>
 
           <div class="field wide">
-            <label for="notes">Additional details <span class="optional">(optional)</span></label>
+            <span class="label-row"><label for="notes">Additional details <span class="optional">(optional)</span></label><button type="button" class="tip" aria-label="How this is used" data-tip="Facts stated here get extracted into the graph when AI is enabled: named people become Person entities, addresses, phones, hours, and prices become properties.">?</button></span>
             <textarea
               id="notes"
               name="notes"
@@ -262,6 +266,11 @@ permalink: /graff/
               <li>
                 <strong>Nested objects</strong>: Offer, PostalAddress, Person, and ListItem
                 shapes match what Google's documentation specifies for each feature.
+              </li>
+              <li>
+                <strong>Breadcrumb hub levels</strong>: middle crumbs come from the example
+                path (<code>/gear/tent</code> yields Home &gt; Gear &gt; page). Confirm each hub
+                URL exists as a real page, or remove that level.
               </li>
               <li>
                 <strong>References</strong>: values like
