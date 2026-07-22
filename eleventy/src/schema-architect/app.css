@@ -784,3 +784,21 @@ pre {
 .footer-details li {
   margin: 8px 0;
 }
+
+.resources-details {
+  border: 2px dashed var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 18px 0 12px;
+  background: var(--accent-soft);
+}
+
+.resources-details summary {
+  cursor: pointer;
+  font-weight: 850;
+  color: var(--accent);
+}
+
+.resources-details .prop-cite {
+  background: var(--paper);
+}
