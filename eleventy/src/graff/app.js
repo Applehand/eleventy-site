@@ -69,6 +69,16 @@ function setPill(id, text, state) {
 
 function errorMessage(payload, fallback) {
   if (typeof payload?.detail === "string") return payload.detail;
+  if (Array.isArray(payload?.detail) && payload.detail.length) {
+    const lines = payload.detail.slice(0, 3).map((item) => {
+      const loc = (item.loc || [])
+        .filter((part) => part !== "body" && part !== "site")
+        .map((part) => (typeof part === "number" ? `#${part + 1}` : part))
+        .join(" ");
+      return loc ? `${loc}: ${item.msg}` : item.msg;
+    });
+    return `Check the form. ${lines.join(". ")}.`;
+  }
   if (typeof payload?.error === "string") return payload.error;
   if (typeof payload?.error?.message === "string") return payload.error.message;
   return fallback;
@@ -100,10 +110,14 @@ async function fetchJson(path, options = {}, fetchOptions = {}) {
         if (!response.ok) {
           const retryable = retryOnTransient && attempt === 0 && response.status >= 502;
           if (retryable) {
-            lastError = new Error(errorMessage(payload, response.statusText));
+            lastError = new Error(
+              errorMessage(payload, response.statusText || `Request failed (HTTP ${response.status}).`),
+            );
             break;
           }
-          throw new Error(errorMessage(payload, response.statusText));
+          throw new Error(
+            errorMessage(payload, response.statusText || `Request failed (HTTP ${response.status}).`),
+          );
         }
         apiBase = base;
         return payload;
@@ -128,7 +142,8 @@ async function fetchJson(path, options = {}, fetchOptions = {}) {
 }
 
 function normalizeOrigin(value) {
-  const url = new URL(value);
+  const withScheme = value.includes("://") ? value : `https://${value}`;
+  const url = new URL(withScheme);
   if (url.username || url.password) throw new Error("Site URL must not include credentials.");
   if (url.pathname !== "/" || url.search || url.hash) {
     throw new Error("Site URL must be the homepage origin only.");
@@ -137,10 +152,24 @@ function normalizeOrigin(value) {
 }
 
 function parseSocialUrls(raw) {
-  return raw
+  const lines = raw
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+  const urls = [];
+  const invalid = [];
+  for (const line of lines) {
+    const candidate = line.includes("://") ? line : `https://${line}`;
+    try {
+      urls.push(new URL(candidate).toString());
+    } catch (error) {
+      invalid.push(line);
+    }
+  }
+  if (invalid.length) {
+    throw new Error(`These social URLs are not valid: ${invalid.join(", ")}`);
+  }
+  return urls;
 }
 
 function updateTemplateLabels() {
