@@ -3,6 +3,14 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   API_CANDIDATES.push("http://127.0.0.1:8120/api/schema");
 }
 
+const GENERATION_TIMEOUT_MS = 120_000;
+const GENERATION_LOADING_MESSAGES = [
+  "Mapping your templates to Schema.org types…",
+  "Checking Google rich-result rules…",
+  "Building JSON-LD scaffolds…",
+  "Almost there — AI routing can take up to a minute…",
+];
+
 let apiBase = API_CANDIDATES[0];
 
 const $ = (selector) => document.querySelector(selector);
@@ -26,26 +34,53 @@ function errorMessage(payload, fallback) {
   return fallback;
 }
 
-async function fetchJson(path, options = {}) {
+async function fetchJson(path, options = {}, fetchOptions = {}) {
+  const { timeoutMs = 0, retryOnTransient = false } = fetchOptions;
   let lastError = new Error("Request failed.");
   const bases = [apiBase, ...API_CANDIDATES.filter((base) => base !== apiBase)];
+  const attempts = retryOnTransient ? 2 : 1;
 
-  for (const base of bases) {
-    try {
-      const response = await fetch(`${base}${path}`, {
-        credentials: base.startsWith("http") ? "omit" : "same-origin",
-        cache: "no-store",
-        headers: { "content-type": "application/json", ...(options.headers || {}) },
-        ...options,
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(errorMessage(payload, response.statusText));
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    for (const base of bases) {
+      const controller = timeoutMs > 0 ? new AbortController() : null;
+      const timer =
+        controller && timeoutMs > 0
+          ? window.setTimeout(() => controller.abort(), timeoutMs)
+          : null;
+      try {
+        const response = await fetch(`${base}${path}`, {
+          credentials: base.startsWith("http") ? "omit" : "same-origin",
+          cache: "no-store",
+          headers: { "content-type": "application/json", ...(options.headers || {}) },
+          signal: controller?.signal,
+          ...options,
+        });
+        if (timer) window.clearTimeout(timer);
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const retryable = retryOnTransient && attempt === 0 && response.status >= 502;
+          if (retryable) {
+            lastError = new Error(errorMessage(payload, response.statusText));
+            break;
+          }
+          throw new Error(errorMessage(payload, response.statusText));
+        }
+        apiBase = base;
+        return payload;
+      } catch (error) {
+        if (timer) window.clearTimeout(timer);
+        if (error instanceof DOMException && error.name === "AbortError") {
+          lastError = new Error(
+            "Generation is taking longer than expected. Please wait a moment and try again.",
+          );
+        } else {
+          lastError = error instanceof Error ? error : new Error("Request failed.");
+        }
+        if (retryOnTransient && attempt === 0) break;
       }
-      apiBase = base;
-      return payload;
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error("Request failed.");
+    }
+    if (retryOnTransient && attempt === 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1500));
     }
   }
 
@@ -461,19 +496,24 @@ function downloadBlueprint(blueprint) {
   announce("Blueprint downloaded as JSON.");
 }
 
-function showResults(blueprint, remaining) {
+function composeFallbackSummary(blueprint) {
+  const parts = [
+    `${blueprint.scaffolds.length} scaffold${blueprint.scaffolds.length === 1 ? "" : "s"} ready.`,
+  ];
+  if (blueprint.model_used) parts.push("Tailored with AI.");
+  else if (blueprint.model_degraded) parts.push("Generated from your answers without AI.");
+  return parts.join(" ");
+}
+
+function showResults(blueprint, remaining, quotaEnforced = true) {
   $("#form-panel")?.setAttribute("hidden", "");
   const results = $("#results-panel");
   results?.removeAttribute("hidden");
 
   const summary = $("#results-summary");
   if (summary) {
-    const parts = [
-      `${blueprint.scaffolds.length} scaffold${blueprint.scaffolds.length === 1 ? "" : "s"} ready.`,
-    ];
-    if (blueprint.model_used) parts.push("Tailored with AI.");
-    else if (blueprint.model_degraded) parts.push("Generated from your answers without AI.");
-    summary.textContent = parts.join(" ");
+    summary.textContent =
+      blueprint.delivery_summary || composeFallbackSummary(blueprint);
   }
 
   void renderDiagram(blueprint.mermaid).catch(() => {
@@ -487,12 +527,16 @@ function showResults(blueprint, remaining) {
   renderRichResults(blueprint.rich_results || []);
   renderScaffolds(blueprint.scaffolds);
   latestBlueprint = blueprint;
-  updateQuotaPill(remaining);
+  updateQuotaPill(remaining, quotaEnforced);
   announce("Blueprint generated.");
   results?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function updateQuotaPill(remaining) {
+function updateQuotaPill(remaining, quotaEnforced = true) {
+  if (quotaEnforced === false) {
+    setPill("#quota-status", "AI mapping enabled", "ok");
+    return;
+  }
   if (typeof remaining === "number") {
     const label =
       remaining === 1 ? "1 generation left today" : `${remaining} generations left today`;
@@ -512,7 +556,7 @@ async function initStatus() {
       ? `Schema.org v${health.registry.schema_version}`
       : "Schema.org registry unavailable";
     setPill("#registry-status", version, health.registry ? "ok" : "warn");
-    updateQuotaPill(quota.model_operations_remaining);
+    updateQuotaPill(quota.model_operations_remaining, quota.quota_enforced);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Service unavailable";
     setPill("#api-status", message, "error");
@@ -535,17 +579,36 @@ async function handleSubmit(event) {
   }
 
   button.disabled = true;
-  button.textContent = "Generating…";
+  let loadingTimer = null;
+  let loadingIndex = 0;
+  const setLoadingMessage = () => {
+    button.textContent = GENERATION_LOADING_MESSAGES[loadingIndex];
+    loadingIndex = (loadingIndex + 1) % GENERATION_LOADING_MESSAGES.length;
+  };
+  setLoadingMessage();
+  loadingTimer = window.setInterval(setLoadingMessage, 4000);
+
   try {
-    const payload = await fetchJson("/blueprint", {
-      method: "POST",
-      body: JSON.stringify({ site, use_model: true }),
-    });
-    showResults(payload.blueprint, payload.model_operations_remaining);
+    const payload = await fetchJson(
+      "/blueprint",
+      {
+        method: "POST",
+        body: JSON.stringify({ site, use_model: true }),
+      },
+      { timeoutMs: GENERATION_TIMEOUT_MS, retryOnTransient: true },
+    );
+    showResults(
+      payload.blueprint,
+      payload.model_operations_remaining,
+      payload.quota_enforced,
+    );
   } catch (error) {
-    announce(error.message);
-    alert(error.message);
+    const message =
+      error instanceof Error ? error.message : "Blueprint generation failed.";
+    announce(message);
+    alert(message);
   } finally {
+    if (loadingTimer) window.clearInterval(loadingTimer);
     button.disabled = false;
     button.textContent = "Generate blueprint";
   }

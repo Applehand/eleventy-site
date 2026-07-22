@@ -38,6 +38,7 @@ const RAG_API_PATHS = new Set([
 const RAG_MEDIA_PREFIX = "/api/media/";
 const SCHEMA_API_BASE = process.env.SCHEMA_API_BASE || "http://127.0.0.1:8120";
 const SCHEMA_API_PREFIX = "/api/schema/";
+const SCHEMA_PROXY_TIMEOUT_MS = Number(process.env.SCHEMA_PROXY_TIMEOUT_MS || 120_000);
 
 app.use(express.json({ limit: "512kb" }));
 
@@ -117,7 +118,11 @@ async function proxyToSchemaApi(req, res) {
   if (req.headers.cookie) headers.cookie = req.headers.cookie;
   if (origin) headers.origin = origin;
 
-  const init = { method: req.method, headers };
+  const init = {
+    method: req.method,
+    headers,
+    signal: AbortSignal.timeout(SCHEMA_PROXY_TIMEOUT_MS),
+  };
   if (req.method === "POST") init.body = JSON.stringify(req.body ?? {});
 
   let upstream;
