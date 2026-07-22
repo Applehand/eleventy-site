@@ -24,7 +24,7 @@ permalink: /schema-architect/
           placeholders for each page type.
         </p>
         <p class="privacy">
-          Nothing is stored on the server — take what is generated before you leave!
+          Nothing is stored on the server. Take what is generated before you leave.
         </p>
       </header>
 
@@ -68,7 +68,7 @@ permalink: /schema-architect/
                 required
                 placeholder="https://example.com"
               />
-              <span class="hint">Homepage origin only — no path, query, or fragment.</span>
+              <span class="hint">Homepage origin only: no path, query, or fragment.</span>
             </div>
             <div class="field wide">
               <label for="business-description">What does the business do?</label>
@@ -127,7 +127,7 @@ permalink: /schema-architect/
               name="notes"
               maxlength="12000"
               rows="3"
-              placeholder="Named authors, addresses, phone numbers, hours, prices — stated facts get extracted into the graph."
+              placeholder="Named authors, addresses, phone numbers, hours, prices. Stated facts get extracted into the graph."
             ></textarea>
           </div>
 
@@ -184,15 +184,15 @@ permalink: /schema-architect/
               primary type.
             </p>
             <ul class="graph-legend">
-              <li><strong>Organization</strong> — the business. Content points at it via
+              <li><strong>Organization</strong>: the business. Content points at it via
                 <code>publisher</code> (articles, videos) or <code>brand</code> (products).</li>
-              <li><strong>WebSite</strong> — the site container. Pages declare
+              <li><strong>WebSite</strong>: the site container. Pages declare
                 <code>isPartOf</code> → WebSite; it declares <code>publisher</code> → Organization.</li>
-              <li><strong>WebPage</strong> nodes — one per template page. Each points at its
+              <li><strong>WebPage</strong> nodes: one per template page. Each points at its
                 subject via <code>mainEntity</code> and at its <code>breadcrumb</code> trail.</li>
-              <li><strong>BreadcrumbList</strong> — the Home → template trail Google shows in
+              <li><strong>BreadcrumbList</strong>: the Home → template trail Google shows in
                 results and agents use to locate a page in the site hierarchy.</li>
-              <li>Missing edges are usually schema.org domain rules, not omissions — e.g. a
+              <li>Missing edges are usually schema.org domain rules, not omissions. A
                 Product cannot declare <code>isPartOf</code> because it is not a CreativeWork.</li>
             </ul>
           </details>
@@ -223,7 +223,7 @@ permalink: /schema-architect/
               Each template gets one self-contained snippet: a <code>@graph</code> holding the
               page's primary entity (Product, Article, Recipe…), a WebPage node, its
               BreadcrumbList, and the shared Organization and WebSite. One block serves every
-              page built from that template — fill the per-page tokens
+              page built from that template. Fill the per-page tokens
               (<code>{% raw %}{{PAGE_URL}}{% endraw %}</code>,
               <code>{% raw %}{{PAGE_TITLE}}{% endraw %}</code>) from the page itself and the
               site-wide tokens (<code>{% raw %}{{ORGANIZATION_LOGO_URL}}{% endraw %}</code>)
@@ -231,32 +231,40 @@ permalink: /schema-architect/
             </p>
             <ul class="graph-legend">
               <li>
-                <strong><code>@id</code> fragments</strong> — entities are named by URL plus
+                <strong><code>@id</code> fragments</strong>: entities are named by URL plus
                 fragment: site-wide ones on the origin
                 (<code>/#organization</code>, <code>/#website</code>), page-scoped ones on the
                 page URL (<code>#webpage</code>, <code>#breadcrumb</code>). Keep them exactly as
                 generated: crawlers merge nodes with the same <code>@id</code> across pages, and
-                that stitching is what turns per-page markup into one connected site graph.
+                this joins per-page markup into one site-wide graph.
               </li>
               <li>
-                <strong>Repetition is intentional</strong> — the Organization and WebSite blocks
-                appear in every snippet so each page stands alone; search engines de-duplicate
-                them by <code>@id</code>.
+                <strong>Duplicate Organization and WebSite blocks</strong>: every snippet
+                repeats them so each page stands alone. Search engines de-duplicate them by
+                <code>@id</code>.
               </li>
               <li>
-                <strong>Nested objects</strong> — Offer, PostalAddress, Person, and ListItem
-                shapes match what Google's documentation expects for each feature, so filling
-                the tokens is all that's left.
+                <strong>Nested objects</strong>: Offer, PostalAddress, Person, and ListItem
+                shapes match what Google's documentation specifies for each feature.
               </li>
               <li>
-                <strong>References</strong> — values like
+                <strong>References</strong>: values like
                 <code>{"@id": "…/#organization"}</code> are pointers to another node in the
-                graph, not text. Leave them untouched.
+                graph, not text. Leave them unchanged.
               </li>
             </ul>
           </details>
           <div id="scaffolds"></div>
         </section>
+
+        <details class="graph-details">
+          <summary>Schema.org references</summary>
+          <p class="hint">
+            Documentation for every type and property used in this blueprint. Each link opens
+            the schema.org definition with its expected values and usage notes.
+          </p>
+          <div id="schema-resources"></div>
+        </details>
 
         <p class="hint verify-links">
           After deploying, verify live pages with the
@@ -280,7 +288,7 @@ permalink: /schema-architect/
           <p>
             Search engines and AI assistants increasingly read pages as data, not prose. JSON-LD
             structured data gives crawlers and agents machine-readable statements about what a
-            page contains — instead of inferring it from layout and copy.
+            page contains, instead of inferring it from layout and copy.
           </p>
           <ul>
             <li>
@@ -290,8 +298,7 @@ permalink: /schema-architect/
             <li>
               <strong>AI answer engines and agents</strong> use schema markup for grounding and
               entity resolution: a connected graph with stable <code>@id</code>s states "this
-              page is about this product, sold by this organization, on this site" so nothing
-              has to be guessed.
+              page is about this product, sold by this organization, on this site" without inference.
             </li>
             <li>
               <strong>Navigation signals</strong> like <code>BreadcrumbList</code> and
@@ -305,34 +312,34 @@ permalink: /schema-architect/
           <p>
             Every blueprint starts from a deterministic skeleton: an Organization → WebSite →
             WebPage spine with breadcrumbs and stable <code>@id</code> fragments, typed by
-            word-boundary keyword rules. AI never builds structure from scratch — it refines a
+            word-boundary keyword rules. AI never builds structure from scratch; it refines a
             graph that is already valid.
           </p>
           <ul>
             <li>
-              <strong>schema.org registry</strong> — the full v30 vocabulary (3,003 terms: 843
+              <strong>schema.org registry</strong>: the full v30 vocabulary (3,003 terms: 843
               types, 1,529 properties, plus enumerations) compiled into a local database. Every
               type and property in the output is validated against it: domains, ranges, and
               subtype relations. Unknown terms are dropped, not published.
             </li>
             <li>
-              <strong>Gemini ops router</strong> — when AI is enabled, Gemini works through
+              <strong>Gemini ops router</strong>: when AI is enabled, Gemini works through
               function-calling operations (<code>search_schema_types</code>,
               <code>get_allowed_properties</code>, <code>check_feature_eligibility</code>,
               <code>propose_template_types</code>, <code>add_entity_node</code>,
               <code>add_entity_facts</code>, <code>add_relationship</code>,
               <code>complete_routing</code>). Each call is validated server-side, so the model
               can only make changes the registry allows. A final enrichment turn extracts facts
-              explicitly stated in the input — addresses, phone numbers, named people, hours —
+              explicitly stated in the input (addresses, phone numbers, named people, hours)
               into the graph.
             </li>
             <li>
-              <strong>Google feature manifests</strong> — 25 rich-result rule sets sourced from
+              <strong>Google feature manifests</strong>: 25 rich-result rule sets sourced from
               Search Central documentation, with a citation per property. They drive the
               required and recommended fields in each snippet and the eligibility panel above.
             </li>
             <li>
-              <strong>Graceful degradation</strong> — if AI is unavailable or its output fails
+              <strong>Graceful degradation</strong>: if AI is unavailable or its output fails
               validation, generation falls back to pure deterministic mapping. The result is
               never below a valid, registry-checked baseline.
             </li>

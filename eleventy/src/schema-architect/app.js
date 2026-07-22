@@ -208,7 +208,7 @@ function ensureTemplateRows() {
 
 const SAMPLE_PROFILES = [
   {
-    label: "Northwind Bakery — local business + menu",
+    label: "Northwind Bakery: local business + menu",
     business_name: "Northwind Bakery",
     site_url: "https://northwindbakery.example",
     business_description:
@@ -245,7 +245,7 @@ const SAMPLE_PROFILES = [
       "Downtown location: 412 Harbor Street, open 7am-3pm daily, phone (555) 014-2200. We publish seasonal menus and accept online orders for pickup. Founded in 2012.",
   },
   {
-    label: "Summit Analytics — SaaS + careers",
+    label: "Summit Analytics: SaaS + careers",
     business_name: "Summit Analytics",
     site_url: "https://summitanalytics.example",
     business_description:
@@ -283,7 +283,7 @@ const SAMPLE_PROFILES = [
       "Multiple product lines under one brand; docs live on a separate subdomain. Hiring is remote-first across the US. The platform is a browser-based web application with a free trial tier.",
   },
   {
-    label: "Horizon Travel Guides — publisher + video",
+    label: "Horizon Travel Guides: publisher + video",
     business_name: "Horizon Travel Guides",
     site_url: "https://horizontravel.example",
     business_description:
@@ -320,7 +320,7 @@ const SAMPLE_PROFILES = [
       "Affiliate links on hotel pages; twelve freelance contributors, each with a byline and profile page. Hotel reviews use a 1-5 star scale from staff visits.",
   },
   {
-    label: "Oak & Page Books — events + reviews",
+    label: "Oak & Page Books: events + reviews",
     business_name: "Oak & Page Books",
     site_url: "https://oakandpage.example",
     business_description:
@@ -348,7 +348,7 @@ const SAMPLE_PROFILES = [
       "Store address: 88 Alder Lane, open Tuesday-Sunday. Events are usually free with RSVP; some ticketed signings around $15.",
   },
   {
-    label: "Driftwood Outdoor Co. — e-commerce + guides",
+    label: "Driftwood Outdoor Co.: e-commerce + guides",
     business_name: "Driftwood Outdoor Co.",
     site_url: "https://driftwoodoutdoor.example",
     business_description:
@@ -379,7 +379,7 @@ const SAMPLE_PROFILES = [
       "Ships from two US warehouses; prices in USD. Product pages show in-stock status and collect verified buyer reviews with star ratings.",
   },
   {
-    label: "Golden Ladle — recipes + cooking videos",
+    label: "Golden Ladle: recipes + cooking videos",
     business_name: "Golden Ladle Kitchen",
     site_url: "https://goldenladle.example",
     business_description:
@@ -421,7 +421,7 @@ const SAMPLE_PROFILES = [
       "Every recipe is tested three times before publishing. Recipes list prep time, cook time, and servings. Chefs: Nora Alvarez and Sam Whitfield.",
   },
   {
-    label: "Brightpath Learning — courses + webinars",
+    label: "Brightpath Learning: courses + webinars",
     business_name: "Brightpath Learning",
     site_url: "https://brightpathlearning.example",
     business_description:
@@ -456,7 +456,7 @@ const SAMPLE_PROFILES = [
       "Six-week cohorts, tuition listed in USD with scholarships. Webinars are free and recorded. The question board shows an accepted answer with upvotes.",
   },
   {
-    label: "Cascade Talent Group — job board",
+    label: "Cascade Talent Group: job board",
     business_name: "Cascade Talent Group",
     site_url: "https://cascadetalent.example",
     business_description:
@@ -485,7 +485,7 @@ const SAMPLE_PROFILES = [
       "Roles include full-time, contract, and contract-to-hire. Every listing shows a posted date, valid-through date, and a salary range in USD.",
   },
   {
-    label: "Lumen Film Society — screenings + reviews",
+    label: "Lumen Film Society: screenings + reviews",
     business_name: "Lumen Film Society",
     site_url: "https://lumenfilm.example",
     business_description:
@@ -521,7 +521,7 @@ const SAMPLE_PROFILES = [
       "Theater address: 200 Meridian Avenue. Tickets $8 members / $14 general. Films are shown with title, director, and release year on each screening page.",
   },
   {
-    label: "Tidewater Stays — vacation rentals",
+    label: "Tidewater Stays: vacation rentals",
     business_name: "Tidewater Stays",
     site_url: "https://tidewaterstays.example",
     business_description:
@@ -550,7 +550,7 @@ const SAMPLE_PROFILES = [
       "Each rental lists a street address, capacity, number of bedrooms and bathrooms, a nightly rate in USD, and verified guest ratings. Office phone (555) 032-7700.",
   },
   {
-    label: "Open Climate Data Lab — research datasets",
+    label: "Open Climate Data Lab: research datasets",
     business_name: "Open Climate Data Lab",
     site_url: "https://openclimatedata.example",
     business_description:
@@ -709,7 +709,7 @@ function createGenerationProgress(site, useAi) {
 
   function show() {
     if (context) {
-      context.textContent = `Generating for ${site.business_name} — ${pageLabel} plus homepage.`;
+      context.textContent = `Generating for ${site.business_name}: ${pageLabel} plus homepage.`;
     }
     enableTab("generation");
     activateTab("generation");
@@ -749,7 +749,7 @@ function createGenerationProgress(site, useAi) {
         window.setTimeout(() => {
           if (!finishing && activeIndex === aiIndex && detail) {
             detail.textContent =
-              "Gemini is still routing your templates — complex sites can take up to a minute.";
+              "Gemini is still routing the templates. Complex sites can take up to a minute.";
           }
         }, 18_000),
       );
@@ -781,7 +781,7 @@ function createGenerationProgress(site, useAi) {
     finishing = true;
     clearTimers();
     panel?.setAttribute("aria-busy", "false");
-    if (detail) detail.textContent = "Generation failed — adjust the inputs and retry.";
+    if (detail) detail.textContent = "Generation failed. Adjust the inputs and retry.";
     activateTab("form");
   }
 
@@ -841,7 +841,7 @@ function renderPropertyCitations(item) {
     const classes = ["prop-cite"];
     if (citation.level === "required") classes.push("prop-cite-required");
     if (missing.has(citation.property)) classes.push("prop-cite-missing");
-    const title = `${citation.level} — documented under "${citation.heading}" in Google Search Central`;
+    const title = `${citation.level}. Documented under "${citation.heading}" in Google Search Central.`;
     return `<a class="${classes.join(" ")}" href="${escapeAttr(citation.url)}" target="_blank" rel="noopener" title="${escapeAttr(title)}">${escapeHtml(citation.property)}</a>`;
   });
   return `<p class="prop-cites"><span class="prop-cites-label">Documented properties:</span> ${links.join(" ")}</p>`;
@@ -865,9 +865,9 @@ function renderRichResults(items) {
     const missing = item.missing_required_properties || [];
     const status =
       item.eligible === false && missing.length
-        ? `<p class="hint">Needs real data for: <strong>${missing.map(escapeHtml).join(", ")}</strong>. ` +
-          "These require actual content (a person, place, or media object) that placeholders " +
-          "can't stub — add them to the JSON-LD to qualify.</p>"
+        ? `<p class="hint">Requires real data for: <strong>${missing.map(escapeHtml).join(", ")}</strong>. ` +
+          "These properties need actual content (a person, place, or media object) rather " +
+          "than a placeholder. Add them to the JSON-LD to qualify.</p>"
         : "";
     const citations = renderPropertyCitations(item);
     card.innerHTML = `
@@ -916,7 +916,7 @@ function renderSnippets(snippets) {
       const text = block?.dataset.json || "";
       await navigator.clipboard.writeText(text);
       announce("JSON-LD copied to clipboard.");
-      button.textContent = "Copied!";
+      button.textContent = "Copied";
       setTimeout(() => {
         button.textContent = "Copy JSON-LD";
       }, 1500);
@@ -972,12 +972,12 @@ function downloadBlueprint(blueprint) {
 }
 
 const DEGRADATION_LABELS = {
-  quota: "AI quota reached — deterministic mapping used",
-  gemini_api: "AI service error — deterministic mapping used",
-  gemini_invalid_response: "AI returned an invalid response — deterministic mapping used",
-  incomplete_routing: "AI routing incomplete — deterministic structure used",
-  validation_fallback: "AI output failed validation — deterministic mapping used",
-  not_configured: "AI not configured — deterministic mapping used",
+  quota: "AI quota reached. Deterministic mapping used.",
+  gemini_api: "AI service error. Deterministic mapping used.",
+  gemini_invalid_response: "AI returned an invalid response. Deterministic mapping used.",
+  incomplete_routing: "AI routing incomplete. Deterministic structure used.",
+  validation_fallback: "AI output failed validation. Deterministic mapping used.",
+  not_configured: "AI not configured. Deterministic mapping used.",
 };
 
 function updateModePill(blueprint) {
@@ -987,7 +987,7 @@ function updateModePill(blueprint) {
   if (blueprint.model_degraded) {
     pill.textContent =
       DEGRADATION_LABELS[blueprint.degradation_reason] ||
-      "AI routing unavailable — deterministic mapping used";
+      "AI routing unavailable. Deterministic mapping used.";
     pill.dataset.state = "warn";
   } else if (blueprint.model_used) {
     pill.textContent = "Tailored with AI";
@@ -1005,6 +1005,43 @@ function composeResultsSummary(blueprint) {
   const parts = [`${count} JSON-LD snippet${count === 1 ? "" : "s"} generated.`];
   if (total) parts.push(`${eligible}/${total} rich result opportunities already eligible.`);
   return parts.join(" ");
+}
+
+function collectSchemaTerms(blueprint) {
+  const types = new Set();
+  const properties = new Set();
+  const visitNode = (node) => {
+    if (!node || typeof node !== "object" || Array.isArray(node)) return;
+    const rawTypes = node["@type"];
+    for (const name of Array.isArray(rawTypes) ? rawTypes : rawTypes ? [rawTypes] : []) {
+      types.add(String(name));
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key.startsWith("@")) continue;
+      properties.add(key);
+      for (const child of Array.isArray(value) ? value : [value]) visitNode(child);
+    }
+  };
+  for (const entity of blueprint.graph?.entities || []) {
+    entity.types.forEach((name) => types.add(name));
+    entity.properties.forEach((prop) => properties.add(prop.property));
+  }
+  for (const snippet of blueprint.scaffolds || []) {
+    for (const node of snippet.jsonld?.["@graph"] || []) visitNode(node);
+  }
+  return { types: [...types].sort(), properties: [...properties].sort() };
+}
+
+function renderSchemaResources(blueprint) {
+  const container = $("#schema-resources");
+  if (!container) return;
+  const { types, properties } = collectSchemaTerms(blueprint);
+  const chip = (name) =>
+    `<a class="prop-cite" href="https://schema.org/${encodeURIComponent(name)}" target="_blank" rel="noopener">${escapeHtml(name)}</a>`;
+  container.innerHTML = `
+    <p class="prop-cites"><span class="prop-cites-label">Types (${types.length}):</span> ${types.map(chip).join(" ")}</p>
+    <p class="prop-cites"><span class="prop-cites-label">Properties (${properties.length}):</span> ${properties.map(chip).join(" ")}</p>
+  `;
 }
 
 function updateGraphAiSummary(blueprint) {
@@ -1042,6 +1079,7 @@ function showResults(blueprint, remaining, quotaEnforced = true) {
   });
   renderRichResults(blueprint.rich_results || []);
   renderSnippets(blueprint.scaffolds);
+  renderSchemaResources(blueprint);
   latestBlueprint = blueprint;
   updateQuotaPill(remaining, quotaEnforced);
   announce("Blueprint generated.");
@@ -1056,7 +1094,7 @@ function updateQuotaPill(remaining, quotaEnforced = true) {
   if (typeof remaining === "number") {
     const label =
       remaining === 0
-        ? "AI limit reached — deterministic mode until next week"
+        ? "AI limit reached. Deterministic mode until next week."
         : `${remaining} AI generation${remaining === 1 ? "" : "s"} left this week`;
     setPill("#quota-status", label, remaining > 0 ? "ok" : "warn");
   }
