@@ -949,8 +949,15 @@ function buildGraphData(manifest) {
 const SVG_NS = "http://www.w3.org/2000/svg";
 let activeGraph = null;
 
-function createForceGraph(container, data) {
-  const WORLD = { w: 980, h: 660 };
+function createForceGraph(container, data, detailsById) {
+  const KIND_LAYER = { org: 0, site: 1, page: 2, content: 3, person: 4, crumb: 4 };
+  const layerCounts = new Map();
+  for (const node of data.nodes) {
+    const layer = KIND_LAYER[node.kind] ?? 3;
+    layerCounts.set(layer, (layerCounts.get(layer) || 0) + 1);
+  }
+  const densestColumn = Math.max(...layerCounts.values());
+  const WORLD = { w: 1150, h: Math.max(640, densestColumn * 96 + 160) };
   const view = { x: 0, y: 0, w: WORLD.w, h: WORLD.h };
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", `0 0 ${WORLD.w} ${WORLD.h}`);
@@ -964,7 +971,6 @@ function createForceGraph(container, data) {
   svg.append(edgeLayer, nodeLayer);
 
   // hierarchical columns, left to right: business -> site -> pages -> content -> support
-  const KIND_LAYER = { org: 0, site: 1, page: 2, content: 3, person: 4, crumb: 4 };
   const maxLayer = Math.max(...data.nodes.map((node) => KIND_LAYER[node.kind] ?? 3));
   const columnX = (layer) => 110 + (layer * (WORLD.w - 220)) / Math.max(1, maxLayer);
   const byLayer = new Map();
@@ -985,7 +991,8 @@ function createForceGraph(container, data) {
     });
   }
 
-  const edgeEls = data.links.map((link) => {
+  const edgeEls = data.links.map((link, index) => {
+    link.labelT = 0.32 + (index % 5) * 0.09;
     const group = document.createElementNS(SVG_NS, "g");
     group.setAttribute("class", "g-edge");
     const line = document.createElementNS(SVG_NS, "line");
@@ -1025,10 +1032,18 @@ function createForceGraph(container, data) {
     label.setAttribute("class", "g-node-label");
     label.setAttribute("text-anchor", "middle");
     label.textContent = node.label;
-    group.append(rect, label);
+    const pinBadge = document.createElementNS(SVG_NS, "rect");
+    pinBadge.setAttribute("class", "g-pin-badge");
+    pinBadge.setAttribute("width", "9");
+    pinBadge.setAttribute("height", "9");
+    pinBadge.setAttribute("fill", GRAPH_PALETTE.accent);
+    pinBadge.setAttribute("stroke", GRAPH_PALETTE.ink);
+    pinBadge.setAttribute("stroke-width", "1.5");
+    pinBadge.setAttribute("visibility", "hidden");
+    group.append(rect, label, pinBadge);
     nodeLayer.append(group);
     group.__node = node;
-    return { node, group, rect, label };
+    return { node, group, rect, label, pinBadge };
   });
 
   let alpha = 1;
@@ -1056,9 +1071,9 @@ function createForceGraph(container, data) {
     }
     for (const { source, target } of data.links) {
       const dy = target.y - source.y;
-      // links pull connected rows into vertical alignment across columns
-      if (!source.pinned && !source.dragging) source.vy += dy * 0.02;
-      if (!target.pinned && !target.dragging) target.vy -= dy * 0.02;
+      // links gently pull connected rows toward alignment across columns
+      if (!source.pinned && !source.dragging) source.vy += dy * 0.006;
+      if (!target.pinned && !target.dragging) target.vy -= dy * 0.006;
     }
     for (const node of data.nodes) {
       if (node.pinned || node.dragging) {
@@ -1070,7 +1085,7 @@ function createForceGraph(container, data) {
       node.vy *= 0.82;
       node.x += node.vx * alpha;
       node.y += node.vy * alpha;
-      node.y = Math.min(WORLD.h - 36, Math.max(28, node.y));
+      node.y = Math.min(WORLD.h - 44, Math.max(34, node.y));
     }
     // enforce a minimum vertical gap inside each column
     for (const column of byLayer.values()) {
@@ -1079,7 +1094,7 @@ function createForceGraph(container, data) {
         const above = movable[i - 1];
         const here = movable[i];
         const gap = here.y - above.y;
-        const minGap = 52;
+        const minGap = 78;
         if (gap < minGap) {
           const push = (minGap - gap) / 2;
           if (!above.pinned && !above.dragging) above.y -= push;
@@ -1093,13 +1108,16 @@ function createForceGraph(container, data) {
   }
 
   function render() {
-    for (const { node, group, rect, label } of nodeEls) {
+    for (const { node, group, rect, label, pinBadge } of nodeEls) {
       rect.setAttribute("x", node.x - node.size / 2);
       rect.setAttribute("y", node.y - node.size / 2);
       rect.setAttribute("stroke", node.pinned ? GRAPH_PALETTE.accent : GRAPH_PALETTE.ink);
       rect.setAttribute("stroke-width", node.pinned ? "3" : "2");
       label.setAttribute("x", node.x);
       label.setAttribute("y", node.y + node.size / 2 + 13);
+      pinBadge.setAttribute("x", node.x + node.size / 2 - 3);
+      pinBadge.setAttribute("y", node.y - node.size / 2 - 6);
+      pinBadge.setAttribute("visibility", node.pinned ? "visible" : "hidden");
       group.classList.toggle("is-pinned", node.pinned);
     }
     for (const { link, line, label } of edgeEls) {
@@ -1107,8 +1125,9 @@ function createForceGraph(container, data) {
       line.setAttribute("y1", link.source.y);
       line.setAttribute("x2", link.target.x);
       line.setAttribute("y2", link.target.y);
-      label.setAttribute("x", (link.source.x + link.target.x) / 2);
-      label.setAttribute("y", (link.source.y + link.target.y) / 2 - 5);
+      const t = link.labelT;
+      label.setAttribute("x", link.source.x + (link.target.x - link.source.x) * t);
+      label.setAttribute("y", link.source.y + (link.target.y - link.source.y) * t - 5);
     }
   }
 
@@ -1131,6 +1150,7 @@ function createForceGraph(container, data) {
 
   svg.addEventListener("wheel", (event) => {
     event.preventDefault();
+    panel.hidden = true;
     const factor = event.deltaY > 0 ? 1.13 : 1 / 1.13;
     const anchor = toWorld(event);
     view.w = Math.min(WORLD.w * 3, Math.max(160, view.w * factor));
@@ -1140,10 +1160,68 @@ function createForceGraph(container, data) {
     applyView();
   }, { passive: false });
 
+  const panel = document.createElement("div");
+  panel.className = "node-panel";
+  panel.hidden = true;
+  container.append(panel);
+  let panelTimer = null;
+  let hideTimer = null;
+
+  function showPanel(node) {
+    const details = detailsById?.get(node.id);
+    if (!details) return;
+    const rows = details.fields
+      .map(
+        ([key, value]) =>
+          `<div class="node-panel-row"><span class="node-panel-key">${escapeHtml(key)}</span><span class="node-panel-value">${escapeHtml(value)}</span></div>`,
+      )
+      .join("");
+    panel.innerHTML = `
+      <p class="node-panel-title">${escapeHtml(details.types.join(", "))}</p>
+      <p class="node-panel-sub">suggested fields in this entity's snippet</p>
+      ${rows || '<p class="node-panel-sub">No fields beyond identity.</p>'}
+    `;
+    const rect = svg.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const screenX = rect.left - containerRect.left + ((node.x - view.x) / view.w) * rect.width;
+    const screenY = rect.top - containerRect.top + ((node.y - view.y) / view.h) * rect.height;
+    panel.hidden = false;
+    const panelWidth = 290;
+    panel.style.left = `${Math.max(8, Math.min(containerRect.width - panelWidth - 8, screenX + 18))}px`;
+    panel.style.top = `${Math.max(8, screenY - 30)}px`;
+  }
+
+  function scheduleHide() {
+    window.clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(() => {
+      panel.hidden = true;
+    }, 180);
+  }
+
+  panel.addEventListener("pointerenter", () => window.clearTimeout(hideTimer));
+  panel.addEventListener("pointerleave", scheduleHide);
+
   let dragNode = null;
   let panStart = null;
 
+  svg.addEventListener("pointerover", (event) => {
+    const nodeGroup = event.target.closest(".g-node");
+    if (!nodeGroup || dragNode) return;
+    window.clearTimeout(panelTimer);
+    window.clearTimeout(hideTimer);
+    panelTimer = window.setTimeout(() => showPanel(nodeGroup.__node), 220);
+  });
+
+  svg.addEventListener("pointerout", (event) => {
+    if (event.target.closest(".g-node")) {
+      window.clearTimeout(panelTimer);
+      scheduleHide();
+    }
+  });
+
   svg.addEventListener("pointerdown", (event) => {
+    window.clearTimeout(panelTimer);
+    panel.hidden = true;
     const nodeGroup = event.target.closest(".g-node");
     svg.setPointerCapture(event.pointerId);
     if (nodeGroup) {
@@ -1203,6 +1281,7 @@ function createForceGraph(container, data) {
     destroy() {
       if (frame) cancelAnimationFrame(frame);
       svg.remove();
+      panel.remove();
     },
   };
 }
@@ -1229,12 +1308,32 @@ function renderGraphKey(data) {
     });
   const hasSubject = data.links.some((link) => link.property === "mainEntity");
   const edges = [
+    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (double-click frees it)</span>`,
     `<span class="key-item"><span class="key-line"></span>link</span>`,
     hasSubject
       ? `<span class="key-item"><span class="key-line key-line-subject"></span>page subject (mainEntity)</span>`
       : "",
   ];
   container.innerHTML = chips.join("") + edges.join("");
+}
+
+function buildSnippetDetails(blueprint) {
+  const details = new Map();
+  for (const snippet of blueprint.scaffolds || []) {
+    for (const node of snippet.jsonld?.["@graph"] || []) {
+      const id = node["@id"];
+      if (!id || details.has(id)) continue;
+      const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
+      const fields = Object.entries(node)
+        .filter(([key]) => !key.startsWith("@"))
+        .map(([key, value]) => {
+          const rendered = typeof value === "string" ? value : JSON.stringify(value);
+          return [key, rendered.length > 80 ? `${rendered.slice(0, 79)}…` : rendered];
+        });
+      details.set(id, { types, fields });
+    }
+  }
+  return details;
 }
 
 function renderDiagram(blueprint) {
@@ -1245,7 +1344,7 @@ function renderDiagram(blueprint) {
   if (activeGraph) activeGraph.destroy();
   const data = buildGraphData(blueprint.graph);
   renderGraphKey(data);
-  activeGraph = createForceGraph(container, data);
+  activeGraph = createForceGraph(container, data, buildSnippetDetails(blueprint));
 }
 
 function renderPropertyCitations(item) {
