@@ -963,14 +963,59 @@ function createForceGraph(container, data, detailsById) {
   const nodeLayer = document.createElementNS(SVG_NS, "g");
   svg.append(edgeLayer, nodeLayer);
 
-  // free layout: seed on a loose ring and let the physics settle; users can
-  // drag and pin nodes into whatever arrangement they want
-  data.nodes.forEach((node, index) => {
-    const angle = (index / Math.max(1, data.nodes.length)) * Math.PI * 2;
-    const radius = 150 + (index % 3) * 70;
-    node.x = WORLD.w / 2 + Math.cos(angle) * radius;
-    node.y = WORLD.h / 2 + Math.sin(angle) * radius;
-  });
+  // Default arrangement: columns by graph distance from the Organization
+  // (BFS over the edges), people sorted to the top of their column. Every
+  // node starts quietly pinned so the layout is stable and directly
+  // arrangeable; unpinning from the hover card hands a node to the physics.
+  function applyDefaultLayout() {
+    const adjacency = new Map(data.nodes.map((node) => [node, []]));
+    for (const link of data.links) {
+      adjacency.get(link.source).push(link.target);
+      adjacency.get(link.target).push(link.source);
+    }
+    const root = data.nodes.find((node) => node.kind === "org") || data.nodes[0];
+    const depth = new Map([[root, 0]]);
+    const queue = [root];
+    while (queue.length) {
+      const node = queue.shift();
+      for (const neighbor of adjacency.get(node)) {
+        if (!depth.has(neighbor)) {
+          depth.set(neighbor, depth.get(node) + 1);
+          queue.push(neighbor);
+        }
+      }
+    }
+    const maxDepth = Math.max(0, ...depth.values());
+    for (const node of data.nodes) {
+      if (!depth.has(node)) depth.set(node, maxDepth + 1);
+    }
+    const columns = new Map();
+    for (const node of data.nodes) {
+      const d = depth.get(node);
+      if (!columns.has(d)) columns.set(d, []);
+      columns.get(d).push(node);
+    }
+    const depths = [...columns.keys()].sort((a, b) => a - b);
+    depths.forEach((d, columnIndex) => {
+      const column = columns.get(d);
+      column.sort((a, b) => {
+        const personFirst = (a.kind === "person" ? 0 : 1) - (b.kind === "person" ? 0 : 1);
+        if (personFirst !== 0) return personFirst;
+        return data.nodes.indexOf(a) - data.nodes.indexOf(b);
+      });
+      const x =
+        depths.length === 1
+          ? WORLD.w / 2
+          : 120 + (columnIndex * (WORLD.w - 240)) / (depths.length - 1);
+      column.forEach((node, rowIndex) => {
+        node.x = x;
+        node.y = ((rowIndex + 1) * WORLD.h) / (column.length + 1);
+        node.pinned = true;
+        node.autoPinned = true;
+      });
+    });
+  }
+  applyDefaultLayout();
 
   const edgeEls = data.links.map((link, index) => {
     link.labelT = 0.32 + (index % 5) * 0.09;
@@ -1110,14 +1155,15 @@ function createForceGraph(container, data, detailsById) {
     for (const { node, group, rect, label, pinBadge } of nodeEls) {
       rect.setAttribute("x", node.x - node.size / 2);
       rect.setAttribute("y", node.y - node.size / 2);
-      rect.setAttribute("stroke", node.pinned ? GRAPH_PALETTE.accent : GRAPH_PALETTE.ink);
-      rect.setAttribute("stroke-width", node.pinned ? "3" : "2");
+      const userPinned = node.pinned && !node.autoPinned;
+      rect.setAttribute("stroke", userPinned ? GRAPH_PALETTE.accent : GRAPH_PALETTE.ink);
+      rect.setAttribute("stroke-width", userPinned ? "3" : "2");
       label.setAttribute("x", node.x);
       label.setAttribute("y", node.y + node.size / 2 + 13);
       pinBadge.setAttribute("x", node.x + node.size / 2 - 3);
       pinBadge.setAttribute("y", node.y - node.size / 2 - 6);
-      pinBadge.setAttribute("visibility", node.pinned ? "visible" : "hidden");
-      group.classList.toggle("is-pinned", node.pinned);
+      pinBadge.setAttribute("visibility", userPinned ? "visible" : "hidden");
+      group.classList.toggle("is-pinned", userPinned);
     }
     for (const { link, line, label } of edgeEls) {
       line.setAttribute("x1", link.source.x);
@@ -1210,6 +1256,7 @@ function createForceGraph(container, data, detailsById) {
     panel.querySelector(".node-panel-unpin")?.addEventListener("click", () => {
       if (!panelNode) return;
       panelNode.pinned = false;
+      panelNode.autoPinned = false;
       reheat(0.5);
       showPanel(panelNode);
     });
@@ -1246,6 +1293,7 @@ function createForceGraph(container, data, detailsById) {
   });
 
   svg.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
     window.clearTimeout(panelTimer);
     panel.hidden = true;
     const nodeGroup = event.target.closest(".g-node");
@@ -1280,7 +1328,10 @@ function createForceGraph(container, data, detailsById) {
     if (dragNode) {
       dragNode.dragging = false;
       // a plain click is not a drag; only a real move pins the node
-      if (dragMoved > 6) dragNode.pinned = true;
+      if (dragMoved > 6) {
+        dragNode.pinned = true;
+        dragNode.autoPinned = false;
+      }
       if (panelNode === dragNode) showPanel(dragNode);
       render();
       reheat(0.3);
@@ -1296,17 +1347,19 @@ function createForceGraph(container, data, detailsById) {
     reheat(0.5);
   });
 
-  reheat(1);
+  render();
+  reheat(0.2);
 
   return {
     reset() {
-      for (const node of data.nodes) node.pinned = false;
+      applyDefaultLayout();
       view.x = 0;
       view.y = 0;
       view.w = WORLD.w;
       view.h = WORLD.h;
       applyView();
-      reheat(1);
+      render();
+      reheat(0.2);
     },
     destroy() {
       if (frame) cancelAnimationFrame(frame);
