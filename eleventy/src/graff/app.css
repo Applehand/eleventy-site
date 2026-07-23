@@ -936,7 +936,7 @@ details[open] > summary::before {
 
 .export-option {
   display: flex;
-  align-items: center;
+  align-items: start;
   gap: 10px;
   border: 2px solid var(--line);
   padding: 10px 12px;
@@ -1468,4 +1468,14 @@ details[open] > summary::before {
 
 .node-panel-sub-gap {
   margin-top: 10px;
+}
+
+.export-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.export-option input {
+  margin-top: 3px;
 }

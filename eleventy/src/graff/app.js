@@ -1656,7 +1656,7 @@ function downloadJson(filename, data) {
   }, 2000);
 }
 
-const EXPORT_PART_KEYS = ["graph", "mermaid", "rich_results", "snippets", "references"];
+const EXPORT_PART_KEYS = ["snippets", "mermaid", "graph"];
 
 function buildExportBundle(blueprint, parts) {
   const bundle = {
@@ -1667,9 +1667,6 @@ function buildExportBundle(blueprint, parts) {
     degradation_reason: blueprint.degradation_reason ?? null,
     delivery_summary: blueprint.delivery_summary,
   };
-  if (parts.has("graph")) bundle.graph = blueprint.graph;
-  if (parts.has("mermaid")) bundle.mermaid = blueprint.mermaid;
-  if (parts.has("rich_results")) bundle.rich_results = blueprint.rich_results;
   if (parts.has("snippets")) {
     bundle.snippets = blueprint.scaffolds.map((snippet) => ({
       label: snippet.label,
@@ -1679,11 +1676,8 @@ function buildExportBundle(blueprint, parts) {
       jsonld: snippet.jsonld,
     }));
   }
-  if (parts.has("references")) {
-    const { types, properties } = collectSchemaTerms(blueprint);
-    const link = (name) => ({ name, url: `https://schema.org/${name}` });
-    bundle.references = { types: types.map(link), properties: properties.map(link) };
-  }
+  if (parts.has("mermaid")) bundle.mermaid = blueprint.mermaid;
+  if (parts.has("graph")) bundle.graph = blueprint.graph;
   return bundle;
 }
 

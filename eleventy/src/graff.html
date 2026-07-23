@@ -326,23 +326,30 @@ permalink: /graff/
         <section aria-labelledby="export-heading" id="section-export">
           <h3 id="export-heading">Export</h3>
           <p class="hint">
-            Download the blueprint as a single JSON file: everything, or any mix of sections.
+            One JSON file, three jobs: implement the markup, document the architecture, or feed
+            another tool.
           </p>
           <div class="export-options" id="export-options">
             <label class="export-option">
-              <input type="checkbox" data-export="graph" checked /> Entity graph
+              <input type="checkbox" data-export="snippets" checked />
+              <span class="export-option-text">
+                <strong>JSON-LD snippets</strong>
+                <span class="hint">the copy-paste markup for each template</span>
+              </span>
             </label>
             <label class="export-option">
-              <input type="checkbox" data-export="mermaid" checked /> Diagram (Mermaid source)
+              <input type="checkbox" data-export="mermaid" checked />
+              <span class="export-option-text">
+                <strong>Mermaid diagram</strong>
+                <span class="hint">renders in READMEs, Notion, mermaid.live</span>
+              </span>
             </label>
             <label class="export-option">
-              <input type="checkbox" data-export="rich_results" checked /> Rich result opportunities
-            </label>
-            <label class="export-option">
-              <input type="checkbox" data-export="snippets" checked /> JSON-LD snippets
-            </label>
-            <label class="export-option">
-              <input type="checkbox" data-export="references" checked /> Schema.org reference links
+              <input type="checkbox" data-export="graph" checked />
+              <span class="export-option-text">
+                <strong>Entity graph (JSON)</strong>
+                <span class="hint">machine-readable model for scripts and agents</span>
+              </span>
             </label>
           </div>
           <div class="actions">
