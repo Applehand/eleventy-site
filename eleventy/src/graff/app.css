@@ -1489,3 +1489,43 @@ details[open] > summary::before {
 .export-option input {
   margin-top: 3px;
 }
+
+.snippet-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.snippet-toolbar .secondary {
+  min-height: 32px;
+  padding: 3px 11px;
+  font-size: 0.82rem;
+}
+
+.json-validity {
+  border: 2px solid var(--line);
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 850;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.json-validity[data-valid="true"] {
+  background: var(--ok-soft);
+}
+
+.json-validity[data-valid="false"] {
+  background: var(--error-soft);
+}
+
+.jsonld-output[contenteditable] {
+  caret-color: #8b7cf7;
+  cursor: text;
+}
+
+.jsonld-output[contenteditable]:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}

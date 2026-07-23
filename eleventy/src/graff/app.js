@@ -1605,17 +1605,36 @@ function renderSnippets(snippets) {
         <span class="hint mono">${escapeHtml(snippet.example_url)}</span>
       </summary>
       <div class="snippet-body">
-        <button type="button" class="secondary copy-scaffold">Copy JSON-LD</button>
-        <pre class="jsonld-output">${escapeHtml(json)}</pre>
+        <div class="snippet-toolbar">
+          <button type="button" class="secondary copy-scaffold">Copy JSON-LD</button>
+          <button type="button" class="secondary restore-snippet">Restore generated</button>
+          <span class="json-validity" data-valid="true">valid JSON</span>
+          <span class="hint">editable: click into the block and type</span>
+        </div>
+        <pre class="jsonld-output" contenteditable="plaintext-only" spellcheck="false">${escapeHtml(json)}</pre>
       </div>
     `;
     block.dataset.json = json;
     container.append(block);
   });
-  container.querySelectorAll(".copy-scaffold").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const block = button.closest(".snippet-block");
-      const text = block?.dataset.json || "";
+  const validate = (block) => {
+    const pre = block.querySelector(".jsonld-output");
+    const badge = block.querySelector(".json-validity");
+    if (!pre || !badge) return;
+    try {
+      JSON.parse(pre.textContent);
+      badge.dataset.valid = "true";
+      badge.textContent = "valid JSON";
+    } catch (error) {
+      badge.dataset.valid = "false";
+      badge.textContent = "invalid JSON";
+    }
+  };
+  container.querySelectorAll(".snippet-block").forEach((block) => {
+    block.querySelector(".jsonld-output")?.addEventListener("input", () => validate(block));
+    block.querySelector(".copy-scaffold")?.addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      const text = block.querySelector(".jsonld-output")?.textContent || "";
       await navigator.clipboard.writeText(text);
       announce("JSON-LD copied to clipboard.");
       button.textContent = "Copied";
@@ -1623,7 +1642,20 @@ function renderSnippets(snippets) {
         button.textContent = "Copy JSON-LD";
       }, 1500);
     });
+    block.querySelector(".restore-snippet")?.addEventListener("click", () => {
+      const pre = block.querySelector(".jsonld-output");
+      if (pre) pre.textContent = block.dataset.json || "";
+      validate(block);
+      announce("Snippet restored to the generated version.");
+    });
   });
+}
+
+function currentSnippetText(templateName, fallback) {
+  const pre = document.querySelector(
+    `.snippet-block[data-template="${CSS.escape(templateName)}"] .jsonld-output`,
+  );
+  return pre?.textContent ?? fallback;
 }
 
 let latestBlueprint = null;
@@ -1663,13 +1695,25 @@ function buildExportBundle(blueprint, parts) {
     delivery_summary: blueprint.delivery_summary,
   };
   if (parts.has("snippets")) {
-    bundle.snippets = blueprint.scaffolds.map((snippet) => ({
-      label: snippet.label,
-      template_name: snippet.template_name,
-      example_url: snippet.example_url,
-      usage_note: snippet.usage_note,
-      jsonld: snippet.jsonld,
-    }));
+    bundle.snippets = blueprint.scaffolds.map((snippet) => {
+      const entry = {
+        label: snippet.label,
+        template_name: snippet.template_name,
+        example_url: snippet.example_url,
+        usage_note: snippet.usage_note,
+      };
+      const text = currentSnippetText(
+        snippet.template_name,
+        JSON.stringify(snippet.jsonld, null, 2),
+      );
+      try {
+        entry.jsonld = JSON.parse(text);
+      } catch (error) {
+        entry.jsonld_text = text;
+        entry.parse_error = "edited snippet is not valid JSON; exported as text";
+      }
+      return entry;
+    });
   }
   if (parts.has("mermaid")) bundle.mermaid = blueprint.mermaid;
   if (parts.has("graph")) bundle.graph = blueprint.graph;
@@ -1707,18 +1751,14 @@ const DEGRADATION_LABELS = {
 function updateModePill(blueprint) {
   const pill = $("#results-mode");
   if (!pill) return;
-  pill.removeAttribute("hidden");
   if (blueprint.model_degraded) {
     pill.textContent =
       DEGRADATION_LABELS[blueprint.degradation_reason] ||
       "AI routing unavailable. Deterministic mapping used.";
     pill.dataset.state = "warn";
-  } else if (blueprint.model_used) {
-    pill.textContent = "Tailored with AI";
-    pill.dataset.state = "ok";
+    pill.removeAttribute("hidden");
   } else {
-    pill.textContent = "Deterministic mapping (AI off)";
-    pill.dataset.state = "ok";
+    pill.setAttribute("hidden", "");
   }
 }
 
