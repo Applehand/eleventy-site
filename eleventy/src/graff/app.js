@@ -1369,12 +1369,17 @@ function renderPropertyCitations(item) {
     .sort((a, b) => (a.level === b.level ? 0 : a.level === "required" ? -1 : 1))
     .slice(0, 12);
   const overflow = all.length - citations.length;
+  const anchorFor = (heading) =>
+    heading
+      ? `#${heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`
+      : "";
   const links = citations.map((citation) => {
     const classes = ["prop-cite"];
     if (citation.level === "required") classes.push("prop-cite-required");
     if (missing.has(citation.property)) classes.push("prop-cite-missing");
     const title = `${citation.level}. Documented under "${citation.heading}" in Google Search Central.`;
-    return `<a class="${classes.join(" ")}" href="${escapeAttr(citation.url)}" target="_blank" rel="noopener" title="${escapeAttr(title)}">${escapeHtml(citation.property)}</a>`;
+    const href = `${citation.url}${anchorFor(citation.heading)}`;
+    return `<a class="${classes.join(" ")}" href="${escapeAttr(href)}" target="_blank" rel="noopener" title="${escapeAttr(title)}">${escapeHtml(citation.property)}</a>`;
   });
   const more = overflow > 0 ? ` <span class="hint">+${overflow} more in the docs</span>` : "";
   return `<p class="prop-cites"><span class="prop-cites-label">Documented properties:</span> ${links.join(" ")}${more}</p>`;
