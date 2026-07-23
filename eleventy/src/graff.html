@@ -269,6 +269,10 @@ permalink: /graff/
         <section aria-labelledby="snippets-heading" id="section-snippets">
           <details class="section-details" open>
             <summary><h3 id="snippets-heading">JSON-LD snippets</h3></summary>
+          <p class="token-progress" id="token-progress" hidden>
+            <span class="token-total-pill" id="token-total-pill" data-state="todo"></span>
+            <span class="hint" id="token-total-hint"></span>
+          </p>
           <p class="hint">
             Paste each block into a <code>&lt;script type="application/ld+json"&gt;</code> tag on
             matching pages. Replace every <code>{% raw %}{{TOKEN}}{% endraw %}</code> with real
@@ -321,14 +325,16 @@ permalink: /graff/
           </details>
         </section>
 
-        <details class="resources-details" id="section-references">
-          <summary>Schema.org references</summary>
-          <p class="hint">
-            Documentation for every type and property used in this blueprint. Each link opens
-            the schema.org definition with its expected values and usage notes.
-          </p>
-          <div id="schema-resources"></div>
-        </details>
+        <section id="section-references" aria-label="Schema.org references">
+          <details class="resources-details">
+            <summary>Schema.org references</summary>
+            <p class="hint">
+              Documentation for every type and property used in this blueprint. Each link opens
+              the schema.org definition with its expected values and usage notes.
+            </p>
+            <div id="schema-resources"></div>
+          </details>
+        </section>
 
         <section aria-labelledby="export-heading" id="section-export">
           <details class="section-details" open>

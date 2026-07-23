@@ -461,8 +461,10 @@ button.secondary {
   box-shadow: 3px 3px 0 var(--ink);
 }
 
-.results section + section {
+.results > section {
+  border-top: 2px solid var(--line-soft);
   margin-top: 28px;
+  padding-top: 22px;
 }
 
 .scaffold-header {
@@ -1510,6 +1512,45 @@ details[open] > summary::before {
   font-size: 0.72rem;
   font-weight: 850;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.token-count {
+  border: 2px solid var(--line);
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 850;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: var(--warn-soft);
+}
+
+.token-count[data-state="done"] {
+  background: var(--ok-soft);
+}
+
+.token-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+
+.token-progress .hint {
+  margin: 0;
+}
+
+.token-total-pill {
+  border: 2px solid var(--line);
+  padding: 3px 12px;
+  font-size: 0.85rem;
+  font-weight: 850;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: var(--warn-soft);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.token-total-pill[data-state="done"] {
+  background: var(--ok-soft);
 }
 
 .json-validity[data-valid="true"] {

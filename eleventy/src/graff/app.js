@@ -1589,6 +1589,41 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;");
 }
 
+const TOKEN_RE = /\{\{[A-Z0-9_]+\}\}/g;
+
+function countTokens(text) {
+  return (text.match(TOKEN_RE) || []).length;
+}
+
+function updateTokenCounts() {
+  let total = 0;
+  document.querySelectorAll(".snippet-block").forEach((block) => {
+    const pre = block.querySelector(".jsonld-output");
+    const badge = block.querySelector(".token-count");
+    if (!pre || !badge) return;
+    const count = countTokens(pre.textContent || "");
+    total += count;
+    badge.dataset.state = count === 0 ? "done" : "todo";
+    badge.textContent =
+      count === 0 ? "all values filled" : `${count} value${count === 1 ? "" : "s"} to fill`;
+  });
+  const progress = $("#token-progress");
+  const pill = $("#token-total-pill");
+  const hint = $("#token-total-hint");
+  if (!progress || !pill || !hint) return;
+  progress.hidden = false;
+  pill.dataset.state = total === 0 ? "done" : "todo";
+  if (total === 0) {
+    pill.textContent = "0 placeholder values left";
+    hint.textContent =
+      "Fully customized: every snippet below carries real data and is ready to publish.";
+  } else {
+    pill.textContent = `${total} placeholder value${total === 1 ? "" : "s"} to fill`;
+    hint.textContent =
+      "Counts update as you replace {{TOKENS}} in the snippets below. Zero means fully customized structured data.";
+  }
+}
+
 function renderSnippets(snippets) {
   const container = $("#scaffolds");
   if (!container) return;
@@ -1608,6 +1643,7 @@ function renderSnippets(snippets) {
         <div class="snippet-toolbar">
           <button type="button" class="secondary copy-scaffold">Copy JSON-LD</button>
           <button type="button" class="secondary restore-snippet">Restore generated</button>
+          <span class="token-count" data-state="todo"></span>
           <span class="json-validity" data-valid="true">valid JSON</span>
           <span class="hint">editable: click into the block and type</span>
         </div>
@@ -1629,6 +1665,7 @@ function renderSnippets(snippets) {
       badge.dataset.valid = "false";
       badge.textContent = "invalid JSON";
     }
+    updateTokenCounts();
   };
   container.querySelectorAll(".snippet-block").forEach((block) => {
     block.querySelector(".jsonld-output")?.addEventListener("input", () => validate(block));
@@ -1649,6 +1686,7 @@ function renderSnippets(snippets) {
       announce("Snippet restored to the generated version.");
     });
   });
+  updateTokenCounts();
 }
 
 function currentSnippetText(templateName, fallback) {
