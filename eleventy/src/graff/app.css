@@ -1457,9 +1457,19 @@ details[open] > summary::before {
 
 .card-docs summary {
   cursor: pointer;
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.88rem;
+  font-weight: 850;
+  color: var(--ink);
+}
+
+.card-docs .prop-cites-label {
+  font-size: 0.75rem;
   color: var(--muted);
+}
+
+.card-docs .prop-cite {
+  cursor: default;
+  text-decoration: none;
 }
 
 .card-docs .prop-cites {
