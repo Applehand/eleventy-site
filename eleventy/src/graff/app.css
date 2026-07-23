@@ -1529,3 +1529,18 @@ details[open] > summary::before {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
+
+.section-details > summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.section-details > summary h3 {
+  margin: 0;
+}
+
+.section-details[open] > summary {
+  margin-bottom: 12px;
+}
