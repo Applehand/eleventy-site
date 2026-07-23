@@ -1507,7 +1507,7 @@ const STATE_META = {
 function opportunityStatusLine(item, state) {
   if (state === "blocked") {
     const missing = (item.missing_required_properties || []).map(escapeHtml).join(", ");
-    return `<p class="opportunity-line">Google requires <strong>${missing}</strong>, and a placeholder does not count. Add the real thing to the snippet to qualify.</p>`;
+    return `<p class="opportunity-line">Google also requires <strong>${missing}</strong>, which needs real nested content (a person, place, or media object). GRAFF leaves it out rather than invent one; edit the snippet to add it and qualify.</p>`;
   }
   if (state === "tokens") {
     const stubs = (item.stubbed_properties || []).map(escapeHtml).join(", ");
