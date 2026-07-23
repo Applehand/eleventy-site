@@ -1500,7 +1500,7 @@ function opportunityState(item) {
 
 const STATE_META = {
   ready: { badge: "Qualifies now", order: 0 },
-  tokens: { badge: "Fill tokens", order: 1 },
+  tokens: { badge: "Needs values", order: 1 },
   blocked: { badge: "Missing data", order: 2 },
 };
 
@@ -1511,7 +1511,7 @@ function opportunityStatusLine(item, state) {
   }
   if (state === "tokens") {
     const stubs = (item.stubbed_properties || []).map(escapeHtml).join(", ");
-    return `<p class="opportunity-line">The snippet meets Google's requirements once the tokens for <strong>${stubs}</strong> are replaced with real values.</p>`;
+    return `<p class="opportunity-line">Meets Google's requirements once the placeholder values for <strong>${stubs}</strong> are replaced with real ones.</p>`;
   }
   return `<p class="opportunity-line">The generated markup already meets Google's requirements for this result.</p>`;
 }
@@ -1547,7 +1547,7 @@ function renderRichResults(items) {
   for (const item of cards) counts[opportunityState(item)] += 1;
   const summaryParts = [];
   if (counts.ready) summaryParts.push(`${counts.ready} qualify now`);
-  if (counts.tokens) summaryParts.push(`${counts.tokens} need tokens filled`);
+  if (counts.tokens) summaryParts.push(`${counts.tokens} awaiting values`);
   if (counts.blocked) summaryParts.push(`${counts.blocked} missing data`);
   const summary = document.createElement("p");
   summary.className = "opportunity-summary mono";
