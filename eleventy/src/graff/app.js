@@ -1899,8 +1899,13 @@ function updateUsagePill(stats) {
   const pill = $("#usage-stats");
   if (!pill || !stats) return;
   const visitors = stats.unique_visitors ?? 0;
+  const graphs = stats.blueprints_generated ?? 0;
   const typeCount = (stats.types || []).length;
-  pill.textContent = `⚡ ${visitors} visitor${visitors === 1 ? "" : "s"} advised · ${typeCount} schema.org type${typeCount === 1 ? "" : "s"} recorded`;
+  const visitorPhrase =
+    visitors === 1
+      ? "1 visitor has come to GRAFF for Graphing"
+      : `${visitors} visitors have come to GRAFF for Graphing`;
+  pill.textContent = `⚡ ${visitorPhrase} · GRAFF graphed ${graphs} graph${graphs === 1 ? "" : "s"} · ${typeCount} schema.org type${typeCount === 1 ? "" : "s"} recorded`;
   pill.hidden = false;
   renderTypeLedger(stats);
 }
