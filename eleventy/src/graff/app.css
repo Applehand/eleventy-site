@@ -1527,6 +1527,23 @@ details[open] > summary::before {
   background: var(--ok-soft);
 }
 
+.snippet-block summary .token-count {
+  margin-left: auto;
+  flex: none;
+}
+
+.snippet-block[open] summary .token-count {
+  display: none;
+}
+
+.jsonld-output .token-mark {
+  background: #3a2b0d;
+  color: #ffd27d;
+  border-radius: 2px;
+  padding: 0 2px;
+  font-weight: 700;
+}
+
 .token-progress {
   display: flex;
   align-items: center;

@@ -1595,17 +1595,70 @@ function countTokens(text) {
   return (text.match(TOKEN_RE) || []).length;
 }
 
+function tokenMarkup(text) {
+  return escapeHtml(text).replace(TOKEN_RE, '<span class="token-mark">$&</span>');
+}
+
+function caretTextOffset(pre) {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return null;
+  const range = selection.getRangeAt(0);
+  if (!pre.contains(range.startContainer)) return null;
+  const probe = document.createRange();
+  probe.selectNodeContents(pre);
+  probe.setEnd(range.startContainer, range.startOffset);
+  return probe.toString().length;
+}
+
+function restoreCaret(pre, offset) {
+  const walker = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT);
+  let remaining = offset;
+  let node;
+  let last = null;
+  while ((node = walker.nextNode())) {
+    last = node;
+    const length = node.textContent.length;
+    if (remaining <= length) {
+      const range = document.createRange();
+      range.setStart(node, remaining);
+      range.collapse(true);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return;
+    }
+    remaining -= length;
+  }
+  if (last) {
+    const range = document.createRange();
+    range.setStart(last, last.textContent.length);
+    range.collapse(true);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+
+function highlightTokens(pre) {
+  const text = pre.textContent || "";
+  const caret = caretTextOffset(pre);
+  pre.innerHTML = tokenMarkup(text);
+  if (caret !== null) restoreCaret(pre, Math.min(caret, text.length));
+}
+
 function updateTokenCounts() {
   let total = 0;
   document.querySelectorAll(".snippet-block").forEach((block) => {
     const pre = block.querySelector(".jsonld-output");
-    const badge = block.querySelector(".token-count");
-    if (!pre || !badge) return;
+    const badges = block.querySelectorAll(".token-count");
+    if (!pre || !badges.length) return;
     const count = countTokens(pre.textContent || "");
     total += count;
-    badge.dataset.state = count === 0 ? "done" : "todo";
-    badge.textContent =
-      count === 0 ? "all values filled" : `${count} value${count === 1 ? "" : "s"} to fill`;
+    for (const badge of badges) {
+      badge.dataset.state = count === 0 ? "done" : "todo";
+      badge.textContent =
+        count === 0 ? "all values filled" : `${count} value${count === 1 ? "" : "s"} to fill`;
+    }
   });
   const progress = $("#token-progress");
   const pill = $("#token-total-pill");
@@ -1638,6 +1691,7 @@ function renderSnippets(snippets) {
       <summary>
         <span class="snippet-label">${escapeHtml(snippet.label)}</span>
         <span class="hint mono">${escapeHtml(snippet.example_url)}</span>
+        <span class="token-count" data-state="todo"></span>
       </summary>
       <div class="snippet-body">
         <div class="snippet-toolbar">
@@ -1647,7 +1701,7 @@ function renderSnippets(snippets) {
           <span class="json-validity" data-valid="true">valid JSON</span>
           <span class="hint">editable: click into the block and type</span>
         </div>
-        <pre class="jsonld-output" contenteditable="plaintext-only" spellcheck="false">${escapeHtml(json)}</pre>
+        <pre class="jsonld-output" contenteditable="plaintext-only" spellcheck="false">${tokenMarkup(json)}</pre>
       </div>
     `;
     block.dataset.json = json;
@@ -1668,7 +1722,10 @@ function renderSnippets(snippets) {
     updateTokenCounts();
   };
   container.querySelectorAll(".snippet-block").forEach((block) => {
-    block.querySelector(".jsonld-output")?.addEventListener("input", () => validate(block));
+    block.querySelector(".jsonld-output")?.addEventListener("input", (event) => {
+      highlightTokens(event.currentTarget);
+      validate(block);
+    });
     block.querySelector(".copy-scaffold")?.addEventListener("click", async (event) => {
       const button = event.currentTarget;
       const text = block.querySelector(".jsonld-output")?.textContent || "";
@@ -1681,7 +1738,7 @@ function renderSnippets(snippets) {
     });
     block.querySelector(".restore-snippet")?.addEventListener("click", () => {
       const pre = block.querySelector(".jsonld-output");
-      if (pre) pre.textContent = block.dataset.json || "";
+      if (pre) pre.innerHTML = tokenMarkup(block.dataset.json || "");
       validate(block);
       announce("Snippet restored to the generated version.");
     });
