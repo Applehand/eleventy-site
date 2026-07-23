@@ -1275,6 +1275,7 @@ function createForceGraph(container, data, detailsById) {
 
   let dragNode = null;
   let dragMoved = 0;
+  let dragOffset = { x: 0, y: 0 };
   let panStart = null;
 
   svg.addEventListener("pointerover", (event) => {
@@ -1302,6 +1303,8 @@ function createForceGraph(container, data, detailsById) {
       dragNode = nodeGroup.__node;
       dragNode.dragging = true;
       dragMoved = 0;
+      const grab = toWorld(event);
+      dragOffset = { x: dragNode.x - grab.x, y: dragNode.y - grab.y };
       reheat(0.5);
     } else {
       panStart = { x: event.clientX, y: event.clientY, vx: view.x, vy: view.y };
@@ -1311,9 +1314,11 @@ function createForceGraph(container, data, detailsById) {
   svg.addEventListener("pointermove", (event) => {
     if (dragNode) {
       const point = toWorld(event);
-      dragMoved += Math.abs(point.x - dragNode.x) + Math.abs(point.y - dragNode.y);
-      dragNode.x = point.x;
-      dragNode.y = point.y;
+      const nextX = point.x + dragOffset.x;
+      const nextY = point.y + dragOffset.y;
+      dragMoved += Math.abs(nextX - dragNode.x) + Math.abs(nextY - dragNode.y);
+      dragNode.x = nextX;
+      dragNode.y = nextY;
       reheat(0.35);
       render();
     } else if (panStart) {
