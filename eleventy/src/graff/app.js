@@ -1168,10 +1168,27 @@ function createForceGraph(container, data, detailsById) {
 
   let panelNode = null;
 
+  function connectionRows(node) {
+    const outgoing = data.links
+      .filter((link) => link.source === node)
+      .map(
+        (link) =>
+          `<div class="node-panel-row"><span class="node-panel-key">${escapeHtml(link.property)} →</span><span class="node-panel-value">${escapeHtml(link.target.label)}</span></div>`,
+      );
+    const incoming = data.links
+      .filter((link) => link.target === node)
+      .map(
+        (link) =>
+          `<div class="node-panel-row"><span class="node-panel-key">← ${escapeHtml(link.property)}</span><span class="node-panel-value">from ${escapeHtml(link.source.label)}</span></div>`,
+      );
+    return [...outgoing, ...incoming].join("");
+  }
+
   function showPanel(node) {
     const details = detailsById?.get(node.id);
     if (!details) return;
     panelNode = node;
+    const connections = connectionRows(node);
     const rows = details.fields
       .map(
         ([key, value]) =>
@@ -1186,7 +1203,8 @@ function createForceGraph(container, data, detailsById) {
         <p class="node-panel-title">${escapeHtml(node.label)}</p>
         ${unpin}
       </div>
-      <p class="node-panel-sub">suggested fields in this entity's snippet</p>
+      ${connections ? `<p class="node-panel-sub">connections</p>${connections}` : ""}
+      <p class="node-panel-sub node-panel-sub-gap">fields to fill in the snippet</p>
       ${rows || '<p class="node-panel-sub">No fields beyond identity.</p>'}
     `;
     panel.querySelector(".node-panel-unpin")?.addEventListener("click", () => {
@@ -1336,8 +1354,16 @@ function buildSnippetDetails(blueprint) {
       const id = node["@id"];
       if (!id || details.has(id)) continue;
       const types = Array.isArray(node["@type"]) ? node["@type"] : [node["@type"]];
+      const isReference = (value) =>
+        value && typeof value === "object" && !Array.isArray(value) &&
+        Object.keys(value).length === 1 && "@id" in value;
       const fields = Object.entries(node)
-        .filter(([key]) => !key.startsWith("@"))
+        .filter(([key, value]) => {
+          if (key.startsWith("@")) return false;
+          if (isReference(value)) return false;
+          if (Array.isArray(value) && value.length && value.every(isReference)) return false;
+          return true;
+        })
         .map(([key, value]) => {
           const rendered = typeof value === "string" ? value : JSON.stringify(value);
           return [key, rendered.length > 80 ? `${rendered.slice(0, 79)}…` : rendered];

@@ -1458,3 +1458,7 @@ details[open] > summary::before {
 .card-docs .prop-cites {
   margin-top: 6px;
 }
+
+.node-panel-sub-gap {
+  margin-top: 10px;
+}
