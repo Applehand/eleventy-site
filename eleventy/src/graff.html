@@ -304,6 +304,9 @@ permalink: /graff/
                 results and agents use to locate a page in the site hierarchy.</li>
               <li>Missing edges are usually schema.org domain rules, not omissions. A
                 Product cannot declare <code>isPartOf</code> because it is not a CreativeWork.</li>
+              <li><strong>Store policies</strong> (returns, shipping, loyalty, variants) are
+                nested objects inside the Organization and Product entities rather than
+                separate nodes — click a node to see them summarized on its card.</li>
             </ul>
           </details>
           <details class="graph-details">
@@ -445,6 +448,13 @@ permalink: /graff/
                 <span class="hint">the copy-paste markup for each template</span>
               </span>
             </label>
+            <label class="export-option" hidden>
+              <input type="checkbox" data-export="merchant" checked />
+              <span class="export-option-text">
+                <strong>Merchant readiness</strong>
+                <span class="hint">the Merchant Center crawl attribute report</span>
+              </span>
+            </label>
             <label class="export-option">
               <input type="checkbox" data-export="mermaid" checked />
               <span class="export-option-text">
@@ -471,6 +481,7 @@ permalink: /graff/
           <a href="#results-heading" data-label="Summary"></a>
           <a href="#section-graph" data-label="Entity graph"></a>
           <a href="#section-rich" data-label="Rich results"></a>
+          <a href="#section-merchant" data-label="Merchant readiness" hidden></a>
           <a href="#section-snippets" data-label="JSON-LD snippets"></a>
           <a href="#section-references" data-label="References"></a>
           <a href="#section-export" data-label="Export"></a>

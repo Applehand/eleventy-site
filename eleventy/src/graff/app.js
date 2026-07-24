@@ -38,6 +38,13 @@ const GENERATION_STEPS = [
     detail: "Comparing your graph to Google Search structured-data rules.",
   },
   {
+    id: "merchant",
+    label: "Building merchant policy markup",
+    detail:
+      "Turning your store details into return, shipping, and loyalty markup and checking Merchant Center crawl attributes.",
+    commerceOnly: true,
+  },
+  {
     id: "scaffolds",
     label: "Building JSON-LD scaffolds",
     detail: "Generating copy-paste blocks with placeholders for each template.",
@@ -800,8 +807,10 @@ function maybeNudgeCommerce() {
   nudge.hidden = !COMMERCE_HINT_RE.test(haystack);
 }
 
-function generationStepsForRequest(useAi) {
-  return GENERATION_STEPS.filter((step) => !step.aiOnly || useAi);
+function generationStepsForRequest(useAi, hasCommerce = false) {
+  return GENERATION_STEPS.filter(
+    (step) => (!step.aiOnly || useAi) && (!step.commerceOnly || hasCommerce),
+  );
 }
 
 function stepMarker(state, index) {
@@ -816,7 +825,7 @@ function createGenerationProgress(site, useAi) {
   const detail = $("#loading-detail");
   const progress = $("#loading-progress");
   const progressBar = $("#loading-progress-bar");
-  const steps = generationStepsForRequest(useAi);
+  const steps = generationStepsForRequest(useAi, Boolean(site.commerce?.sells_online));
   let activeIndex = 0;
   let timers = [];
   let finishing = false;
@@ -1566,6 +1575,28 @@ function buildSnippetDetails(blueprint) {
       const isReference = (value) =>
         value && typeof value === "object" && !Array.isArray(value) &&
         Object.keys(value).length === 1 && "@id" in value;
+      const describeValue = (value) => {
+        // Typed nested objects (policies, offers, addresses) read as a
+        // summary line instead of raw JSON.
+        if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          typeof value["@type"] === "string"
+        ) {
+          const detailParts = Object.entries(value)
+            .filter(([key]) => !key.startsWith("@"))
+            .slice(0, 3)
+            .map(
+              ([key, child]) =>
+                `${key}: ${typeof child === "object" ? "…" : String(child)}`,
+            );
+          return detailParts.length
+            ? `${value["@type"]} · ${detailParts.join(" · ")}`
+            : value["@type"];
+        }
+        return typeof value === "string" ? value : JSON.stringify(value);
+      };
       const fields = Object.entries(node)
         .filter(([key, value]) => {
           if (key.startsWith("@")) return false;
@@ -1574,8 +1605,8 @@ function buildSnippetDetails(blueprint) {
           return true;
         })
         .map(([key, value]) => {
-          const rendered = typeof value === "string" ? value : JSON.stringify(value);
-          return [key, rendered.length > 80 ? `${rendered.slice(0, 79)}…` : rendered];
+          const rendered = describeValue(value);
+          return [key, rendered.length > 90 ? `${rendered.slice(0, 89)}…` : rendered];
         });
       details.set(id, { types, fields });
     }
@@ -1838,12 +1869,18 @@ function renderMerchantReadiness(items) {
   const section = $("#section-merchant");
   const container = $("#merchant-readiness");
   if (!section || !container) return;
+  const railLink = document.querySelector('.section-rail a[href="#section-merchant"]');
+  const exportOption = document.querySelector('#export-options input[data-export="merchant"]');
   if (!items || !items.length) {
     section.hidden = true;
     container.innerHTML = "";
+    if (railLink) railLink.hidden = true;
+    if (exportOption) exportOption.closest(".export-option").hidden = true;
     return;
   }
   section.hidden = false;
+  if (railLink) railLink.hidden = false;
+  if (exportOption) exportOption.closest(".export-option").hidden = false;
   container.innerHTML = items
     .map((item) => {
       const rows = item.checks
@@ -1985,12 +2022,12 @@ function downloadJson(filename, data) {
   }, 2000);
 }
 
-const EXPORT_PART_KEYS = ["snippets", "mermaid", "graph"];
+const EXPORT_PART_KEYS = ["snippets", "mermaid", "graph", "merchant"];
 
 function buildExportBundle(blueprint, parts) {
   const bundle = {
     generated_at: new Date().toISOString(),
-    tool: "GRAFF (Graph Registry Attribute & Field Framework)",
+    tool: "GRAFF (Graph Registry, Architecture & Field Framework)",
     model_used: blueprint.model_used,
     model_degraded: blueprint.model_degraded,
     degradation_reason: blueprint.degradation_reason ?? null,
@@ -2019,6 +2056,9 @@ function buildExportBundle(blueprint, parts) {
   }
   if (parts.has("mermaid")) bundle.mermaid = blueprint.mermaid;
   if (parts.has("graph")) bundle.graph = blueprint.graph;
+  if (parts.has("merchant") && blueprint.merchant_readiness?.length) {
+    bundle.merchant_readiness = blueprint.merchant_readiness;
+  }
   return bundle;
 }
 
@@ -2070,6 +2110,14 @@ function composeResultsSummary(blueprint) {
   const total = (blueprint.rich_results || []).length;
   const parts = [`${count} JSON-LD snippet${count === 1 ? "" : "s"} generated.`];
   if (total) parts.push(`${eligible}/${total} rich result opportunities already eligible.`);
+  const readiness = blueprint.merchant_readiness || [];
+  if (readiness.length) {
+    const ready = readiness.filter((item) => item.ready).length;
+    parts.push(
+      `${ready}/${readiness.length} product template${readiness.length === 1 ? "" : "s"} ` +
+        "ready for Merchant Center's crawl.",
+    );
+  }
   return parts.join(" ");
 }
 
