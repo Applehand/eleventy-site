@@ -1365,7 +1365,14 @@ details[open] > summary::before {
   gap: 8px;
 }
 
-.node-panel-unpin {
+.node-panel-actions {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.node-panel-pin,
+.node-panel-close {
   min-height: 0;
   padding: 2px 8px;
   font-size: 0.7rem;
@@ -1376,6 +1383,34 @@ details[open] > summary::before {
   box-shadow: 2px 2px 0 #171717;
   cursor: pointer;
   flex: none;
+}
+
+.node-panel-close {
+  border-color: #171717;
+  color: #171717;
+}
+
+/* Selection focus: clicking a node dims everything not connected to it. */
+.g-node.is-dim,
+.g-edge.is-dim {
+  opacity: 0.18;
+  transition: opacity 120ms ease;
+}
+
+.g-node.is-selected rect {
+  stroke: #5b4bdb;
+  stroke-width: 3.5px;
+}
+
+/* Edge labels only appear where they can be read: on the page-subject edges
+   and on edges touching the selected node. */
+.g-edge .g-edge-label {
+  opacity: 0;
+}
+
+.g-edge.is-subject .g-edge-label,
+.g-edge.is-active .g-edge-label {
+  opacity: 1;
 }
 
 .opportunity-summary {

@@ -218,7 +218,7 @@ permalink: /graff/
             <summary><h3 id="graph-heading">Entity graph</h3></summary>
           <div id="graph-stage">
             <div class="graph-controls">
-              <span class="hint">scroll to zoom · drag background to pan · drag a node to pin it in place · hover a node for its fields and to unpin</span>
+              <span class="hint">scroll to zoom · drag background to pan · click a node for its details card · drag a node to pin it · double-click to unpin</span>
               <span class="graph-buttons">
                 <button type="button" id="graph-reset" class="secondary">Reset layout</button>
                 <button type="button" id="graph-fullscreen" class="secondary">Full screen</button>
@@ -448,41 +448,52 @@ permalink: /graff/
           <p>
             Every blueprint starts from a deterministic skeleton: an Organization → WebSite →
             WebPage spine with breadcrumbs and stable <code>@id</code> fragments, typed by
-            word-boundary keyword rules. AI never builds structure from scratch; it refines a
-            graph that is already valid.
+            keyword rules over your template names and descriptions. AI never builds structure
+            from scratch — it refines a graph that is already valid, and every change it
+            proposes has to pass the same server-side checks the skeleton does.
           </p>
           <ul>
             <li>
               <strong>schema.org registry</strong>: the full v30 vocabulary (3,003 terms: 843
               types, 1,529 properties, plus enumerations) compiled into a local database. Every
-              type and property in the output is validated against it: domains, ranges, and
-              subtype relations. Unknown terms are dropped, not published.
+              type and property in the output — whether picked by keyword rules or proposed by
+              AI — is checked against its domains, ranges, and subtype relations before it
+              enters the graph, so nothing outside the vocabulary can reach your snippets.
+              Rejected proposals are reported back to the model so it can correct course, and
+              claims your input can't support are listed as unsupported instead of published.
               <span id="registry-version" class="hint"></span>
             </li>
             <li>
-              <strong>Gemini ops router</strong>: when AI is enabled, Gemini works through
-              function-calling operations (<code>search_schema_types</code>,
-              <code>list_subtypes</code>, <code>get_allowed_properties</code>,
-              <code>check_feature_eligibility</code>, <code>propose_template_types</code>,
-              <code>add_entity_node</code>, <code>add_entity_facts</code>,
-              <code>add_relationship</code>, <code>complete_routing</code>). Each call is
-              validated server-side, so the model can only make changes the registry allows. It
-              browses the type hierarchy with <code>list_subtypes</code> to pick the most
-              specific type the input supports (a bookstore becomes <code>BookStore</code>, not
-              just <code>Organization</code>), and a final enrichment turn extracts facts
-              explicitly stated in the input (addresses, phone numbers, named people, hours)
-              into the graph. Entities it creates must be linked into the graph or they are
-              dropped, so the result is always fully connected.
+              <strong>Gemini ops router</strong>: with AI enabled, Gemini refines the draft
+              through a set of server-validated operations rather than free-form output. It
+              searches the vocabulary and browses subtypes to find the most specific type your
+              input supports (a bookstore becomes <code>BookStore</code>, not just
+              <code>Organization</code>), and when a retype would cost a Google rich result,
+              the server tells it so it can keep both the precise type and the eligible one.
+              It extracts facts you explicitly stated — phone numbers, emails, hours, prices,
+              founding dates — creates <code>Person</code> entities for named people, and
+              builds structured values like postal addresses from fixed, server-owned shapes.
+              Everything it creates must be linked into the graph or it is dropped.
+            </li>
+            <li>
+              <strong>Focused follow-up passes</strong>: after the main mapping, dedicated
+              turns sweep for stated facts the router missed, fill Google-required properties
+              your input provides values for, and suggest example values for the placeholder
+              tokens in each snippet. If the graph ever fails validation, the model receives
+              the exact findings and gets a bounded chance to repair its own work before any
+              fallback.
             </li>
             <li>
               <strong>Google feature manifests</strong>: 25 rich-result rule sets sourced from
               Search Central documentation, with a citation per property. They drive the
-              required and recommended fields in each snippet and the eligibility panel above.
+              required and recommended fields in each snippet, the eligibility panel above,
+              and the placeholder tokens seeded into the skeleton.
             </li>
             <li>
-              <strong>Graceful degradation</strong>: if AI is unavailable or its output fails
-              validation, generation falls back to pure deterministic mapping. The result is
-              never below a valid, registry-checked baseline.
+              <strong>Graceful degradation</strong>: if AI is off, unavailable, over quota, or
+              its output can't be repaired, generation falls back to the deterministic
+              skeleton. The result is never below a valid, registry-checked baseline — the AI
+              can only add to it, not break it.
             </li>
           </ul>
         </details>

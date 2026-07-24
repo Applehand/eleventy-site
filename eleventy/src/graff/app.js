@@ -902,7 +902,23 @@ const GRAPH_PALETTE = {
   accentSoft: "#eeeaff",
 };
 
-function entityKind(types) {
+function entityKind(entity) {
+  // The backend mints stable @id fragments (StableIdPolicy), which are far
+  // more reliable than type heuristics: the AI may retype the business to a
+  // subtype like EmploymentAgency or Bakery that no name pattern catches.
+  const id = entity.id || "";
+  const fragment = id.includes("#") ? id.slice(id.indexOf("#") + 1) : "";
+  if (fragment === "organization") return "org";
+  if (fragment === "website") return "site";
+  if (fragment === "webpage") return "page";
+  if (fragment === "breadcrumb") return "crumb";
+  if (fragment.startsWith("person-")) return "person";
+  const types = entity.types;
+  if (fragment.startsWith("page-entity-")) {
+    // The template's primary entity: the page's subject. When it is typed as
+    // a plain WebPage it doubles as the page node itself.
+    return types.includes("WebPage") ? "page" : "content";
+  }
   if (types.includes("Organization") || types.some((t) => t.endsWith("Business"))) return "org";
   if (types.includes("WebSite")) return "site";
   if (types.includes("BreadcrumbList")) return "crumb";
@@ -922,7 +938,7 @@ function buildGraphData(manifest) {
     nodes.set(entity.id, {
       id: entity.id,
       label: label.length > 34 ? `${label.slice(0, 33)}…` : label,
-      kind: entityKind(entity.types),
+      kind: entityKind(entity),
       degree: 0,
       x: 0,
       y: 0,
@@ -963,66 +979,78 @@ function createForceGraph(container, data, detailsById) {
   const nodeLayer = document.createElementNS(SVG_NS, "g");
   svg.append(edgeLayer, nodeLayer);
 
-  // Default arrangement: columns by graph distance from the Organization
-  // (BFS over the edges), people sorted to the top of their column. Every
-  // node starts quietly pinned so the layout is stable and directly
-  // arrangeable; unpinning from the hover card hands a node to the physics.
+  // Default arrangement: semantic columns matching the markup hierarchy
+  // (business → people/site → pages → content → breadcrumbs), then a few
+  // barycenter sweeps so each node sits beside the nodes it links to instead
+  // of crossing the canvas. Every node starts quietly pinned so the layout is
+  // stable and directly arrangeable; unpinning hands a node to the physics.
+  const KIND_COLUMN = { org: 0, person: 1, site: 1, page: 2, content: 3, crumb: 4 };
   function applyDefaultLayout() {
-    const adjacency = new Map(data.nodes.map((node) => [node, []]));
+    const neighbors = new Map(data.nodes.map((node) => [node, []]));
     for (const link of data.links) {
-      adjacency.get(link.source).push(link.target);
-      adjacency.get(link.target).push(link.source);
+      neighbors.get(link.source).push(link.target);
+      neighbors.get(link.target).push(link.source);
     }
-    const root = data.nodes.find((node) => node.kind === "org") || data.nodes[0];
-    const depth = new Map([[root, 0]]);
-    const queue = [root];
-    while (queue.length) {
-      const node = queue.shift();
-      for (const neighbor of adjacency.get(node)) {
-        if (!depth.has(neighbor)) {
-          depth.set(neighbor, depth.get(node) + 1);
-          queue.push(neighbor);
-        }
-      }
-    }
-    const maxDepth = Math.max(0, ...depth.values());
-    for (const node of data.nodes) {
-      if (!depth.has(node)) depth.set(node, maxDepth + 1);
-    }
+    const columnOf = (node) => KIND_COLUMN[node.kind] ?? 3;
     const columns = new Map();
     for (const node of data.nodes) {
-      const d = depth.get(node);
-      if (!columns.has(d)) columns.set(d, []);
-      columns.get(d).push(node);
+      const rank = columnOf(node);
+      if (!columns.has(rank)) columns.set(rank, []);
+      columns.get(rank).push(node);
     }
-    const depths = [...columns.keys()].sort((a, b) => a - b);
-    depths.forEach((d, columnIndex) => {
-      const column = columns.get(d);
-      column.sort((a, b) => {
-        const personFirst = (a.kind === "person" ? 0 : 1) - (b.kind === "person" ? 0 : 1);
-        if (personFirst !== 0) return personFirst;
-        return data.nodes.indexOf(a) - data.nodes.indexOf(b);
-      });
+    const ranks = [...columns.keys()].sort((a, b) => a - b);
+    // rowOf holds each node's normalized vertical slot (0..1) so columns of
+    // different sizes can still compare positions during the sweeps.
+    const rowOf = new Map();
+    const setRows = (column) =>
+      column.forEach((node, index) => rowOf.set(node, (index + 1) / (column.length + 1)));
+    ranks.forEach((rank) => setRows(columns.get(rank)));
+    const barycenter = (node, rank) => {
+      const across = neighbors.get(node).filter((other) => columnOf(other) !== rank);
+      if (!across.length) return rowOf.get(node);
+      return across.reduce((sum, other) => sum + rowOf.get(other), 0) / across.length;
+    };
+    for (let sweep = 0; sweep < 4; sweep += 1) {
+      const order = sweep % 2 ? [...ranks].reverse() : ranks;
+      for (const rank of order) {
+        const column = columns.get(rank);
+        column.sort((a, b) => barycenter(a, rank) - barycenter(b, rank));
+        setRows(column);
+      }
+    }
+    ranks.forEach((rank, columnIndex) => {
+      const column = columns.get(rank);
       const x =
-        depths.length === 1
+        ranks.length === 1
           ? WORLD.w / 2
-          : 120 + (columnIndex * (WORLD.w - 240)) / (depths.length - 1);
-      column.forEach((node, rowIndex) => {
+          : 120 + (columnIndex * (WORLD.w - 240)) / (ranks.length - 1);
+      column.forEach((node) => {
         node.x = x;
-        node.y = ((rowIndex + 1) * WORLD.h) / (column.length + 1);
+        node.y = 60 + rowOf.get(node) * (WORLD.h - 120);
         node.pinned = true;
         node.autoPinned = true;
       });
     });
+    // A column holding a single node (usually the business) sits level with
+    // the average of its neighbors rather than at an arbitrary center.
+    for (const rank of ranks) {
+      const column = columns.get(rank);
+      if (column.length !== 1) continue;
+      const node = column[0];
+      const linked = neighbors.get(node);
+      if (!linked.length) continue;
+      const y = linked.reduce((sum, other) => sum + other.y, 0) / linked.length;
+      node.y = Math.min(WORLD.h - 60, Math.max(60, y));
+    }
   }
   applyDefaultLayout();
 
   const edgeEls = data.links.map((link, index) => {
     link.labelT = 0.32 + (index % 5) * 0.09;
     const group = document.createElementNS(SVG_NS, "g");
-    group.setAttribute("class", "g-edge");
-    const line = document.createElementNS(SVG_NS, "line");
     const isSubject = link.property === "mainEntity";
+    group.setAttribute("class", isSubject ? "g-edge is-subject" : "g-edge");
+    const line = document.createElementNS(SVG_NS, "line");
     line.setAttribute("stroke", isSubject ? GRAPH_PALETTE.accent : GRAPH_PALETTE.ink);
     line.setAttribute("stroke-width", isSubject ? "2.2" : "1.3");
     line.setAttribute("opacity", isSubject ? "0.85" : "0.4");
@@ -1032,7 +1060,7 @@ function createForceGraph(container, data, detailsById) {
     label.textContent = link.property;
     group.append(line, label);
     edgeLayer.append(group);
-    return { link, line, label };
+    return { link, group, line, label };
   });
 
   const nodeEls = data.nodes.map((node) => {
@@ -1195,7 +1223,7 @@ function createForceGraph(container, data, detailsById) {
 
   svg.addEventListener("wheel", (event) => {
     event.preventDefault();
-    panel.hidden = true;
+    if (!selectedNode) panel.hidden = true;
     const factor = event.deltaY > 0 ? 1.13 : 1 / 1.13;
     const anchor = toWorld(event);
     view.w = Math.min(WORLD.w * 3, Math.max(160, view.w * factor));
@@ -1213,6 +1241,36 @@ function createForceGraph(container, data, detailsById) {
   let hideTimer = null;
 
   let panelNode = null;
+  let selectedNode = null;
+
+  function setHighlight(node) {
+    svg.classList.toggle("has-selection", Boolean(node));
+    const touches = (link, target) => link.source === target || link.target === target;
+    const isNeighbor = (candidate) =>
+      data.links.some(
+        (link) =>
+          (link.source === node && link.target === candidate) ||
+          (link.target === node && link.source === candidate),
+      );
+    for (const el of nodeEls) {
+      el.group.classList.toggle("is-selected", el.node === node);
+      el.group.classList.toggle(
+        "is-dim",
+        Boolean(node) && el.node !== node && !isNeighbor(el.node),
+      );
+    }
+    for (const el of edgeEls) {
+      const active = Boolean(node) && touches(el.link, node);
+      el.group.classList.toggle("is-active", active);
+      el.group.classList.toggle("is-dim", Boolean(node) && !active);
+    }
+  }
+
+  function clearSelection() {
+    selectedNode = null;
+    panel.hidden = true;
+    setHighlight(null);
+  }
 
   function connectionRows(node) {
     const outgoing = data.links
@@ -1232,41 +1290,47 @@ function createForceGraph(container, data, detailsById) {
 
   function showPanel(node) {
     const details = detailsById?.get(node.id);
-    if (!details) return;
     panelNode = node;
+    const locked = selectedNode === node;
     const connections = connectionRows(node);
-    const rows = details.fields
+    const rows = (details?.fields || [])
       .map(
         ([key, value]) =>
           `<div class="node-panel-row"><span class="node-panel-key">${escapeHtml(key)}</span><span class="node-panel-value">${escapeHtml(value)}</span></div>`,
       )
       .join("");
-    const unpin = node.pinned
-      ? '<button type="button" class="node-panel-unpin" aria-label="Unpin node">unpin ×</button>'
+    const userPinned = node.pinned && !node.autoPinned;
+    const pinButton = `<button type="button" class="node-panel-pin" aria-label="${userPinned ? "Unpin node" : "Pin node in place"}">${userPinned ? "unpin" : "pin"}</button>`;
+    const closeButton = locked
+      ? '<button type="button" class="node-panel-close" aria-label="Close details">×</button>'
       : "";
     panel.innerHTML = `
       <div class="node-panel-head">
         <p class="node-panel-title">${escapeHtml(node.label)}</p>
-        ${unpin}
+        <span class="node-panel-actions">${pinButton}${closeButton}</span>
       </div>
       ${connections ? `<p class="node-panel-sub">connections</p>${connections}` : ""}
       <p class="node-panel-sub node-panel-sub-gap">fields to fill in the snippet</p>
       ${rows || '<p class="node-panel-sub">No fields beyond identity.</p>'}
     `;
-    panel.querySelector(".node-panel-unpin")?.addEventListener("click", () => {
+    panel.querySelector(".node-panel-pin")?.addEventListener("click", () => {
       if (!panelNode) return;
-      panelNode.pinned = false;
+      const wasPinned = panelNode.pinned && !panelNode.autoPinned;
+      panelNode.pinned = !wasPinned;
       panelNode.autoPinned = false;
-      reheat(0.5);
+      if (!panelNode.pinned) reheat(0.5);
+      render();
       showPanel(panelNode);
     });
+    panel.querySelector(".node-panel-close")?.addEventListener("click", clearSelection);
     panel.hidden = false;
   }
 
   function scheduleHide() {
     window.clearTimeout(hideTimer);
     hideTimer = window.setTimeout(() => {
-      panel.hidden = true;
+      // A clicked (selected) node keeps its card open until dismissed.
+      if (!selectedNode) panel.hidden = true;
     }, 180);
   }
 
@@ -1277,10 +1341,11 @@ function createForceGraph(container, data, detailsById) {
   let dragMoved = 0;
   let dragOffset = { x: 0, y: 0 };
   let panStart = null;
+  let panMoved = 0;
 
   svg.addEventListener("pointerover", (event) => {
     const nodeGroup = event.target.closest(".g-node");
-    if (!nodeGroup || dragNode) return;
+    if (!nodeGroup || dragNode || selectedNode) return;
     window.clearTimeout(panelTimer);
     window.clearTimeout(hideTimer);
     panelTimer = window.setTimeout(() => showPanel(nodeGroup.__node), 220);
@@ -1296,7 +1361,7 @@ function createForceGraph(container, data, detailsById) {
   svg.addEventListener("pointerdown", (event) => {
     event.preventDefault();
     window.clearTimeout(panelTimer);
-    panel.hidden = true;
+    if (!selectedNode) panel.hidden = true;
     const nodeGroup = event.target.closest(".g-node");
     svg.setPointerCapture(event.pointerId);
     if (nodeGroup) {
@@ -1308,6 +1373,7 @@ function createForceGraph(container, data, detailsById) {
       reheat(0.5);
     } else {
       panStart = { x: event.clientX, y: event.clientY, vx: view.x, vy: view.y };
+      panMoved = 0;
     }
   });
 
@@ -1323,6 +1389,7 @@ function createForceGraph(container, data, detailsById) {
       render();
     } else if (panStart) {
       const rect = svg.getBoundingClientRect();
+      panMoved += Math.abs(event.clientX - panStart.x) + Math.abs(event.clientY - panStart.y);
       view.x = panStart.vx - ((event.clientX - panStart.x) / rect.width) * view.w;
       view.y = panStart.vy - ((event.clientY - panStart.y) / rect.height) * view.h;
       applyView();
@@ -1332,15 +1399,23 @@ function createForceGraph(container, data, detailsById) {
   svg.addEventListener("pointerup", () => {
     if (dragNode) {
       dragNode.dragging = false;
-      // a plain click is not a drag; only a real move pins the node
       if (dragMoved > 6) {
+        // a real move pins the node in place
         dragNode.pinned = true;
         dragNode.autoPinned = false;
+      } else {
+        // a plain click selects: card stays open until dismissed
+        selectedNode = dragNode;
+        setHighlight(selectedNode);
+        showPanel(selectedNode);
       }
-      if (panelNode === dragNode) showPanel(dragNode);
+      if (panelNode === dragNode && dragMoved > 6) showPanel(dragNode);
       render();
       reheat(0.3);
       dragNode = null;
+    } else if (panStart && panMoved <= 6) {
+      // a click on empty canvas dismisses the selection
+      clearSelection();
     }
     panStart = null;
   });
@@ -1349,6 +1424,7 @@ function createForceGraph(container, data, detailsById) {
     const nodeGroup = event.target.closest(".g-node");
     if (!nodeGroup) return;
     nodeGroup.__node.pinned = false;
+    nodeGroup.__node.autoPinned = false;
     reheat(0.5);
   });
 
@@ -1357,6 +1433,7 @@ function createForceGraph(container, data, detailsById) {
 
   return {
     reset() {
+      clearSelection();
       applyDefaultLayout();
       view.x = 0;
       view.y = 0;
@@ -1396,7 +1473,7 @@ function renderGraphKey(data) {
     });
   const hasSubject = data.links.some((link) => link.property === "mainEntity");
   const edges = [
-    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (unpin from its hover card)</span>`,
+    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (double-click or use its card to unpin)</span>`,
     `<span class="key-item"><span class="key-line"></span>link</span>`,
     hasSubject
       ? `<span class="key-item"><span class="key-line key-line-subject"></span>page subject (mainEntity)</span>`
