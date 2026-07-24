@@ -1931,6 +1931,17 @@ function renderSnippets(snippets) {
     block.dataset.template = snippet.template_name;
     if (index === 0) block.open = true;
     const json = JSON.stringify(snippet.jsonld, null, 2);
+    const nodeTypes = [
+      ...new Set(
+        (snippet.jsonld?.["@graph"] || []).map((node) => {
+          const raw = node["@type"];
+          return Array.isArray(raw) ? raw[0] : raw;
+        }),
+      ),
+    ].filter(Boolean);
+    const containsLine = nodeTypes.length
+      ? `<p class="hint snippet-contains">Entities in this snippet: ${nodeTypes.map(escapeHtml).join(" · ")} — the page ships its whole graph, matching the entity graph above.</p>`
+      : "";
     block.innerHTML = `
       <summary>
         <span class="snippet-label">${escapeHtml(snippet.label)}</span>
@@ -1938,6 +1949,7 @@ function renderSnippets(snippets) {
         <span class="token-count" data-state="todo"></span>
       </summary>
       <div class="snippet-body">
+        ${containsLine}
         <div class="snippet-toolbar">
           <button type="button" class="secondary copy-scaffold">Copy JSON-LD</button>
           <button type="button" class="secondary restore-snippet">Restore generated</button>
