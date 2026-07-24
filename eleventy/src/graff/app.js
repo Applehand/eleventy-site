@@ -1890,8 +1890,8 @@ function renderMerchantReadiness(items) {
         )
         .join("");
       const verdict = item.ready
-        ? "Every crawlable attribute is present or token-stubbed — fill the tokens and this template can seed a Merchant Center feed."
-        : "Attributes marked “not in markup” need real values before Merchant Center's crawl can use this template.";
+        ? "Every attribute Googlebot reads is present or token-stubbed — fill the tokens and this template can seed a Merchant Center feed."
+        : "Attributes marked “not in markup” need real values before Googlebot can feed this template to Merchant Center.";
       return `<article class="merchant-card"><h4>${escapeHtml(item.template_name)}</h4><p class="hint">${verdict}</p>${rows}</article>`;
     })
     .join("");
@@ -2115,7 +2115,7 @@ function composeResultsSummary(blueprint) {
     const ready = readiness.filter((item) => item.ready).length;
     parts.push(
       `${ready}/${readiness.length} product template${readiness.length === 1 ? "" : "s"} ` +
-        "ready for Merchant Center's crawl.",
+        "carry the attributes Googlebot reads for Merchant Center.",
     );
   }
   return parts.join(" ");

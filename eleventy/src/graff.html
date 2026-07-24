@@ -354,10 +354,13 @@ permalink: /graff/
           <details class="section-details" open>
             <summary><h3 id="merchant-heading">Merchant Center readiness</h3></summary>
             <p class="hint">
-              Google Merchant Center's website crawl reads the same schema.org markup GRAFF
-              generates, so a complete product snippet doubles as a starter feed. Merchant
-              Center and Search Console settings override on-page markup, and the crawler only
-              reads markup present in the server-rendered HTML.
+              Google reads this markup with two crawlers: <strong>Googlebot</strong> ingests
+              schema.org product data for Merchant Center's automated feeds and automatic item
+              updates, and <strong>Storebot-Google</strong> (Merchant Center's dedicated bot)
+              verifies product, cart, and checkout pages — so allow both in robots.txt. A
+              complete product snippet doubles as a starter feed. Merchant Center and Search
+              Console settings override on-page markup, and the crawlers only read markup
+              present in the server-rendered HTML.
             </p>
             <div id="merchant-readiness"></div>
           </details>
