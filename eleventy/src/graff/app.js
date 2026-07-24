@@ -409,6 +409,17 @@ const SAMPLE_PROFILES = [
     ],
     notes:
       "Founded in 2017 by Sam Driftwood. Ships from two US warehouses; prices in USD with free shipping over $75. Product pages show in-stock status and collect verified buyer reviews with star ratings. Support email gear@driftwoodoutdoor.example, phone (555) 067-3300.",
+    commerce: {
+      sells_online: true,
+      ships_to_countries: ["US", "CA"],
+      free_shipping_threshold: "$75",
+      delivery_window_days: 5,
+      return_window_days: 30,
+      loyalty_program_name: "Trailhead Rewards",
+      loyalty_benefits: "Points on every order and early access to gear drops",
+      has_variants: true,
+      uses_merchant_center: true,
+    },
   },
   {
     label: "Golden Ladle: recipes + cooking videos",
@@ -674,6 +685,19 @@ function fillFormFromSample(sample) {
   form.socialUrls.value = (sample.social_urls || []).join("\n");
   form.notes.value = sample.notes || "";
 
+  const commerce = sample.commerce || {};
+  if (form.sellsOnline) form.sellsOnline.checked = Boolean(commerce.sells_online);
+  form.shipsTo.value = (commerce.ships_to_countries || []).join(", ");
+  form.returnWindowDays.value = commerce.return_window_days ?? "";
+  form.returnPolicyUrl.value = commerce.return_policy_url || "";
+  form.freeShippingThreshold.value = commerce.free_shipping_threshold || "";
+  form.deliveryWindowDays.value = commerce.delivery_window_days ?? "";
+  form.loyaltyName.value = commerce.loyalty_program_name || "";
+  form.loyaltyBenefits.value = commerce.loyalty_benefits || "";
+  form.hasVariants.checked = Boolean(commerce.has_variants);
+  form.usesMerchantCenter.checked = Boolean(commerce.uses_merchant_center);
+  syncCommerceVisibility();
+
   container.replaceChildren();
   sample.templates.forEach((template, index) => {
     container.append(templateRow(index, template));
@@ -707,7 +731,7 @@ function collectSiteDescription(form) {
     description: row.querySelector('[name="templateDescription"]').value.trim(),
   }));
   if (!templates.length) throw new Error("Add at least one page template.");
-  return {
+  const site = {
     business_name: form.businessName.value.trim(),
     site_url: normalizeOrigin(form.siteUrl.value.trim()),
     business_description: form.businessDescription.value.trim(),
@@ -716,6 +740,64 @@ function collectSiteDescription(form) {
     templates,
     notes: form.notes.value.trim() || null,
   };
+  const commerce = collectCommerceDetails(form);
+  if (commerce) site.commerce = commerce;
+  return site;
+}
+
+function collectCommerceDetails(form) {
+  if (!form.sellsOnline?.checked) return null;
+  const commerce = { sells_online: true };
+  const countries = form.shipsTo.value
+    .split(/[,\s]+/)
+    .map((code) => code.trim().toUpperCase())
+    .filter((code) => /^[A-Z]{2}$/.test(code));
+  if (countries.length) commerce.ships_to_countries = countries;
+  const returnDays = Number.parseInt(form.returnWindowDays.value, 10);
+  if (Number.isFinite(returnDays)) commerce.return_window_days = returnDays;
+  if (form.returnPolicyUrl.value.trim()) {
+    commerce.return_policy_url = form.returnPolicyUrl.value.trim();
+  }
+  if (form.freeShippingThreshold.value.trim()) {
+    commerce.free_shipping_threshold = form.freeShippingThreshold.value.trim();
+  }
+  const deliveryDays = Number.parseInt(form.deliveryWindowDays.value, 10);
+  if (Number.isFinite(deliveryDays)) commerce.delivery_window_days = deliveryDays;
+  if (form.loyaltyName.value.trim()) commerce.loyalty_program_name = form.loyaltyName.value.trim();
+  if (form.loyaltyBenefits.value.trim()) {
+    commerce.loyalty_benefits = form.loyaltyBenefits.value.trim();
+  }
+  if (form.hasVariants.checked) commerce.has_variants = true;
+  if (form.usesMerchantCenter.checked) commerce.uses_merchant_center = true;
+  return commerce;
+}
+
+function syncCommerceVisibility() {
+  const checkbox = $("#sells-online");
+  const fields = $("#commerce-fields");
+  if (checkbox && fields) fields.hidden = !checkbox.checked;
+  if (checkbox?.checked) {
+    const nudge = $("#commerce-nudge");
+    if (nudge) nudge.hidden = true;
+  }
+}
+
+const COMMERCE_HINT_RE =
+  /\b(e-?commerce|online (store|shop|retailer)|product|shop|store|cart|checkout|pricing|sku|merch)\b/i;
+
+function maybeNudgeCommerce() {
+  const checkbox = $("#sells-online");
+  const nudge = $("#commerce-nudge");
+  if (!checkbox || !nudge || checkbox.checked) return;
+  const form = $("#site-form");
+  const haystack = [
+    form?.businessCategory?.value || "",
+    form?.businessDescription?.value || "",
+    ...[...(form?.querySelectorAll('[name="templateDescription"]') || [])].map(
+      (input) => input.value,
+    ),
+  ].join(" ");
+  nudge.hidden = !COMMERCE_HINT_RE.test(haystack);
 }
 
 function generationStepsForRequest(useAi) {
@@ -1746,6 +1828,62 @@ function updateTokenCounts() {
   }
 }
 
+const MERCHANT_CHECK_LABELS = {
+  present: "✓ in markup",
+  stubbed: "fill the token",
+  missing: "not in markup",
+};
+
+function renderMerchantReadiness(items) {
+  const section = $("#section-merchant");
+  const container = $("#merchant-readiness");
+  if (!section || !container) return;
+  if (!items || !items.length) {
+    section.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  section.hidden = false;
+  container.innerHTML = items
+    .map((item) => {
+      const rows = item.checks
+        .map(
+          (check) =>
+            `<div class="merchant-check" data-state="${check.status}"><span class="merchant-attr">${escapeHtml(check.attribute)}</span><code>${escapeHtml(check.property)}</code><span class="merchant-state">${MERCHANT_CHECK_LABELS[check.status] || check.status}</span></div>`,
+        )
+        .join("");
+      const verdict = item.ready
+        ? "Every crawlable attribute is present or token-stubbed — fill the tokens and this template can seed a Merchant Center feed."
+        : "Attributes marked “not in markup” need real values before Merchant Center's crawl can use this template.";
+      return `<article class="merchant-card"><h4>${escapeHtml(item.template_name)}</h4><p class="hint">${verdict}</p>${rows}</article>`;
+    })
+    .join("");
+}
+
+const TOMBSTONE_SVG =
+  '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 16.17v-9.17a3 3 0 0 1 3 -3h4a3 3 0 0 1 3 3v9.171"/><path d="M12 7v5"/><path d="M10 9h4"/><path d="M5 21v-2a3 3 0 0 1 3 -3h8a3 3 0 0 1 3 3v2h-14"/></svg>';
+
+function renderRetiredFeatures(features) {
+  const container = $("#retired-features");
+  if (!container) return;
+  const retired = (features || []).filter((feature) => feature.status === "retired");
+  if (!retired.length) {
+    const details = $("#retired-features-details");
+    if (details) details.hidden = true;
+    return;
+  }
+  retired.sort((a, b) => (b.retired_at || "").localeCompare(a.retired_at || ""));
+  container.innerHTML = retired
+    .map(
+      (feature) =>
+        `<div class="retired-feature">${TOMBSTONE_SVG}<span class="retired-name">${escapeHtml(feature.name)}</span><span class="retired-date">${escapeHtml(feature.retired_at || "")}</span><span class="retired-note">${escapeHtml(feature.note || "")}</span></div>`,
+    )
+    .join("");
+  document.querySelectorAll(".tombstone-icon").forEach((el) => {
+    el.innerHTML = TOMBSTONE_SVG;
+  });
+}
+
 function renderSnippets(snippets) {
   const container = $("#scaffolds");
   if (!container) return;
@@ -2036,6 +2174,7 @@ function showResults(blueprint, remaining, quotaEnforced = true) {
     }
   }
   renderRichResults(blueprint.rich_results || []);
+  renderMerchantReadiness(blueprint.merchant_readiness || []);
   renderSnippets(blueprint.scaffolds);
   renderSchemaResources(blueprint);
   initSectionRail();
@@ -2097,6 +2236,9 @@ async function initStatus() {
     const [health, quota] = await Promise.all([fetchJson("/health"), fetchJson("/quota")]);
     fetchJson("/stats")
       .then(updateUsagePill)
+      .catch(() => {});
+    fetchJson("/features")
+      .then((payload) => renderRetiredFeatures(payload.features))
       .catch(() => {});
     setPill(
       "#api-status",
@@ -2200,6 +2342,13 @@ function bindEvents() {
   });
   populateSampleSelect();
   $("#sample-select")?.addEventListener("change", fillSelectedSample);
+  $("#sells-online")?.addEventListener("change", syncCommerceVisibility);
+  $("#site-form")?.addEventListener("input", (event) => {
+    const name = event.target?.name || "";
+    if (["businessCategory", "businessDescription", "templateDescription"].includes(name)) {
+      maybeNudgeCommerce();
+    }
+  });
   $("#export-full")?.addEventListener("click", () => {
     exportBlueprint(new Set(EXPORT_PART_KEYS));
   });

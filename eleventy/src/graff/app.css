@@ -1637,3 +1637,113 @@ details[open] > summary::before {
 .section-details[open] > summary {
   margin-bottom: 12px;
 }
+
+/* --- Online store details --- */
+.commerce-fieldset {
+  border: 2px solid var(--ink, #171717);
+  padding: 14px 16px 16px;
+  margin: 18px 0 0;
+}
+
+.commerce-fieldset legend {
+  font-weight: 850;
+  padding: 0 6px;
+}
+
+.commerce-toggle,
+.commerce-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 6px 0;
+}
+
+.commerce-check {
+  grid-column: 1 / -1;
+  font-weight: 650;
+}
+
+#commerce-fields {
+  margin-top: 12px;
+}
+
+#commerce-fields .hint.wide {
+  grid-column: 1 / -1;
+}
+
+/* --- Merchant Center readiness --- */
+.merchant-card {
+  border: 2px solid var(--ink, #171717);
+  padding: 12px 14px;
+  margin: 0 0 12px;
+  background: var(--panel, transparent);
+}
+
+.merchant-card h4 {
+  margin: 0 0 4px;
+}
+
+.merchant-check {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 0;
+  border-top: 1px solid var(--line, #ddd8cf);
+  font-size: 0.85rem;
+}
+
+.merchant-attr {
+  font-weight: 800;
+}
+
+.merchant-check[data-state="present"] .merchant-state {
+  color: #1d7a3d;
+  font-weight: 750;
+}
+
+.merchant-check[data-state="stubbed"] .merchant-state {
+  color: #8a6d00;
+  font-weight: 750;
+}
+
+.merchant-check[data-state="missing"] .merchant-state {
+  color: #b3261e;
+  font-weight: 750;
+}
+
+/* --- Retired features (tombstones) --- */
+.tombstone-icon svg {
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+.retired-feature {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-top: 1px solid var(--line, #ddd8cf);
+  font-size: 0.85rem;
+}
+
+.retired-feature svg {
+  align-self: center;
+  opacity: 0.75;
+}
+
+.retired-name {
+  font-weight: 800;
+}
+
+.retired-date {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--muted, #68635c);
+}
+
+.retired-note {
+  color: var(--muted, #68635c);
+}

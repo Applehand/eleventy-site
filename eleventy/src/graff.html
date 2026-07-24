@@ -9,9 +9,10 @@ permalink: /graff/
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Describe a site once and get a Schema.org entity graph plus ready-to-fill JSON-LD snippets for every template."
+      content="Describe a site once and get a Schema.org entity graph, ready-to-fill JSON-LD snippets for every template, and Google rich-result and Merchant Center readiness checks."
     />
-    <title>GRAFF: Graph Registry Attribute &amp; Field Framework</title>
+    <title>GRAFF: Graph Registry, Architecture &amp; Field Framework</title>
+    <link rel="icon" type="image/svg+xml" href="/graff/favicon.svg" />
     <link rel="stylesheet" href="/graff/app.css" />
     <script>
       (function () {
@@ -36,11 +37,12 @@ permalink: /graff/
           </button>
         </div>
         <h1>GRAFF</h1>
-        <p class="tagline mono">Graph Registry Attribute &amp; Field Framework</p>
+        <p class="tagline mono">Graph Registry, Architecture &amp; Field Framework</p>
         <p class="lede">
           Describe the site and its page templates. GRAFF builds a connected Schema.org
           entity graph and generates copy-paste JSON-LD snippets with clear placeholders for
-          each page type.
+          each page type. Online stores also get merchant markup: return, shipping, and
+          loyalty policies, product variants, and a Merchant Center readiness check.
         </p>
         <p class="privacy">
           Nothing is stored on the server. Take what is generated before you leave.
@@ -165,6 +167,58 @@ permalink: /graff/
             <button type="button" id="add-template" class="secondary">Add template</button>
           </fieldset>
 
+          <fieldset class="commerce-fieldset" id="commerce-fieldset">
+            <legend>
+              <span class="label-row">Online store details <span class="optional">(optional)</span>
+                <button type="button" class="tip" aria-label="How this is used" data-tip="Google only shows merchant listing experiences for pages where products can be bought directly. These details become return, shipping, and loyalty policy markup on your Organization and unlock the Merchant Center readiness check.">?</button>
+              </span>
+            </legend>
+            <label class="commerce-toggle">
+              <input type="checkbox" id="sells-online" name="sellsOnline" />
+              Customers can buy products directly on this site
+            </label>
+            <p class="hint" id="commerce-nudge" hidden>
+              Looks like you sell online — these details earn merchant rich results and seed
+              Google Merchant Center.
+            </p>
+            <div class="grid" id="commerce-fields" hidden>
+              <div class="field">
+                <span class="label-row"><label for="ships-to">Countries you sell to</label><button type="button" class="tip" aria-label="How this is used" data-tip="Two-letter country codes, comma separated (US, CA). Becomes applicableCountry on your return policy and shippingDestination on your shipping policy.">?</button></span>
+                <input id="ships-to" name="shipsTo" maxlength="200" placeholder="US, CA" />
+              </div>
+              <div class="field">
+                <span class="label-row"><label for="return-window">Return window (days)</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes a MerchantReturnPolicy with a finite return window. Leave blank and give a policy URL instead if you prefer.">?</button></span>
+                <input id="return-window" name="returnWindowDays" type="number" min="0" max="365" placeholder="30" />
+              </div>
+              <div class="field">
+                <span class="label-row"><label for="return-policy-url">Return policy URL</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes merchantReturnLink: Google accepts a link to your policy page instead of structured return details.">?</button></span>
+                <input id="return-policy-url" name="returnPolicyUrl" type="url" placeholder="https://example.com/returns" />
+              </div>
+              <div class="field">
+                <span class="label-row"><label for="free-shipping">Free shipping over</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes the freeShippingThreshold in your shipping policy markup.">?</button></span>
+                <input id="free-shipping" name="freeShippingThreshold" maxlength="60" placeholder="$50" />
+              </div>
+              <div class="field">
+                <span class="label-row"><label for="delivery-window">Typical delivery (days)</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes the transit time in your shipping policy markup.">?</button></span>
+                <input id="delivery-window" name="deliveryWindowDays" type="number" min="0" max="365" placeholder="5" />
+              </div>
+              <div class="field">
+                <span class="label-row"><label for="loyalty-name">Loyalty program name</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes a MemberProgram on your Organization so member benefits can appear alongside products.">?</button></span>
+                <input id="loyalty-name" name="loyaltyName" maxlength="200" placeholder="VaultPoints" />
+              </div>
+              <div class="field wide">
+                <span class="label-row"><label for="loyalty-benefits">What members get</label><button type="button" class="tip" aria-label="How this is used" data-tip="Becomes the MemberProgram description (points, member pricing, free shipping...).">?</button></span>
+                <input id="loyalty-benefits" name="loyaltyBenefits" maxlength="500" placeholder="Points on every order" />
+              </div>
+              <label class="commerce-check"><input type="checkbox" id="has-variants" name="hasVariants" /> Products come in variants (sizes, colors)</label>
+              <label class="commerce-check"><input type="checkbox" id="uses-mc" name="usesMerchantCenter" /> We use or plan to use Google Merchant Center</label>
+              <p class="hint wide">
+                Markup is the base layer: Merchant Center and Search Console settings override
+                it, and Google's crawler only reads markup present in the server-rendered HTML.
+              </p>
+            </div>
+          </fieldset>
+
           <div class="field wide">
             <span class="label-row"><label for="notes">Additional details <span class="optional">(optional)</span></label><button type="button" class="tip" aria-label="How this is used" data-tip="Facts stated here get extracted into the graph when AI is enabled: named people become Person entities, addresses, phones, hours, and prices become properties.">?</button></span>
             <textarea
@@ -282,6 +336,27 @@ permalink: /graff/
        
             </details>
             <div id="rich-results"></div>
+            <details class="graph-details" id="retired-features-details">
+              <summary><span class="tombstone-icon" aria-hidden="true"></span>Retired by Google</summary>
+              <p class="hint">
+                Markup that once earned a rich result but no longer does. GRAFF does not
+                generate or screen for these; they are listed so you know where they went.
+              </p>
+              <div id="retired-features" class="retired-features"></div>
+            </details>
+          </details>
+        </section>
+
+        <section aria-labelledby="merchant-heading" id="section-merchant" hidden>
+          <details class="section-details" open>
+            <summary><h3 id="merchant-heading">Merchant Center readiness</h3></summary>
+            <p class="hint">
+              Google Merchant Center's website crawl reads the same schema.org markup GRAFF
+              generates, so a complete product snippet doubles as a starter feed. Merchant
+              Center and Search Console settings override on-page markup, and the crawler only
+              reads markup present in the server-rendered HTML.
+            </p>
+            <div id="merchant-readiness"></div>
           </details>
         </section>
 
@@ -484,10 +559,20 @@ permalink: /graff/
               fallback.
             </li>
             <li>
-              <strong>Google feature manifests</strong>: 25 rich-result rule sets sourced from
-              Search Central documentation, with a citation per property. They drive the
-              required and recommended fields in each snippet, the eligibility panel above,
-              and the placeholder tokens seeded into the skeleton.
+              <strong>Google feature manifests</strong>: 29 rich-result rule sets sourced from
+              Search Central documentation, with a citation per property — the full search
+              gallery plus the merchant listing cluster (product variants, return policy,
+              shipping policy, loyalty program). They drive the required and recommended
+              fields in each snippet, the eligibility panel above, and the placeholder tokens
+              seeded into the skeleton. Retired features stay in the catalog as tombstones so
+              you know which markup no longer pays.
+            </li>
+            <li>
+              <strong>Merchant markup</strong>: for sites that sell online, the store details
+              you provide become organization-level return, shipping, and loyalty policy
+              markup — never inferred — and product templates are checked against the
+              attributes Google Merchant Center's website crawl reads, so the same markup
+              that earns rich results can seed your product feed.
             </li>
             <li>
               <strong>Graceful degradation</strong>: if AI is off, unavailable, over quota, or
