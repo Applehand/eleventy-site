@@ -1660,6 +1660,19 @@ details[open] > summary::before {
   margin: 6px 0;
 }
 
+/* The global input rule stretches inputs to full width; checkboxes must not
+   stretch or they drift far from their label text. */
+.commerce-toggle input[type="checkbox"],
+.commerce-check input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  flex: none;
+}
+
+.commerce-toggle {
+  justify-content: center;
+}
+
 .commerce-check {
   grid-column: 1 / -1;
   font-weight: 650;
