@@ -1420,14 +1420,6 @@ function createForceGraph(container, data, detailsById) {
     panStart = null;
   });
 
-  svg.addEventListener("dblclick", (event) => {
-    const nodeGroup = event.target.closest(".g-node");
-    if (!nodeGroup) return;
-    nodeGroup.__node.pinned = false;
-    nodeGroup.__node.autoPinned = false;
-    reheat(0.5);
-  });
-
   render();
   reheat(0.2);
 
@@ -1473,7 +1465,7 @@ function renderGraphKey(data) {
     });
   const hasSubject = data.links.some((link) => link.property === "mainEntity");
   const edges = [
-    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (double-click or use its card to unpin)</span>`,
+    `<span class="key-item"><span class="key-swatch key-swatch-pinned"></span>pinned (unpin from its card)</span>`,
     `<span class="key-item"><span class="key-line"></span>link</span>`,
     hasSubject
       ? `<span class="key-item"><span class="key-line key-line-subject"></span>page subject (mainEntity)</span>`
