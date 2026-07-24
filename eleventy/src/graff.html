@@ -38,12 +38,15 @@ permalink: /graff/
         </div>
         <h1>GRAFF</h1>
         <p class="tagline mono">Graph Registry, Architecture &amp; Field Framework</p>
-        <p class="lede">
-          Describe the site and its page templates. GRAFF builds a connected Schema.org
-          entity graph and generates copy-paste JSON-LD snippets with clear placeholders for
-          each page type. Online stores also get merchant markup: return, shipping, and
-          loyalty policies, product variants, and a Merchant Center readiness check.
-        </p>
+        <details class="lede-details">
+          <summary>What does GRAFF do?</summary>
+          <p class="lede">
+            Describe the site and its page templates. GRAFF builds a connected Schema.org
+            entity graph and generates copy-paste JSON-LD snippets for each page type.
+            Online stores also get return, shipping, and loyalty policy markup, product
+            variants, and a Merchant Center readiness check.
+          </p>
+        </details>
         <p class="privacy">
           Nothing is stored on the server. Take what is generated before you leave.
         </p>
@@ -354,13 +357,9 @@ permalink: /graff/
           <details class="section-details" open>
             <summary><h3 id="merchant-heading">Merchant Center readiness</h3></summary>
             <p class="hint">
-              Google reads this markup with two crawlers: <strong>Googlebot</strong> ingests
-              schema.org product data for Merchant Center's automated feeds and automatic item
-              updates, and <strong>Storebot-Google</strong> (Merchant Center's dedicated bot)
-              verifies product, cart, and checkout pages — so allow both in robots.txt. A
-              complete product snippet doubles as a starter feed. Merchant Center and Search
-              Console settings override on-page markup, and the crawlers only read markup
-              present in the server-rendered HTML.
+              Googlebot reads this markup for Merchant Center's automated feeds and item
+              updates, so a complete product snippet doubles as a starter feed. Merchant
+              Center settings override on-page markup.
             </p>
             <div id="merchant-readiness"></div>
           </details>

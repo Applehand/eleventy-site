@@ -1760,3 +1760,19 @@ details[open] > summary::before {
 .retired-note {
   color: var(--muted, #68635c);
 }
+
+/* --- Collapsible hero description --- */
+.lede-details {
+  max-width: 760px;
+  margin: 8px 0;
+}
+
+.lede-details summary {
+  cursor: pointer;
+  font-weight: 750;
+  color: var(--muted);
+}
+
+.lede-details .lede {
+  margin: 8px 0 0;
+}

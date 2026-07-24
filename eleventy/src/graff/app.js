@@ -1890,8 +1890,8 @@ function renderMerchantReadiness(items) {
         )
         .join("");
       const verdict = item.ready
-        ? "Every attribute Googlebot reads is present or token-stubbed — fill the tokens and this template can seed a Merchant Center feed."
-        : "Attributes marked “not in markup” need real values before Googlebot can feed this template to Merchant Center.";
+        ? "All attributes present or token-stubbed — fill the tokens to seed a feed."
+        : "“Not in markup” attributes need real values before Googlebot can use this template.";
       return `<article class="merchant-card"><h4>${escapeHtml(item.template_name)}</h4><p class="hint">${verdict}</p>${rows}</article>`;
     })
     .join("");
