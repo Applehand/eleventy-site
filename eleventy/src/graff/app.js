@@ -1940,7 +1940,9 @@ function renderSnippets(snippets) {
       ),
     ].filter(Boolean);
     const containsLine = nodeTypes.length
-      ? `<p class="hint snippet-contains">Entities in this snippet: ${nodeTypes.map(escapeHtml).join(" · ")} — the page ships its whole graph, matching the entity graph above.</p>`
+      ? `<p class="snippet-contains"><span class="hint">Entities:</span> ${nodeTypes
+          .map((name) => `<span class="entity-pill">${escapeHtml(name)}</span>`)
+          .join("")}</p>`
       : "";
     block.innerHTML = `
       <summary>
