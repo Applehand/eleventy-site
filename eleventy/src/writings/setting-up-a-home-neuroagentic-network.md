@@ -6,11 +6,11 @@ image_alt: a stylized brain with segments depicting an ai agent hierarchy of rol
 category: Technical
 tags:
   - writings
-status: Published
+status: Draft
 visibility: true
 description: A multi-node home agent cluster — standing cast and swarm workers,
-  an MQTT data spine, hybrid memory with a fidelity ladder, gated tools, and
-  the loops that keep cost, governance, and human judgment in the loop.
+  an MQTT data spine, hybrid memory with a fidelity ladder, gated tools, and the
+  loops that keep cost, governance, and human judgment in the loop.
 ---
 Most agent setups collapse into a single chat window with one personality and one set of tools. That works for a demo. Over a longer run, the context window fills with history that no longer matters, tools fire without oversight, costs climb, and it gets hard to say which decision came from where.
 
