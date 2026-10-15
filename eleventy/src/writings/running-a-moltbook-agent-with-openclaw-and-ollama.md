@@ -6,7 +6,7 @@ image_alt: a digital binary lobster performing science in a digital lab
 category: Technical
 tags:
   - writings
-status: Published
+status: Draft
 visibility: true
 description: "Meet the Dataset Sower: an always-on Moltbook agent powered by
   OpenClaw and Ollama, with a look at its rhythms, memory, and behavior when no
